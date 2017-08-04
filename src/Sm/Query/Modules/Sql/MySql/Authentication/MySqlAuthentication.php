@@ -17,7 +17,6 @@ use Sm\Query\Modules\Sql\Authentication\SqlAuthentication;
  * Authentication for connecting to a MySql database
  *
  * @package Sm\Query\Modules\Sql\MySql\Authentication
- * @method \PDO getConnection()
  */
 class MySqlAuthentication extends AbstractAuthentication implements SqlAuthentication {
     protected $database_name;
@@ -73,5 +72,8 @@ class MySqlAuthentication extends AbstractAuthentication implements SqlAuthentic
         $this->connection->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
         
         return $this->isValid();
+    }
+    public function getConnection(): \PDO {
+        return $this->connection;
     }
 }

@@ -25,7 +25,7 @@ trait HasHooksTrait {
      *
      * @return $this
      */
-    public function addHook(string $hook_name, Hook $hook) {
+    public function registerHook(string $hook_name, Hook $hook) {
         $this->getHookContainer()->register($hook_name, $hook);
         return $this;
     }

@@ -10,9 +10,9 @@ namespace Sm\Data\Property;
 
 use Sm\Core\Abstraction\Readonly_able;
 use Sm\Core\Abstraction\ReadonlyTrait;
+use Sm\Core\SmEntity\SmEntity;
+use Sm\Core\SmEntity\StdSmEntityTrait;
 use Sm\Data\Property\Exception\ReadonlyPropertyException;
-use Sm\Data\Source\DataSource;
-use Sm\Data\Source\DataSourceContainer;
 use Sm\Data\Type\Variable_\Variable_;
 
 /**
@@ -30,29 +30,11 @@ use Sm\Data\Type\Variable_\Variable_;
  * @property-read string                           $object_id
  * @property-read array                            $potential_types
  */
-class Property extends Variable_ implements Readonly_able {
-    use ReadonlyTrait;
-    
+class Property extends Variable_ implements Readonly_able, PropertySchema, SmEntity {
+    use ReadonlyTrait, StdSmEntityTrait;
+    protected $protoSmID = 'Property';
     /** @var  string $name */
     protected $_name;
-    /** @var  DataSourceContainer $dataSourceContainer */
-    protected $dataSourceContainer;
-    
-    
-    /**
-     * Property constructor.
-     *
-     * @param string          $name
-     * @param DataSource|null $dataSource
-     */
-    public function __construct($name = null, DataSource $dataSource = null) {
-        $this->dataSourceContainer = new DataSourceContainer;
-        
-        if (isset($name)) $this->_name = $name;
-        if (isset($dataSource)) $this->dataSourceContainer->register(DataSourceContainer::DEFAULT_SOURCE, $dataSource);
-        parent::__construct(null);
-    }
-    
     
     ####################################################
     #   Getters and Setters

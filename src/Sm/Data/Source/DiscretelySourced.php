@@ -6,12 +6,13 @@
  */
 
 namespace Sm\Data\Source;
+
 use Sm\Data\Source\Schema\DataSourceSchema;
 
 /**
  * Interface DiscretelySourced
  *
- * Item that has a discrete Source
+ * Item that has once DataSource
  *
  * @package Sm\Data\Source
  */

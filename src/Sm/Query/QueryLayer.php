@@ -68,14 +68,8 @@ class QueryLayer extends StandardLayer {
             $this->queryModuleFactory->register(...$args);
         }
     }
-    /**
-     * @param                        $name
-     * @param \Sm\Core\Module\Module $module
-     *
-     * @return bool
-     * @throws \Sm\Core\Module\Error\InvalidModuleException
-     */
     public function checkCanRegisterModule($name, Module $module) {
+        # I don't know if this is necessary
         return true;
     }
     

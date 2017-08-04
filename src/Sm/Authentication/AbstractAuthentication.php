@@ -19,8 +19,4 @@ abstract class AbstractAuthentication implements Authentication {
     }
     abstract public function isValid(): bool;
     abstract public function connect();
-    abstract public function setCredentials();
-    public function getConnection() {
-        return $this->connection;
-    }
 }

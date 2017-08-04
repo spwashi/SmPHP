@@ -11,37 +11,38 @@ namespace Sm\Data\Property;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Data\Property\Exception\ReadonlyPropertyException;
 
-class PropertyContainerTest extends \PHPUnit_Framework_TestCase {
-    /** @var  \Sm\Data\Property\PropertyContainer */
-    protected $PropertyContainer;
+class PropertySchemaContainerTest extends \PHPUnit_Framework_TestCase {
+    /** @var  \Sm\Data\Property\PropertySchemaContainer */
+    protected $propertySchemaContainer;
     
     public function setUp() {
-        $this->PropertyContainer = new PropertyContainer;
+        $this->propertySchemaContainer = new PropertySchemaContainer;
     }
     
     public function testCanRegisterProperty() {
         $Property = new Property;
-        $this->PropertyContainer->register('title', $Property);
-    
+        $this->propertySchemaContainer->register('title', $Property);
+        
         $this->expectException(InvalidArgumentException::class);
-        $this->PropertyContainer->register('first_name', new \stdClass);
+        $this->propertySchemaContainer->register('first_name', new \stdClass);
     }
     
     public function testCanRemoveProperty() {
         $this->testCanRegisterProperty();
-        $Property = $this->PropertyContainer->title;
+        $Property = $this->propertySchemaContainer->remove('title');
         $this->assertInstanceOf(Property::class, $Property);
     }
     
     public function testCanMarkReadonlyAndNotRegister() {
-        $this->PropertyContainer->markReadonly();
+        $this->propertySchemaContainer->markReadonly();
         $this->expectException(ReadonlyPropertyException::class);
         $this->testCanRegisterProperty();
     }
     
     public function testCanMarkReadonlyAndNotRemove() {
-        $this->PropertyContainer->markReadonly();
+        $this->testCanRegisterProperty();
+        $this->propertySchemaContainer->markReadonly();
         $this->expectException(ReadonlyPropertyException::class);
-        $this->testCanRemoveProperty();
+        $this->propertySchemaContainer->remove('title');
     }
 }

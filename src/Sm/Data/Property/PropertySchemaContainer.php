@@ -16,47 +16,33 @@ use Sm\Data\Property\Exception\ReadonlyPropertyException;
 /**
  * Class PropertyContainer
  *
- * Container for Properties, held by Models and Entities
+ * Container for PropertySchemas
  *
  * @package Sm\Data\Property
  * @method Property current()
- * @property \Sm\Data\Property\Property $id
+ * @property \Sm\Data\Property\PropertySchema $id
  */
-class PropertyContainer extends Container {
+class PropertySchemaContainer extends Container {
     use ReadonlyTrait;
     
-    /** @var  PropertyHaver $PropertyHaver Whatever these properties belong to */
-    protected $PropertyHaver;
-    /** @var  \Sm\Data\Source\DataSource $Source If there is a source that all of these Properties should belong to */
-    protected $Source;
-    
-    /**
-     * Rules for cloning the PropertyContainer
-     */
     public function __clone() {
         foreach ($this->registry as $key => &$item) {
             $this->registry[ $key ] = (clone $item);
         }
-        $this->addPropertyPropertyHavers(null);
     }
-    /**
-     * @param null|string $name
-     *
-     * @return \Sm\Data\Property\Property
-     */
-    public function resolve($name = null) {
-        return $this->getItem($name);
+    public function resolve($name = null): PropertySchema {
+        return parent::resolve($name);
     }
     /**
      * Add a Property to this class, naming it if it is not already named.
      *
-     * @param \Sm\Data\Property\Property|string $name
-     * @param \Sm\Data\Property\Property        $registrand
+     * @param \Sm\Data\Property\PropertySchema|string $name
+     * @param \Sm\Data\Property\PropertySchema        $registrand
      *
      * @return $this
-     * @throws \Sm\Data\Property\ReadonlyPropertyException If we try to add a property to
-     *                                                       this PropertyContainer while the
-     *                                                       readonly flag is set
+     * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException If we try to add a property to
+     *                                                                  this PropertyContainer while the
+     *                                                                  readonly flag is set
      *
      * @throws \Sm\Core\Exception\InvalidArgumentException If we try to register anything
      *                                          that isn't a named Property or array of named properties
@@ -74,18 +60,26 @@ class PropertyContainer extends Container {
         }
     
         # If the first parameter is a named property, register it
-        if ($name instanceof Property && isset($name->name)) return $this->register($name->name, $name);
-    
+        if ($name instanceof PropertySchema && isset($name->name)) {
+            if (isset($registrand)) throw new InvalidArgumentException("When using a PropertySchema as the first parameter, ther can be no second");
+            return $this->register($name->name, $name);
+        }
+        
         # We can only register Properties
-        if (!($registrand instanceof Property)) throw new InvalidArgumentException("Can only add Properties to the PropertyContainer");
-    
-    
+        if (!($registrand instanceof PropertySchema)) {
+            throw new InvalidArgumentException("Can only add Properties to the PropertyContainer");
+        }
+        
+        
         # We can only register named Properties
-        if (!isset($name)) throw new InvalidArgumentException("Must name properties.");
-    
-    
+        if (!isset($name)) {
+            throw new InvalidArgumentException("Must name properties.");
+        }
+        
         # Set the name of the property based on this one
-        if (!isset($registrand->name)) $registrand->setName($name);
+        if (!isset($registrand->name)) {
+            $registrand->setName($name);
+        }
         
         /** @var static $result */
         parent::register($name, $registrand);
@@ -99,20 +93,12 @@ class PropertyContainer extends Container {
      *
      * @return mixed The variable that we removed
      *
-     * @throws \Sm\Data\Property\ReadonlyPropertyException If we try to remove a property while this class has been marked as readonly
+     * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException If we try to remove a property while this class has been marked as readonly
      */
     public function remove($name) {
         if ($this->readonly) {
             throw new ReadonlyPropertyException("Cannot remove elements from a readonly PropertyContainer.");
         }
         return parent::remove($name);
-    }
-    /**
-     * Get the PropertyHaver of these Properties
-     *
-     * @return PropertyHaver|null
-     */
-    public function getPropertyHaver() {
-        return $this->PropertyHaver;
     }
 }

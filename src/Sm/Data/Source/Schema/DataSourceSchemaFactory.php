@@ -9,14 +9,15 @@ namespace Sm\Data\Source\Schema;
 
 
 use Sm\Core\Factory\Exception\WrongFactoryException;
-use Sm\Core\Factory\StandardFactory;
+use Sm\Core\SmEntity\SmEntityFactory;
 use Sm\Data\Source\DiscretelySourced;
 
-class DataSourceSchemaFactory extends StandardFactory {
+class DataSourceSchemaFactory extends SmEntityFactory {
     public function resolve($name = null): DataSourceSchema {
         try {
-            return parent::resolve($name);
+            return parent::resolve(...func_get_args());
         } catch (WrongFactoryException $e) {
+            # If we are trying to get the source of something that has a source, return that source
             if ($name instanceof DiscretelySourced && ($result = $name->getDataSourceSchema())) {
                 return $name->getDataSourceSchema();
             }

@@ -23,8 +23,8 @@ class HasHooksTraitTest extends \PHPUnit_Framework_TestCase {
         $hook = $this->createMock(Hook::class);
         $hook->method('resolve')
              ->willReturnCallback(function (Context $context = null, $arg_1) { return 'here ' . $arg_1; });
-        
-        $hookHaver->addHook('test', $hook);
+    
+        $hookHaver->registerHook('test', $hook);
         $result = $hookHaver->resolveHook('test', null, 'another');
         $this->assertEquals($result, 'here another');
     }

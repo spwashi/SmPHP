@@ -12,7 +12,7 @@ use Sm\Core\Resolvable\AbstractResolvable;
 use Sm\Core\Resolvable\ResolvableFactory;
 
 abstract class StandardType extends AbstractResolvable implements Type {
-    /** @var  AbstractResolvable $subject */
+    /** @var  \Sm\Core\Resolvable\Resolvable $subject */
     protected $subject;
     public function __construct($subject) {
         $subject = static::resolveType($subject);
@@ -36,7 +36,14 @@ abstract class StandardType extends AbstractResolvable implements Type {
         end($expl);
         return "[" . $expl[ key($expl) ] . "]";
     }
+    /**
+     * Represent the subject internally in a particular way
+     *
+     * @param $subject
+     *
+     * @return \Sm\Core\Resolvable\Resolvable
+     */
     public static function resolveType($subject) {
-        return ResolvableFactory::init($subject);
+        return ResolvableFactory::init($subject)->resolve($subject);
     }
 }

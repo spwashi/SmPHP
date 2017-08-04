@@ -120,8 +120,9 @@ class StandardFactory extends AbstractContainer implements Factory {
         $class_name = is_object($item) ? get_class($item) : $item;
         
         $previous_exception = null;
-        if (self::isProbablyClassname($class_name) || ($class_name = gettype($class_name)) && isset($this->class_registry[ $class_name ])
-        ) {
+        if (self::isProbablyClassname($class_name)
+            || (($class_name = gettype($class_name))
+                && isset($this->class_registry[ $class_name ]))) {
             
             try {
                 array_shift($args);
@@ -138,17 +139,24 @@ class StandardFactory extends AbstractContainer implements Factory {
         
         # Iterate through the other registry to see if there is some sort of different check
         #  being done
-        /**
-         * @var                    $index
-         * @var Resolvable         $method
-         */
         foreach ($this->registry as $index => $method) {
+            /*** @var Resolvable $method */
             $result = $method->resolve(...$args);
-            if ($result) {
-                return $result;
-            }
+            if ($result) return $result;
         }
-        $arg_shape = count($args) === 1 ? $args[0] : Util::getShapeOfItem($args);
+    
+        #
+        # Could not find instance
+        $_args     = count($args) === 1 ? $args[0] : $args;
+        $arg_shape =
+            Util::canBeString($_args) ?
+                $_args :
+                (Util::getShapeOfItem($_args));
+    
+        if (is_array($_args) || ($_args instanceof \JsonSerializable)) {
+            $arg_shape .= ' - ' . json_encode($_args);
+        }
+    
         throw new FactoryCannotBuildException("Cannot find a matching build method for " . $arg_shape, null, $previous_exception);
     }
     /**
@@ -160,6 +168,7 @@ class StandardFactory extends AbstractContainer implements Factory {
      *
      * @return mixed|null
      * @throws \Sm\Core\Exception\ClassNotFoundException
+     * @throws \Sm\Core\Exception\RecursiveError
      */
     protected function buildClassInstance(string $class_name, array $args = []) {
         # If there is a function to help us create the class, call that function with the original class name that we
@@ -177,9 +186,8 @@ class StandardFactory extends AbstractContainer implements Factory {
             $instance = $class_handler->resolve(...$args);
         }
     
-        # If the class name is an object, clone it
         if (is_object($instance)) {
-            # Check to see if we're allowed to create objects of this type
+            # Check to see if we're allowed to interact with objects of this type
             $this->_checkCanInit($instance);
             return $instance;
         }

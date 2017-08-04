@@ -9,8 +9,8 @@ namespace Sm\Data\Source\Database\Table;
 
 
 use Sm\Authentication\Authentication;
-use Sm\Data\Property\PropertyContainer;
-use Sm\Data\Source\Database\DatabaseDataSource;
+use Sm\Data\Property\PropertySchemaContainer;
+use Sm\Data\Source\Database\DatabaseSource;
 use Sm\Data\Source\DataSource;
 
 /** @noinspection PhpSignatureMismatchDuringInheritanceInspection */
@@ -20,19 +20,19 @@ use Sm\Data\Source\DataSource;
  *
  * Represents a Source from a Table
  *
- * @property-read \Sm\Data\Source\Database\ColumnContainer $columns
+ * @property-read \Sm\Data\Source\Database\ColumnSchemaContainer $columns
  *
- * @method static TableSource init(DatabaseDataSource $DatabaseSource, string $table_name = null)
+ * @method static TableSource init(DatabaseSource $DatabaseSource, string $table_name = null)
  * @package Sm\Data\Source\Database
  */
 class TableSource extends DataSource implements TableSourceSchema {
     protected $table_name;
-    /** @var  DatabaseDataSource $databaseSource */
+    /** @var  DatabaseSource $databaseSource */
     protected $databaseSource;
-    /** @var PropertyContainer $columnContainer */
+    /** @var PropertySchemaContainer $columnContainer */
     protected $columnContainer;
     
-    public function __construct($table_name, DatabaseDataSource $DatabaseSource = null) {
+    public function __construct($table_name, DatabaseSource $DatabaseSource = null) {
         parent::__construct();
         $this->table_name     = $table_name;
         $this->databaseSource = $DatabaseSource;
@@ -41,7 +41,7 @@ class TableSource extends DataSource implements TableSourceSchema {
         if ($name === 'columns') return $this->columnContainer;
         return null;
     }
-    public function getParentSource(): ?DatabaseDataSource {
+    public function getParentSource(): ?DatabaseSource {
         return $this->databaseSource;
     }
     /**
@@ -59,10 +59,6 @@ class TableSource extends DataSource implements TableSourceSchema {
      */
     public function setTableName($table_name) {
         $this->table_name = $table_name;
-        return $this;
-    }
-    public function authenticate(Authentication $authentication = null) {
-        $this->databaseSource->authenticate($authentication);
         return $this;
     }
 }

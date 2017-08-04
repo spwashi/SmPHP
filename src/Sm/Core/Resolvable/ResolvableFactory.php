@@ -11,12 +11,11 @@ namespace Sm\Core\Resolvable;
 use Sm\Core\Factory\StandardFactory;
 
 class ResolvableFactory extends StandardFactory {
-    public static function init($item = null) {
-        if ($item instanceof ResolvableFactory) {
-            return $item;
-        }
-        return new static($item);
-    }
+    /**
+     * @param null $subject
+     *
+     * @return  \Sm\Core\Resolvable\Resolvable
+     */
     public function build($subject = null) {
         if ($subject instanceof Resolvable) {
             return $subject;

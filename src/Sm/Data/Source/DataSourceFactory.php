@@ -26,5 +26,4 @@ class DataSourceFactory extends DataSourceSchemaFactory {
     protected function canCreateClass($object_type) {
         return is_a($object_type, DataSource::class);
     }
-    
 }

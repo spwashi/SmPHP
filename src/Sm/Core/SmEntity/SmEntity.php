@@ -14,8 +14,13 @@ namespace Sm\Core\SmEntity;
  * Class that represents a Framework Entity.
  * These are the objects/data structures that we will likely see in each implementation of this Framework.
  *
- * @package Sm\Core\SmEntity
+ * Meant to be a concrete implementation of the SmEntitySchema  interface
  */
-interface SmEntity {
-    public function getSmId():?string;
+interface SmEntity extends SmEntitySchema {
+    /**
+     * Get the SmID of the object or class that is going to serve as the blueprint for creating this instance.
+     *
+     * @return null|string
+     */
+    public function getPrototypeSmID():?string;
 }

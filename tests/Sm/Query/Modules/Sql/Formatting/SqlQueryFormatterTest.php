@@ -11,7 +11,7 @@ const DO_ECHO_RESULTS = 0;
 
 use Sm\Data\Evaluation\Comparison\EqualToCondition;
 use Sm\Data\Source\Constructs\JoinedSourceSchematic;
-use Sm\Data\Source\Database\DatabaseDataSource;
+use Sm\Data\Source\Database\DatabaseSource;
 use Sm\Data\Source\Database\Table\TableSource;
 use Sm\Data\Source\Database\Table\TableSourceSchematic;
 use Sm\Query\Modules\Sql\Constraints\ForeignKeyConstraintSchema;
@@ -37,8 +37,8 @@ class SqlQueryFormatterTest extends \PHPUnit_Framework_TestCase {
     
     
     public function testSelect() {
-        $tableSource   = new TableSource('tablename_is_here', new DatabaseDataSource('Database'));
-        $tableSource_2 = new TableSource('another_table', new DatabaseDataSource('Database'));
+        $tableSource   = new TableSource('tablename_is_here', new DatabaseSource('Database'));
+        $tableSource_2 = new TableSource('another_table', new DatabaseSource('Database'));
         $boonman       = VarcharColumnSchema::init('boonman')
                                             ->setLength(25)
                                             ->setTableSchema($tableSource);
@@ -55,7 +55,7 @@ class SqlQueryFormatterTest extends \PHPUnit_Framework_TestCase {
         if (DO_ECHO_RESULTS) echo __FILE__ . "\n--\n$result\n\n";
     }
     public function testUpdate() {
-        $tableSource = new TableSource('tablename_is_here', new DatabaseDataSource('Database'));
+        $tableSource = new TableSource('tablename_is_here', new DatabaseSource('Database'));
         $boonman     = VarcharColumnSchema::init('boonman')
                                           ->setLength(25)
                                           ->setTableSchema($tableSource);

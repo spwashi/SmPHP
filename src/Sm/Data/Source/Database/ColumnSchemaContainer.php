@@ -11,7 +11,7 @@ namespace Sm\Data\Source\Database;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Util;
 use Sm\Data\Property\Property;
-use Sm\Data\Property\PropertyContainer;
+use Sm\Data\Property\PropertySchemaContainer;
 
 /** @noinspection PhpHierarchyChecksInspection */
 
@@ -25,7 +25,7 @@ use Sm\Data\Property\PropertyContainer;
  * @method Property current()
  *
  */
-class ColumnContainer extends PropertyContainer {
+class ColumnSchemaContainer extends PropertySchemaContainer {
     protected $_primary_keys = [];
     
     

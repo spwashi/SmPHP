@@ -41,7 +41,7 @@ class LayerContainer extends Container {
      */
     public function register($name = null, $registrand = null) {
         if (!(is_string($name))) throw new InvalidArgumentException("Invalid name");
-        if (!($registrand instanceof StandardLayer)) throw new InvalidArgumentException("Cannot register non-Layer {$name} here");
+        if (!($registrand instanceof Layer)) throw new InvalidArgumentException("Cannot register non-Layer {$name} here");
         parent::register($name, $registrand);
         return $this;
     }

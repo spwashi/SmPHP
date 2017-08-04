@@ -8,7 +8,6 @@
 namespace Sm\Data\Source\Database;
 
 
-use Sm\Authentication\AbstractAuthentication;
 use Sm\Authentication\Authentication;
 use Sm\Data\Source\DataSource;
 use Sm\Data\Source\Schema\NamedDataSourceSchema;
@@ -18,8 +17,9 @@ use Sm\Data\Source\Schema\NamedDataSourceSchema;
  *
  * @package Sm\Data\Source\Database
  */
-class DatabaseDataSource extends DataSource implements NamedDataSourceSchema {
+class DatabaseSource extends DataSource implements DatabaseSourceSchema, NamedDataSourceSchema {
     protected $name;
+    protected $authentication;
     /**
      * DatabaseDataSource constructor.
      *
@@ -31,12 +31,11 @@ class DatabaseDataSource extends DataSource implements NamedDataSourceSchema {
         $this->name = $name;
         parent::__construct();
     }
-    /**
-     * Get the name of the database
-     *
-     * @return mixed
-     */
     public function getName(): ?string {
         return $this->name;
+    }
+    public function authenticate(Authentication $authentication = null) {
+        $this->authentication = $authentication;
+        return $this;
     }
 }
