@@ -8,11 +8,11 @@
 namespace Sm\Communication\Module;
 
 
+use Sm\Communication\Network\Http\Http;
 use Sm\Communication\Network\Http\Request\HttpRequest;
 use Sm\Communication\Network\Http\Request\HttpRequestFromEnvironment;
 use Sm\Communication\Network\Http\Response\HttpResponse;
 use Sm\Core\Resolvable\StringResolvable;
-use Sm\Http\Http;
 
 /**
  * Class HttpCommunicationModule
@@ -39,7 +39,7 @@ class HttpCommunicationModule extends CommunicationModule {
             Http::class => function ($result) {
                 if (!($result instanceof HttpResponse)) {
                     $result = HttpResponse::init()
-                                          ->setBody(StringResolvable::init($result));
+                        ->setBody(StringResolvable::init($result));
                 }
                 $result->makeHeaders();
                 echo $result->getBody();

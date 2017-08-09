@@ -8,13 +8,13 @@
 namespace Sm\Data\Model;
 
 
-use Sm\Core\SmEntity\SmEntitySchematic;
+use Sm\Core\SmEntity\SmEntitySchema;
 
 /**
  * Interface ModelSchema
  *
  * Something that describes a Model
  */
-interface ModelSchema extends SmEntitySchematic {
+interface ModelSchema extends SmEntitySchema {
     public function getName();
 }

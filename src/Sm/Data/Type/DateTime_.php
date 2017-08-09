@@ -10,7 +10,7 @@ namespace Sm\Data\Type;
 
 use Sm\Core\Resolvable\DateResolvable;
 
-class DateTime_ extends StandardType {
+class DateTime_ extends StandardDatatype {
     public function __toString() {
         return "" . $this->subject->resolve()->format('Y-m-d H:i:s.u');
     }

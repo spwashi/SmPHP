@@ -4,8 +4,8 @@
 namespace Sm\Data\Model;
 
 
-use Sm\Core\Exception\UnimplementedError;
-use Sm\Core\SmEntity\StdSmEntityTrait;
+use Sm\Core\SmEntity\SmEntitySchematic;
+use Sm\Core\SmEntity\StdSmEntitySchematicTrait;
 use Sm\Data\Property\PropertyDataManager;
 use Sm\Data\Property\PropertySchemaContainer;
 
@@ -14,12 +14,17 @@ use Sm\Data\Property\PropertySchemaContainer;
  *
  * Represents the structure of a Model
  */
-class ModelSchematic implements ModelSchema {
-    protected $name;
+class ModelSchematic implements ModelSchema, SmEntitySchematic, \JsonSerializable {
+    protected $protoSmID = '[Model]';
+    
+    use StdSmEntitySchematicTrait {
+        load as protected _load_std;
+    }
+    
+    
     protected $properties;
     /** @var \Sm\Data\Property\PropertyDataManager $propertyDataManager The SmEntityDataManager that will help configure PropertySchemas for us */
     private $propertyDataManager;
-    use StdSmEntityTrait;
     /**
      * ModelSchematic constructor.
      *
@@ -43,29 +48,16 @@ class ModelSchematic implements ModelSchema {
         return $this;
     }
     public function load($configuration) {
-        if (!is_array($configuration)) throw new UnimplementedError("Cannot configure schematic without array");
-        
-        $name       = $this->_configArrayGet__name($configuration);
-        $properties = $this->_configArrayGet__properties($configuration);
-        
-        if (isset($name)) $this->setName($name);
-        if (isset($properties)) $this->setProperties($properties);
+        $this->_load_std($configuration);
+        $this->_configArraySet__properties($configuration);
         return $this;
     }
     
-    public function getName() { return $this->name; }
-    
-    public function setName($name) {
-        $this->name = $name;
-        return $this;
-    }
-    protected function _configArrayGet__name($configuration) {
-        return $configuration['name'] ?? null;
-    }
-    protected function _configArrayGet__properties($configuration): PropertySchemaContainer {
+    protected function _configArraySet__properties($configuration) {
         $propertySchemaContainer = PropertySchemaContainer::init();
         $properties              = $configuration['properties'] ?? [];
-        if (!count($properties)) return $propertySchemaContainer;
+        
+        if (!count($properties)) return;
         
         # - convert the configurations to schematics
         $propertySchematic_array = [];
@@ -78,6 +70,15 @@ class ModelSchematic implements ModelSchema {
         
         # - register the properties
         $propertySchemaContainer->register($propertySchematic_array);
-        return $propertySchemaContainer;
+        
+        #
+        if (isset($propertySchemaContainer)) $this->setProperties($propertySchemaContainer);
+    }
+    public function jsonSerialize() {
+        return [
+            'smID'       => $this->getSmID(),
+            'name'       => $this->getName(),
+            'properties' => $this->properties,
+        ];
     }
 }

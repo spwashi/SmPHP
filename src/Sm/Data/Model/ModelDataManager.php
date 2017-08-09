@@ -26,13 +26,13 @@ class ModelDataManager extends SmEntityDataManager {
      *
      * @param \Sm\Data\DataLayer                         $dataLayer
      * @param SmEntityFactory                            $smEntityFactory
-     * @param \Sm\Data\Property\PropertyDataManager|null $propertyDataManager
+     * @param \Sm\Data\Property\PropertyDataManager|null $datatypeFactory
      */
     public function __construct(DataLayer $dataLayer = null,
                                 SmEntityFactory $smEntityFactory = null,
-                                PropertyDataManager $propertyDataManager = null) {
+                                PropertyDataManager $datatypeFactory = null) {
         parent::__construct($dataLayer, $smEntityFactory);
-        $this->propertyDataManager = $propertyDataManager ?? PropertyDataManager::init();
+        $this->propertyDataManager = $datatypeFactory ?? PropertyDataManager::init();
     }
     
     public function configure($configuration): ModelSchematic {

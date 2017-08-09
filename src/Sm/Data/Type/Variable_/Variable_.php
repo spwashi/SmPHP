@@ -29,7 +29,7 @@ class Variable_ extends AbstractResolvable implements \JsonSerializable {
     protected $subject;
     /** @var  Resolvable $_default */
     protected $_default;
-    protected $_name;
+    protected $name;
     protected $_potential_types = [];
     /**
      * Variable_ constructor.
@@ -37,7 +37,7 @@ class Variable_ extends AbstractResolvable implements \JsonSerializable {
      * @param string|null $name The name of the Variable_
      */
     public function __construct($name = null) {
-        if (isset($name)) $this->_name = $name;
+        if (isset($name)) $this->name = $name;
         parent::__construct(null);
     }
     /**
@@ -55,7 +55,7 @@ class Variable_ extends AbstractResolvable implements \JsonSerializable {
     
     public function __get($name) {
         if ($name === 'name') {
-            return $this->_name;
+            return $this->name;
         }
         if ($name === 'value') {
             return $this->resolve();
@@ -74,7 +74,7 @@ class Variable_ extends AbstractResolvable implements \JsonSerializable {
     public function __set($name, $value) {
         switch ($name) {
             case 'name':
-                $this->_name = $value;
+                $this->name = $value;
                 break;
             case 'value':
                 $this->setValue($value);
@@ -142,7 +142,7 @@ class Variable_ extends AbstractResolvable implements \JsonSerializable {
     }
     
     function jsonSerialize() {
-        return [ 'name'  => $this->_name,
+        return [ 'name'  => $this->name,
                  'value' => json_decode(json_encode($this->subject)) ];
     }
     /**

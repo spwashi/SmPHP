@@ -23,7 +23,7 @@ use Sm\Query\Module\QueryModuleFactory;
 class QueryLayer extends StandardLayer {
     /** @var  QueryModuleFactory $queryModuleFactory */
     private $queryModuleFactory;
-    public function __construct(ModuleContainer $moduleContainer, QueryModuleFactory $queryModuleFactory = null) {
+    public function __construct(ModuleContainer $moduleContainer = null, QueryModuleFactory $queryModuleFactory = null) {
         parent::__construct($moduleContainer);
         $this->queryModuleFactory = $queryModuleFactory ?? new QueryModuleFactory;
     }

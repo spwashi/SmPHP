@@ -27,4 +27,9 @@ class AbstractFactoryTest extends \PHPUnit_Framework_TestCase {
         $mockFactory->register(\stdClass::class, $registrand);
         $result = $mockFactory->resolve(\stdClass::class);
     }
+    public function testCanRegisterStringsAsNames() {
+        $factory = StandardFactory::init();
+        $factory->register('test', new \stdClass());
+        $this->assertInstanceOf(\stdClass::class, $factory->test);
+    }
 }

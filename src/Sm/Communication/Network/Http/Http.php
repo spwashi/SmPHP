@@ -5,7 +5,7 @@
  * Time: 7:50 PM
  */
 
-namespace Sm\Http;
+namespace Sm\Communication\Network\Http;
 
 
 class Http {

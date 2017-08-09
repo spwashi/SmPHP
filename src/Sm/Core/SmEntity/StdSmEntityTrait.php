@@ -7,21 +7,23 @@
 
 namespace Sm\Core\SmEntity;
 
-use Sm\Core\Exception\UnimplementedError;
-
 /**
  * Trait SmEntityCanBeConfiguredTrait
  *
  * For SmEntities that can be Configured
  *
- * @property $protoSmID
  */
 trait StdSmEntityTrait {
+    protected $_smID;
+    protected $_name;
     public function getSmID():?string {
-        throw new UnimplementedError("Cannot yet get the SmID of this object");
+        return $this->_smID;
     }
-    public function getPrototypeSmID():?string {
-        if (!isset($this->protoSmID)) throw new UnimplementedError("No prototypical smID set");
-        return $this->protoSmID;
+    public function getName():?string {
+        return $this->_name;
+    }
+    public function setName(string $name) {
+        $this->_name = $name;
+        return $this;
     }
 }

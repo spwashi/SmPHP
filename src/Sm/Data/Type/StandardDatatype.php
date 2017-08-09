@@ -10,14 +10,19 @@ namespace Sm\Data\Type;
 
 use Sm\Core\Resolvable\AbstractResolvable;
 use Sm\Core\Resolvable\ResolvableFactory;
+use Sm\Core\SmEntity\StdSmEntityTrait;
 
-abstract class StandardType extends AbstractResolvable implements Type {
+abstract class StandardDatatype extends AbstractResolvable implements Datatype {
+    use StdSmEntityTrait;
+    const SUBJECT_NOT_SET = '**subjectnotset**'; # value that isn't nul lso we don't have to resolve types
     /** @var  \Sm\Core\Resolvable\Resolvable $subject */
     protected $subject;
-    public function __construct($subject) {
-        $subject = static::resolveType($subject);
-        parent::__construct($subject);
+    
+    public function setSubject($subject) {
+        $this->subject = static::resolveType($subject);
+        return $this;
     }
+    
     /**
      * @param null|mixed $_ ,..
      *

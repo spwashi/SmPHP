@@ -10,7 +10,7 @@ namespace Sm\Data\Type;
 
 use Sm\Core\Resolvable\NullResolvable;
 
-class Null_ extends StandardType {
+class Null_ extends StandardDatatype {
     public static function resolveType($subject) {
         return NullResolvable::init($subject);
     }

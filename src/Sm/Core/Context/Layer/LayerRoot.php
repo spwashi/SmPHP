@@ -8,7 +8,6 @@
 namespace Sm\Core\Context\Layer;
 
 use Sm\Core\Context\Context;
-use Sm\Core\Context\ResolutionContext;
 
 /**
  * Interface LayerRoot
@@ -19,11 +18,4 @@ use Sm\Core\Context\ResolutionContext;
  * @package Sm\Core\Context\Layer
  */
 interface LayerRoot extends Context {
-    /**
-     * Get all of the child Layers under this Layer Root.
-     *
-     * @return \Sm\Core\Context\Layer\LayerContainer
-     */
-    public function getLayers(): LayerContainer;
-    public function getResolutionContext(): ResolutionContext;
 }

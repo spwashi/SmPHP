@@ -17,4 +17,10 @@ namespace Sm\Core\SmEntity;
  */
 interface SmEntitySchematic extends SmEntitySchema {
     public function load($configuration);
+    /**
+     * Get the SmID of the Prototype of these SmEntities
+     *
+     * @return null|string
+     */
+    public function getPrototypeSmID():?string;
 }

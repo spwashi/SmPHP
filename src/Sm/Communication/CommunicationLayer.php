@@ -26,8 +26,9 @@ use Sm\Core\Module\ModuleContainer;
  * @package Sm\Communication
  */
 class CommunicationLayer extends StandardLayer {
-    const ROUTING_MODULE = 'routing';
-    const HTTP_MODULE    = 'http';
+    const ROUTE_RESOLVE_REQUEST = 'ROUTE_RESOLVE_REQUEST';
+    const ROUTING_MODULE        = 'routing';
+    const HTTP_MODULE           = 'http';
     /** @var \Sm\Communication\Request\RequestFactory Factory used to resolve Requests */
     protected $requestFactory;
     /** @var \Sm\Communication\Response\ResponseFactory Factory used to resolve Responses */
@@ -122,6 +123,7 @@ class CommunicationLayer extends StandardLayer {
      * @throws \Sm\Core\Context\Layer\Module\Exception\MissingModuleException
      */
     public function route($request) {
+        if ($request === static::ROUTE_RESOLVE_REQUEST) $request = $this->resolveRequest();
         $routingModule = $this->getRoutingModule();
         if (!$routingModule) throw new MissingModuleException("Missing a Routing Module");
         return $routingModule->route($request);

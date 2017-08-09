@@ -8,6 +8,7 @@
 namespace Sm\Data\Type;
 
 use Sm\Core\Resolvable\Resolvable;
+use Sm\Core\SmEntity\SmEntity;
 
-interface Type extends \JsonSerializable, Resolvable {
+interface Datatype extends \JsonSerializable, SmEntity, Resolvable {
 }

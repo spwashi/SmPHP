@@ -33,7 +33,7 @@ abstract class DataSource implements ConfigurableSmEntity,
     
     # Properties
     /** @var string The SmID of the prototype of the DataSources */
-    protected $protoSmID = 'DataSource';
+    protected $protoSmID = '[DataSource]';
     
     ####################################
     #   Constructors/Initialization

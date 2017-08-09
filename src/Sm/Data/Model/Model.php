@@ -8,8 +8,6 @@
 namespace Sm\Data\Model;
 
 
-use Sm\Core\Exception\UnimplementedError;
-use Sm\Core\SmEntity\ConfigurableSmEntity;
 use Sm\Core\SmEntity\StdSmEntityTrait;
 
 /**
@@ -26,18 +24,12 @@ use Sm\Core\SmEntity\StdSmEntityTrait;
  *
  * @package Sm\Data\Model
  */
-class Model implements ConfigurableSmEntity {
+class Model implements ModelSchema {
     # traits
     use StdSmEntityTrait;
     
     # properties
-    /** @var string The SmID of the prototype of the Model */
-    static $protoSmID = 'Model';
     /** @var  \Sm\Data\Source\DataSource $dataSource Where the information/identity of the Model will come from */
     protected $dataSource;
-    
-    # Configuration
-    public function configure($configuration) {
-        throw new UnimplementedError("Cannot configure Models yet");
-    }
+    protected $name;
 }

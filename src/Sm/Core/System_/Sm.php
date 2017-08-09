@@ -13,10 +13,8 @@ use Sm\Communication\Module\HttpCommunicationModule;
 use Sm\Communication\Routing\Module\StandardRoutingModule;
 use Sm\Core\Context\Layer\LayerContainer;
 use Sm\Core\Context\Layer\LayerRoot;
-use Sm\Core\Context\Layer\StandardLayer;
-use Sm\Core\Context\ResolutionContext;
 use Sm\Core\Context\StandardContext;
-use Sm\Core\Paths\PathContainer;
+use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Resolvable\StringResolvable;
 
 /**
@@ -28,8 +26,6 @@ use Sm\Core\Resolvable\StringResolvable;
 class Sm extends StandardContext implements LayerRoot {
     /** @var  Sm $instance */
     public static $instance;
-    /** @var  $resolutionContext */
-    protected $resolutionContext;
     /** @var  LayerContainer */
     protected $layers;
     /**
@@ -38,10 +34,9 @@ class Sm extends StandardContext implements LayerRoot {
      * @param                                       $resolutionContext
      * @param LayerContainer                        $layers
      */
-    public function __construct($resolutionContext, LayerContainer $layers) {
+    public function __construct(LayerContainer $layers) {
         parent::__construct();
-        $this->resolutionContext = $resolutionContext;
-        $this->layers            = $layers;
+        $this->layers = $layers;
     }
     
     /**
@@ -52,17 +47,14 @@ class Sm extends StandardContext implements LayerRoot {
     public function getLayers(): LayerContainer {
         return $this->layers;
     }
-    public function getResolutionContext(): ResolutionContext {
-        return $this->resolutionContext;
-    }
     public function __get($name) {
-        if ($name === 'communication') return $this->getLayers()->resolve(StandardLayer::COMMUNICATION);
+        $layer = $this->getLayers()->resolve($name);
+        if (!isset($layer)) throw new InvalidArgumentException("No Layer registered as {$name}");
+        return $layer;
     }
 }
 
-$pathContainer     = new PathContainer;
-$resolutionContext = new ResolutionContext($pathContainer);
-Sm::$instance      = new Sm($resolutionContext, new LayerContainer);
+Sm::$instance = new Sm(LayerContainer::init());
 
 $routingModule      = new StandardRoutingModule;
 $communicationLayer = new CommunicationLayer;
@@ -70,4 +62,4 @@ $communicationLayer->registerRoutingModule($routingModule)
                    ->registerModule(CommunicationLayer::HTTP_MODULE, new HttpCommunicationModule)
                    ->registerRoutes([ 'Sm' => StringResolvable::init('sam') ]);
 
-Sm::$instance->getLayers()->register('Communication', $communicationLayer);
+Sm::$instance->getLayers()->register('communication', $communicationLayer);

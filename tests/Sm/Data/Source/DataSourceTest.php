@@ -10,8 +10,5 @@ namespace Sm\Data\Source;
 
 class DataSourceTest extends \PHPUnit_Framework_TestCase {
     public function testSmID() {
-        /** @var \Sm\Data\Source\DataSource $ds */
-        $ds = $this->getMockForAbstractClass(DataSource::class);
-        $this->assertEquals('DataSource', $ds->getPrototypeSmID());
     }
 }

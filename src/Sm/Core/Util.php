@@ -90,7 +90,7 @@ class Util {
     public static function getItemByClassAncestry(string $item, array &$search_array) {
         # If the class is non-existent, all we can really do is check to see if
         #   we have that name registered in whatever array
-        if (!class_exists($item)) {
+        if (isset($search_array[ $item ]) || !class_exists($item)) {
             return $search_array[ $item ] ?? null;
         }
         

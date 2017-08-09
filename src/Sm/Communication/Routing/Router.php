@@ -81,14 +81,15 @@ class Router implements Registry {
         }
         return $this;
     }
-    public function resolve(Request $Request = null) {
-        if (!$Request) {
+    public function resolve(Request $request = null) {
+        if (!$request) {
             throw new UnimplementedError("Can only deal with requests");
         }
         foreach ($this->routes as $index => $route) {
-            $__does_match = $route->matches($Request);
-            if ($__does_match) return $route->resolve($Request);
+            $__does_match = $route->matches($request);
+            if ($__does_match) return $route->resolve($request);
         }
-        throw new RouteNotFoundException("No matching routes");
+        $json_request = json_encode($request);
+        throw new RouteNotFoundException("No matching routes for {$json_request}");
     }
 }

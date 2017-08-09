@@ -10,7 +10,9 @@ namespace Sm\Data\Type;
 
 use Sm\Core\Resolvable\StringResolvable;
 
-class String_ extends StandardType {
+class String_ extends StandardDatatype {
+    protected $smID = 'string';
+    
     public static function resolveType($subject) {
         return StringResolvable::init($subject);
     }

@@ -8,6 +8,10 @@
 namespace Sm\Data\Type;
 
 
-class Integer_ extends StandardType {
-    
+use Sm\Core\Resolvable\NativeResolvable;
+
+class Integer_ extends StandardDatatype {
+    public static function resolveType($subject) {
+        return NativeResolvable::init(intval($subject));
+    }
 }

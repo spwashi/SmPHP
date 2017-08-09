@@ -54,6 +54,7 @@ class StandardFactory extends AbstractContainer implements Factory {
     public function resolve($name = null) {
         return $this->build(...func_get_args());
     }
+    
     public function build() {
         $args   = func_get_args();
         $result = $this->Cache->resolve($args);
@@ -117,12 +118,11 @@ class StandardFactory extends AbstractContainer implements Factory {
     protected function attempt_build($item = null) {
         $args = func_get_args();
         /** @var string $class_name */
-        $class_name = is_object($item) ? get_class($item) : $item;
-        
+        $class_name         = is_object($item) ? get_class($item) : $item;
         $previous_exception = null;
         if (self::isProbablyClassname($class_name)
-            || (($class_name = gettype($class_name))
-                && isset($this->class_registry[ $class_name ]))) {
+            || (is_string($class_name) ? $class_name : ($class_name = gettype($class_name))
+                                                       && isset($this->class_registry[ $class_name ]))) {
             
             try {
                 array_shift($args);
@@ -156,7 +156,6 @@ class StandardFactory extends AbstractContainer implements Factory {
         if (is_array($_args) || ($_args instanceof \JsonSerializable)) {
             $arg_shape .= ' - ' . json_encode($_args);
         }
-    
         throw new FactoryCannotBuildException("Cannot find a matching build method for " . $arg_shape, null, $previous_exception);
     }
     /**
@@ -186,16 +185,21 @@ class StandardFactory extends AbstractContainer implements Factory {
             $instance = $class_handler->resolve(...$args);
         }
     
+        if (is_string($instance) && class_exists($instance)) {
+            $class_name = $instance; # Assume we are dealing with a class name ... maybe do a check?
+        }
+        
         if (is_object($instance)) {
             # Check to see if we're allowed to interact with objects of this type
             $this->_checkCanInit($instance);
             return $instance;
         }
     
-        $this->_checkCanInit($class_name);
         if (!class_exists($class_name)) {
             throw new ClassNotFoundException("Class {$class_name} not found");
         }
+    
+        $this->_checkCanInit($class_name);
         $class = new $class_name(...$args);
         return $class;
     }

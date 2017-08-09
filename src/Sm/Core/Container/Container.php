@@ -28,7 +28,7 @@ use Sm\Core\Resolvable\ResolvableFactory;
  *
  * @coupled \Sm\Core\Resolvable\Resolvable
  */
-class Container extends AbstractContainer {
+class Container extends AbstractContainer implements \JsonSerializable {
     /**
      * @var Factory
      */
@@ -220,5 +220,11 @@ class Container extends AbstractContainer {
      */
     protected function standardizeRegistrand($registrand):?Resolvable {
         return isset($this->ResolvableFactory) ? $this->ResolvableFactory->build($registrand) : null;
+    }
+    
+    public function jsonSerialize() {
+        return [
+            'items' => $this->registry,
+        ];
     }
 }

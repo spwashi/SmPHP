@@ -25,20 +25,17 @@ use Sm\Data\Type\Variable_\Variable_;
  *
  * @package Sm\Data\Property
  *
- * @property-read string                           $name
  * @property-read \Sm\Data\Property\Property|false $reference
  * @property-read string                           $object_id
  * @property-read array                            $potential_types
  */
 class Property extends Variable_ implements Readonly_able, PropertySchema, SmEntity {
-    use ReadonlyTrait, StdSmEntityTrait;
-    protected $protoSmID = 'Property';
-    /** @var  string $name */
-    protected $_name;
+    use ReadonlyTrait;
+    use StdSmEntityTrait;
+    use PropertyTrait;
     
-    ####################################################
-    #   Getters and Setters
-    ####################################################
+    #
+    ##   Getters and Setters
     public function __get($name) {
         if ($name === 'object_id') return $this->getObjectId();
         if ($name === 'potential_types') return $this->getPotentialTypes();
@@ -55,22 +52,5 @@ class Property extends Variable_ implements Readonly_able, PropertySchema, SmEnt
     public function __set($name, $value) {
         if ($this->isReadonly()) throw new ReadonlyPropertyException("Cannot modify a readonly property");
         parent::__set($name, $value);
-    }
-    /**
-     * @return string
-     */
-    public function getName(): string {
-        return $this->_name;
-    }
-    /**
-     * Set the name of the property
-     *
-     * @param string $name
-     *
-     * @return $this
-     */
-    public function setName(string $name) {
-        $this->_name = $name;
-        return $this;
     }
 }

@@ -8,9 +8,8 @@
 namespace Sm\Data\Source\Database\Table;
 
 
-use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
-use Sm\Core\SmEntity\StdSmEntityTrait;
+use Sm\Core\SmEntity\StdSmEntitySchematicTrait;
 use Sm\Data\Source\DataSourceSchematic;
 
 /**
@@ -20,10 +19,12 @@ use Sm\Data\Source\DataSourceSchematic;
  *
  * @package Sm\Data\Source\Database\Table
  */
-class TableSourceSchematic implements TableSourceSchema, DataSourceSchematic {
+class TableSourceSchematic implements TableSourceSchema, DataSourceSchematic, \JsonSerializable {
     use HasObjectIdentityTrait;
-    use StdSmEntityTrait;
-    protected $name;
+    use StdSmEntitySchematicTrait {
+        load as protected _load_std;
+    }
+
     public function __construct(string $name = null) {
         if ($name) $this->setName($name);
         $this->createSelfID();
@@ -31,20 +32,16 @@ class TableSourceSchematic implements TableSourceSchema, DataSourceSchematic {
     public static function init() {
         return new static(...func_get_args());
     }
-    public function getName(): ?string {
-        return $this->name;
-    }
-    public function setName($name) {
-        $this->name = $name;
-        return $this;
-    }
     public function load($configuration) {
-        if (!is_array($configuration)) {
-            throw new UnimplementedError("Cannot configure schematic using something other than an array");
-        }
-        if (isset($configuration['name'])) {
-            $this->setName($configuration['name']);
-        }
+        $this->_load_std($configuration);
+        $this->_configArraySet__name($configuration);
         return $this;
     }
+    function jsonSerialize() {
+        return [
+            'smID' => $this->getSmID(),
+            'name' => $this->getName(),
+        ];
+    }
+    
 }

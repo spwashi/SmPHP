@@ -5,11 +5,11 @@ namespace Sm\Data\Source\Database;
 
 
 use Sm\Core\Exception\UnimplementedError;
-use Sm\Core\SmEntity\StdSmEntityTrait;
+use Sm\Core\SmEntity\StdSmEntitySchematicTrait;
 use Sm\Data\Source\DataSourceSchematic;
 
-class DatabaseSourceSchematic implements DatabaseSourceSchema, DataSourceSchematic {
-    use StdSmEntityTrait;
+class DatabaseSourceSchematic implements DatabaseSourceSchema, DataSourceSchematic, \JsonSerializable {
+    use StdSmEntitySchematicTrait;
     protected $name;
     public static function init() { return new static(...func_get_args()); }
     public function getName() {
@@ -24,13 +24,9 @@ class DatabaseSourceSchematic implements DatabaseSourceSchema, DataSourceSchemat
         $this->name = $name;
         return $this;
     }
-    public function load($configuration) {
-        if (!is_array($configuration)) {
-            throw new UnimplementedError("Cannot configure schematic using something other than an array");
-        }
-        if (isset($configuration['name'])) {
-            $this->setName($configuration['name']);
-        }
-        return $this;
+    
+    function jsonSerialize() {
+        return [ 'smID' => $this->getSmID(),
+                 'name' => $this->getName(), ];
     }
 }
