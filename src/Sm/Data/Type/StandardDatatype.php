@@ -14,7 +14,6 @@ use Sm\Core\SmEntity\StdSmEntityTrait;
 
 abstract class StandardDatatype extends AbstractResolvable implements Datatype {
     use StdSmEntityTrait;
-    const SUBJECT_NOT_SET = '**subjectnotset**'; # value that isn't nul lso we don't have to resolve types
     /** @var  \Sm\Core\Resolvable\Resolvable $subject */
     protected $subject;
     

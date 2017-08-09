@@ -14,27 +14,39 @@ use Sm\Data\Property\PropertySchemaContainer;
  *
  * Represents the structure of a Model
  */
-class ModelSchematic implements ModelSchema, SmEntitySchematic, \JsonSerializable {
+class ModelSchematic implements ModelSchema,
+                                SmEntitySchematic,
+                                \JsonSerializable {
     protected $protoSmID = '[Model]';
-    
+    use ModelTrait;
     use StdSmEntitySchematicTrait {
         load as protected _load_std;
     }
     
     
     protected $properties;
-    /** @var \Sm\Data\Property\PropertyDataManager $propertyDataManager The SmEntityDataManager that will help configure PropertySchemas for us */
+    /** @var PropertyDataManager $propertyDataManager The SmEntityDataManager that will help configure PropertySchemas for us */
     private $propertyDataManager;
+    
+    #
+    ##  Constructors/Initialization
     /**
      * ModelSchematic constructor.
      *
-     * @param \Sm\Data\Property\PropertyDataManager $propertyDataManager
+     * @param PropertyDataManager $propertyDataManager
      */
     public function __construct(PropertyDataManager $propertyDataManager) {
         $this->propertyDataManager = $propertyDataManager;
     }
-    
     public static function init(PropertyDataManager $propertyDataManager) { return new static(...func_get_args()); }
+    public function load($configuration) {
+        $this->_load_std($configuration);
+        $this->_configArraySet__properties($configuration);
+        return $this;
+    }
+    
+    #
+    ##  Getters and Setters
     public function getProperties(): PropertySchemaContainer {
         return $this->properties = $this->properties ?? PropertySchemaContainer::init();
     }
@@ -47,12 +59,9 @@ class ModelSchematic implements ModelSchema, SmEntitySchematic, \JsonSerializabl
         $this->properties = $properties;
         return $this;
     }
-    public function load($configuration) {
-        $this->_load_std($configuration);
-        $this->_configArraySet__properties($configuration);
-        return $this;
-    }
     
+    #
+    ##  Configuration
     protected function _configArraySet__properties($configuration) {
         $propertySchemaContainer = PropertySchemaContainer::init();
         $properties              = $configuration['properties'] ?? [];
@@ -74,11 +83,20 @@ class ModelSchematic implements ModelSchema, SmEntitySchematic, \JsonSerializabl
         #
         if (isset($propertySchemaContainer)) $this->setProperties($propertySchemaContainer);
     }
+    
+    #
+    ##  Serialization
     public function jsonSerialize() {
         return [
             'smID'       => $this->getSmID(),
             'name'       => $this->getName(),
             'properties' => $this->properties,
         ];
+    }
+    /**
+     * @return PropertyDataManager
+     */
+    public function getPropertyDataManager(): PropertyDataManager {
+        return $this->propertyDataManager;
     }
 }

@@ -18,8 +18,8 @@ class DataSourceSchemaFactory extends SmEntityFactory {
             return parent::resolve(...func_get_args());
         } catch (WrongFactoryException $e) {
             # If we are trying to get the source of something that has a source, return that source
-            if ($name instanceof DiscretelySourced && ($result = $name->getDataSourceSchema())) {
-                return $name->getDataSourceSchema();
+            if ($name instanceof DiscretelySourced && ($result = $name->getDataSource())) {
+                return $name->getDataSource();
             }
             throw $e;
         }

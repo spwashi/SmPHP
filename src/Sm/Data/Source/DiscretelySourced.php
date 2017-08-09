@@ -17,5 +17,5 @@ use Sm\Data\Source\Schema\DataSourceSchema;
  * @package Sm\Data\Source
  */
 interface DiscretelySourced {
-    public function getDataSourceSchema():?DataSourceSchema;
+    public function getDataSource();
 }

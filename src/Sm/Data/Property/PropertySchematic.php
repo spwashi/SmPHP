@@ -48,9 +48,9 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
     ##  Serialization
     public function jsonSerialize() {
         return [
-            'smID'       => $this->getSmID(),
-            'name'       => $this->getName(),
-            'properties' => $this->_getDatatypes(),
+            'smID'      => $this->getSmID(),
+            'name'      => $this->getName(),
+            'datatypes' => $this->_getDatatypes(),
         ];
     }
 }

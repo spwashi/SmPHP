@@ -8,10 +8,8 @@
 namespace Sm\Data\Source;
 
 
-use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
 use Sm\Core\Internal\Identification\Identifiable;
-use Sm\Core\SmEntity\ConfigurableSmEntity;
 use Sm\Core\SmEntity\StdSmEntityTrait;
 use Sm\Data\Source\Schema\DataSourceSchema;
 
@@ -24,8 +22,7 @@ use Sm\Data\Source\Schema\DataSourceSchema;
  *
  * @package Sm\Data\Source
  */
-abstract class DataSource implements ConfigurableSmEntity,
-                                     Identifiable,
+abstract class DataSource implements Identifiable,
                                      DataSourceSchema {
     # Traits
     use HasObjectIdentityTrait;
@@ -53,9 +50,6 @@ abstract class DataSource implements ConfigurableSmEntity,
     ####################################
     #   Getters/Setters/Configuration
     ####################################
-    public function configure($configuration) {
-        throw new UnimplementedError("Cannot yet configure DataSources");
-    }
     /**
      * Get the root DataSource of this DataSource. Useful for subsources
      *

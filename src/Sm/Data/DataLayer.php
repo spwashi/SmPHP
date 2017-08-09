@@ -11,6 +11,8 @@ namespace Sm\Data;
 use Sm\Core\Context\Layer\StandardLayer;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
+use Sm\Core\Factory\Exception\FactoryCannotBuildException;
+use Sm\Core\Schema\Schematic;
 use Sm\Core\SmEntity\Exception\InvalidConfigurationException;
 use Sm\Data\Model\Model;
 use Sm\Data\Model\ModelDataManager;
@@ -31,6 +33,8 @@ use Sm\Data\Source\DataSourceDataManager;
 class DataLayer extends StandardLayer {
     /** @var  SmEntityDataManager[] */
     protected $managers;
+    protected $configuredSmEntities = [];
+    
     
     public function __get($name) {
         $data_manager = $this->getDataManager($name);
@@ -71,9 +75,15 @@ class DataLayer extends StandardLayer {
             if (!$config_type) continue; # assume this isn't an SmEntity handled by this Data layer?
             
             $dataManager = $this->getDataManager($config_type);
-            
-            $result = $dataManager->configure($configuration);
-            var_dump(json_decode(json_encode($result), 1));
+            $schematic   = $dataManager->configure($configuration);
+//            var_dump(json_decode(json_encode($schematic), 1));
+    
+            if ($schematic instanceof Schematic) {
+                try {
+                    $this->configuredSmEntities[ $smID ] = $schematic;
+                } catch (FactoryCannotBuildException $buildException) {
+                }
+            }
         }
     }
     
@@ -99,6 +109,12 @@ class DataLayer extends StandardLayer {
         }
         
         throw new UnimplementedError("Cannot resolve objects of type {$classname}");
+    }
+    /**
+     * @return array
+     */
+    public function getConfiguredSmEntities(): array {
+        return $this->configuredSmEntities;
     }
     
 }

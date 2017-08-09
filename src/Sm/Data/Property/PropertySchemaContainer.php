@@ -11,6 +11,7 @@ namespace Sm\Data\Property;
 use Sm\Core\Abstraction\ReadonlyTrait;
 use Sm\Core\Container\Container;
 use Sm\Core\Exception\InvalidArgumentException;
+use Sm\Core\Resolvable\Resolvable;
 use Sm\Data\Property\Exception\ReadonlyPropertyException;
 
 /**
@@ -19,16 +20,20 @@ use Sm\Data\Property\Exception\ReadonlyPropertyException;
  * Container for PropertySchemas
  *
  * @package Sm\Data\Property
- * @method Property current()
  * @property \Sm\Data\Property\PropertySchema $id
  */
 class PropertySchemaContainer extends Container {
     use ReadonlyTrait;
     
+    
     public function __clone() {
         foreach ($this->registry as $key => &$item) {
             $this->registry[ $key ] = (clone $item);
         }
+    }
+    public function current(): PropertySchema {
+        $item = $this->{$this->getRegistryName()}[ $this->key() ];
+        return $item instanceof Resolvable ? $item->resolve() : $item;
     }
     public function resolve($name = null): PropertySchema {
         return parent::resolve($name);

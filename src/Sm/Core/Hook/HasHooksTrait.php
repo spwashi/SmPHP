@@ -29,7 +29,6 @@ trait HasHooksTrait {
         $this->getHookContainer()->register($hook_name, $hook);
         return $this;
     }
-    
     /**
      * Get the result of a Hook's execution
      *

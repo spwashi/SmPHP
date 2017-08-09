@@ -10,6 +10,12 @@ namespace Sm\Data\Property;
 
 use Sm\Core\SmEntity\SmEntityFactory;
 
+/** @noinspection PhpHierarchyChecksInspection */
+
+/**
+ * Class PropertyFactory
+ * @method Property resolve($name = null)
+ */
 class PropertyFactory extends SmEntityFactory {
     public function __construct() {
         parent::__construct();

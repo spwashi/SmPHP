@@ -9,12 +9,14 @@ namespace Sm\Data\Model;
 
 
 use Sm\Core\SmEntity\SmEntitySchema;
+use Sm\Data\Source\DiscretelySourced;
 
 /**
  * Interface ModelSchema
  *
  * Something that describes a Model
  */
-interface ModelSchema extends SmEntitySchema {
+interface ModelSchema extends SmEntitySchema, DiscretelySourced {
     public function getName();
+    public function getProperties();
 }

@@ -30,4 +30,11 @@ class PropertyDataManagerTest extends \PHPUnit_Framework_TestCase {
         $datatypes = $propertySchema->getDatatypes();
         $this->assertInstanceOf(Integer_::class, $datatypes[0] ?? null);
     }
+    public function testCanInstantiateProperty() {
+        $pdm            = PropertyDataManager::init();
+        $configuration  = [ 'name' => 'id', 'datatypes' => 'int' ];
+        $propertySchema = $pdm->configure($configuration);
+        $result         = $pdm->instantiate($propertySchema);
+        var_dump($result);
+    }
 }

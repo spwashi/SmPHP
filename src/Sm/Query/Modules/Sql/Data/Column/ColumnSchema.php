@@ -99,7 +99,7 @@ abstract class ColumnSchema implements Schema, DiscretelySourced {
     /**
      * @return null|\Sm\Data\Source\Schema\DataSourceSchema
      */
-    public function getDataSourceSchema():?DataSourceSchema {
+    public function getDataSource():?DataSourceSchema {
         return $this->getTableSchema();
     }
     

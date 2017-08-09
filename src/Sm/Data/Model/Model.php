@@ -8,7 +8,12 @@
 namespace Sm\Data\Model;
 
 
+use Sm\Core\Exception\InvalidArgumentException;
+use Sm\Core\Schema\Schematicized;
+use Sm\Core\SmEntity\SmEntity;
+use Sm\Core\SmEntity\StdSchematicizedSmEntity;
 use Sm\Core\SmEntity\StdSmEntityTrait;
+use Sm\Data\Property\PropertyContainer;
 
 /**
  * Class Model
@@ -24,12 +29,63 @@ use Sm\Core\SmEntity\StdSmEntityTrait;
  *
  * @package Sm\Data\Model
  */
-class Model implements ModelSchema {
-    # traits
+class Model implements ModelSchema,
+                       Schematicized,
+                       SmEntity,
+                       \JsonSerializable {
     use StdSmEntityTrait;
+    use ModelTrait;
+    use StdSchematicizedSmEntity {
+        fromSchematic as protected _fromSchematic_std;
+    }
     
-    # properties
-    /** @var  \Sm\Data\Source\DataSource $dataSource Where the information/identity of the Model will come from */
-    protected $dataSource;
-    protected $name;
+    protected $properties;
+    
+    #
+    ## Getters and Setters
+    public function getProperties(): PropertyContainer {
+        return $this->properties = $this->properties ?? PropertyContainer::init();
+    }
+    public function setProperties(PropertyContainer $properties) {
+        $this->properties = $properties;
+        return $this;
+    }
+    
+    #
+    ##  Configuration/Initialization
+    public function fromSchematic($schematic) {
+        /** @var \Sm\Data\Model\ModelSchematic $schematic */
+        $this->_fromSchematic_std($schematic);
+        
+        $this->setName($this->getName() ?? $schematic->getName());
+        
+        $pdm             = $schematic->getPropertyDataManager();
+        $propertySchemas = $schematic->getProperties();
+        $properties      = [];
+        foreach ($propertySchemas as $index => $propertySchema) {
+            $properties[ $index ] = $pdm->instantiate($propertySchema);
+        }
+        $this->getProperties()->register($properties);
+        return $this;
+    }
+    public function checkCanUseSchematic($schematic) {
+        if (!($schematic instanceof ModelSchematic)) {
+            throw new InvalidArgumentException("Cannot use anything except for a Model Schema to initialize these");
+        }
+    }
+    
+    
+    #
+    ##  Debugging/Serialization
+    public function jsonSerialize() {
+        $propertyContainer = $this->getProperties();
+        return [
+            'smID'       => $this->getSmID(),
+            'name'       => $this->getName(),
+            'properties' => $propertyContainer->count() ? $propertyContainer : null,
+        ];
+    }
+    public function __debugInfo() {
+        return $this->jsonSerialize();
+    }
 }

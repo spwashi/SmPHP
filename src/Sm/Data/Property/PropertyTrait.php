@@ -10,6 +10,9 @@ trait PropertyTrait {
     protected $_datatypeFactory;
     protected $_datatypes = [];
     
+    public function getRawDataTypes() {
+        return $this->_getDatatypes();
+    }
     public function getDatatypes(): array {
         return array_map(function ($item) {
             return $this->_getDatatypeFactory()->resolve($item);

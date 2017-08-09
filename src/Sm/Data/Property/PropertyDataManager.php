@@ -8,6 +8,7 @@
 namespace Sm\Data\Property;
 
 
+use Sm\Core\Schema\Schematic;
 use Sm\Core\SmEntity\SmEntityFactory;
 use Sm\Data\DataLayer;
 use Sm\Data\SmEntity\SmEntityDataManager;
@@ -20,14 +21,21 @@ use Sm\Data\Type\DatatypeFactory;
  */
 class PropertyDataManager extends SmEntityDataManager {
     protected $datatypeFactory;
+    /** @var \Sm\Data\Property\PropertyFactory */
+    private $propertyFactory;
     public function __construct(DataLayer $dataLayer = null,
                                 SmEntityFactory $smEntityFactory = null,
-                                DatatypeFactory $datatypeFactory = null) {
+                                DatatypeFactory $datatypeFactory = null,
+                                PropertyFactory $propertyFactory = null) {
         parent::__construct($dataLayer, $smEntityFactory);
         $this->datatypeFactory = $datatypeFactory ?? DatatypeFactory::init();
+        $this->propertyFactory = $propertyFactory ?? PropertyFactory::init();
     }
     public function configure($configuration): PropertySchematic {
         return PropertySchematic::init()->load($configuration);
+    }
+    public function instantiate(Schematic $schematic = null) {
+        return $this->propertyFactory->resolve(null, $schematic)->fromSchematic($schematic);
     }
     public function initializeDefaultSmEntityFactory(): SmEntityFactory {
         return PropertyFactory::init();

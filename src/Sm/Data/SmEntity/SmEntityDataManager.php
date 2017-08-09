@@ -8,6 +8,8 @@
 namespace Sm\Data\SmEntity;
 
 
+use Sm\Core\Schema\Schematic;
+use Sm\Core\Schema\Schematicized;
 use Sm\Core\SmEntity\SmEntityFactory;
 use Sm\Core\SmEntity\SmEntityManager;
 use Sm\Data\DataLayer;
@@ -24,14 +26,13 @@ abstract class SmEntityDataManager implements SmEntityManager {
     /** @var SmEntityFactory */
     private $smEntityFactory;
     
-    ############################
-    #   Constructors/Initialization
-    ############################
+    
+    #
+    ##   Constructors/Initialization
     public function __construct(DataLayer $dataLayer = null, SmEntityFactory $smEntityFactory = null) {
         $this->dataLayer = $dataLayer;
         $this->setSmEntityFactory($smEntityFactory);
     }
-    
     /**
      * Static constructor for SmEntityManagers
      *
@@ -43,10 +44,26 @@ abstract class SmEntityDataManager implements SmEntityManager {
     public static function init(DataLayer $dataLayer = null, SmEntityFactory $smEntityFactory = null) {
         return new static(...func_get_args());
     }
-    public function load($identity) {
-        return $this->smEntityFactory->resolve($identity);
-    }
+    /**
+     * Initialize the default SmEntityFactory for this class
+     *
+     * @return mixed
+     */
+    abstract public function initializeDefaultSmEntityFactory(): SmEntityFactory;
     
+    #
+    ##  Configuration/
+    public function instantiate(Schematic $schematic = null) {
+        $item = $this->smEntityFactory->resolve(null, $schematic);
+        
+        if (isset($schematic) && $item instanceof Schematicized) {
+            return $item->fromSchematic($schematic);
+        }
+        
+        return $item;
+    }
+    #
+    ##  Getters/Setters
     /**
      * @param SmEntityFactory $smEntityFactory
      *
@@ -60,10 +77,4 @@ abstract class SmEntityDataManager implements SmEntityManager {
         $this->smEntityFactory = $smEntityFactory;
         return $this;
     }
-    /**
-     * Initialize the default SmEntityFactory for this class
-     *
-     * @return mixed
-     */
-    abstract public function initializeDefaultSmEntityFactory(): SmEntityFactory;
 }

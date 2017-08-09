@@ -10,7 +10,6 @@ use Sm\Communication\Routing\Module\StandardRoutingModule;
 use Sm\Core\Context\Layer\LayerContainer;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Paths\Exception\PathNotFoundException;
-use Sm\Core\Resolvable\StringResolvable;
 use Sm\Core\Util;
 use Sm\Data\DataLayer;
 use Sm\Query\QueryLayer;
@@ -98,8 +97,7 @@ class Application {
         $routingModule      = new StandardRoutingModule;
         $communicationLayer = new CommunicationLayer;
         $communicationLayer->registerRoutingModule($routingModule)
-                           ->registerModule(CommunicationLayer::HTTP_MODULE, new HttpCommunicationModule)
-                           ->registerRoutes([ 'sbme' => StringResolvable::init('sam') ]);
+                           ->registerModule(CommunicationLayer::HTTP_MODULE, new HttpCommunicationModule);
         
         #------------------------------------------------------------------------------
         $this->layerContainer->register('communication', $communicationLayer);

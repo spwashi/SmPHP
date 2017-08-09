@@ -7,6 +7,8 @@
 
 namespace Sm\Core\SmEntity;
 
+use Sm\Core\Schema\Schematic;
+
 /**
  * Class SmEntityManager
  *
@@ -15,6 +17,6 @@ namespace Sm\Core\SmEntity;
  *
  */
 interface SmEntityManager {
-    public function load($identity);
+    public function instantiate(Schematic $identity);
     public function configure($configuration);
 }

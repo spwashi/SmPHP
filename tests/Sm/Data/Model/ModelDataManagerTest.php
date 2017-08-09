@@ -9,7 +9,7 @@ use Sm\Data\Property\PropertySchemaContainer;
 class ModelDataManagerTest extends \PHPUnit_Framework_TestCase {
     public function testCanResolveDefaultModel() {
         $mdm = ModelDataManager::init();
-        $this->assertInstanceOf(Model::class, $mdm->load(null));
+        $this->assertInstanceOf(Model::class, $mdm->instantiate());
     }
     public function testCanConfigureModel() {
         $mdm           = ModelDataManager::init();

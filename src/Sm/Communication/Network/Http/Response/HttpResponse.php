@@ -9,6 +9,7 @@ namespace Sm\Communication\Network\Http\Response;
 
 
 use Sm\Communication\Response\AbstractResponse;
+use Sm\Core\Exception\UnimplementedError;
 
 /**
  * Class HttpResponse
@@ -25,7 +26,9 @@ class HttpResponse extends AbstractResponse {
      * Make the Headers that are referenced in this HttpResponse
      */
     public function makeHeaders() {
-    
+        if (isset($this->headers))
+            throw new UnimplementedError("make headers");
+        
     }
     
     /**

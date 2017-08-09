@@ -16,6 +16,10 @@ namespace Sm\Core\SmEntity;
 trait StdSmEntityTrait {
     protected $_smID;
     protected $_name;
+    
+    protected function setSmID(string $smID = null) {
+        $this->_smID = $smID ?? $this->_smID;
+    }
     public function getSmID():?string {
         return $this->_smID;
     }
