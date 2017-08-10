@@ -16,6 +16,9 @@ use Sm\Data\Type\DatatypeFactory;
 class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSerializable {
     protected $protoSmID = '[Property]';
     protected $datatypeFactory;
+    protected $length;
+    protected $unique    = false;
+    protected $primary   = false;
     use PropertyTrait;
     use StdSmEntitySchematicTrait {
         load as protected _load_std;
@@ -33,6 +36,7 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
     public function load($configuration) {
         $this->_load_std($configuration);
         $this->_configArraySet__datatypes($configuration);
+        $this->_configArraySet__length($configuration);
         
         return $this;
     }
@@ -40,17 +44,34 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
         $datatypes = $configuration['datatypes'] ?? [];
         if (isset($datatypes)) $this->setDatatypes($datatypes);
     }
+    protected function _configArraySet__length($configuration) {
+        $length = $configuration['length'] ?? null;
+        if (isset($length)) $this->setLength($length);
+    }
     
     #
     ##  Getters and Setters
+    /**
+     * @return mixed
+     */
+    public function getLength() {
+        return $this->length;
+    }
+    protected function setLength($length) {
+        $this->length = intval($length);
+        return $this;
+    }
     
     #
     ##  Serialization
     public function jsonSerialize() {
-        return [
+        $length = $this->getLength();
+        $items  = [
             'smID'      => $this->getSmID(),
             'name'      => $this->getName(),
             'datatypes' => $this->_getDatatypes(),
         ];
+        if (isset($length)) $items['length'] = $length;
+        return $items;
     }
 }

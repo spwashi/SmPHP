@@ -39,6 +39,10 @@ class SqlQueryFormatter implements Formatter {
         $this->queryFormatter = $formatterFactory;
         $this->aliasContainer = $aliasContainer ?? new SqlFormattingAliasContainer;
     }
+    public static function init(SqlQueryFormatterFactory $formatterFactory = null, SqlFormattingAliasContainer $aliasContainer = null) {
+        if (!isset($formatterFactory)) $formatterFactory = SqlQueryFormatterFactory::init();
+        return new static($formatterFactory, $aliasContainer);
+    }
     /**
      * Return the item Formatted in the specific way
      *

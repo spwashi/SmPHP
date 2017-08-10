@@ -17,7 +17,6 @@ use Sm\Core\Schema\Schematicized;
  *
  * Factory to create or resolve references to SmEntities
  *
- * @method SmEntity|mixed resolve($name = null)
  */
 abstract class SmEntityFactory extends StandardFactory {
     public function build($name = null, $schematic = null) {

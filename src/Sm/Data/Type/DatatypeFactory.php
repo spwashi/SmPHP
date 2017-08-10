@@ -17,6 +17,14 @@ class DatatypeFactory extends SmEntityFactory {
                         ]);
         
     }
+    public function build($name = null, $schematic = null) {
+        $datatype_sm_id = '[Datatype]';
+        # todo test
+        if (strpos($name, $datatype_sm_id) !== false) $name = substr($name, strlen($datatype_sm_id));
+        return parent::build($name, $schematic);
+    }
+    
+    
     protected function canCreateClass($object_type) {
         return true; # Datatypes are weird... not sure about this
     }

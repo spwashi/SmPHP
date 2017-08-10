@@ -17,7 +17,6 @@ use Sm\Data\Property\PropertySchemaContainer;
 class ModelSchematic implements ModelSchema,
                                 SmEntitySchematic,
                                 \JsonSerializable {
-    protected $protoSmID = '[Model]';
     use ModelTrait;
     use StdSmEntitySchematicTrait {
         load as protected _load_std;
@@ -25,6 +24,8 @@ class ModelSchematic implements ModelSchema,
     
     
     protected $properties;
+    protected $protoSmID = '[Model]';
+    protected $propertyMeta;
     /** @var PropertyDataManager $propertyDataManager The SmEntityDataManager that will help configure PropertySchemas for us */
     private $propertyDataManager;
     
@@ -65,6 +66,10 @@ class ModelSchematic implements ModelSchema,
     protected function _configArraySet__properties($configuration) {
         $propertySchemaContainer = PropertySchemaContainer::init();
         $properties              = $configuration['properties'] ?? [];
+    
+        $meta = $configuration['propertyMeta'] ?? null;
+    
+        $this->propertyMeta = ModelPropertyMetaSchematic::init($propertySchemaContainer)->load($meta);
         
         if (!count($properties)) return;
         
@@ -90,7 +95,7 @@ class ModelSchematic implements ModelSchema,
         return [
             'smID'       => $this->getSmID(),
             'name'       => $this->getName(),
-            'properties' => $this->properties,
+            'properties' => $this->propertyMeta,
         ];
     }
     /**
@@ -98,5 +103,8 @@ class ModelSchematic implements ModelSchema,
      */
     public function getPropertyDataManager(): PropertyDataManager {
         return $this->propertyDataManager;
+    }
+    public function getPropertyMeta(): ModelPropertyMetaSchematic {
+        return $this->propertyMeta;
     }
 }

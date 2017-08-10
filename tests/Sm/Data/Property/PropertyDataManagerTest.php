@@ -13,7 +13,7 @@ use Sm\Data\Type\Integer_;
 class PropertyDataManagerTest extends \PHPUnit_Framework_TestCase {
     public function testCanResolveDefaultProperty() {
         $pdm = PropertyDataManager::init();
-        $this->assertInstanceOf(Property::class, $pdm->load(null));
+        $this->assertInstanceOf(Property::class, $pdm->instantiate());
     }
     public function testCanConfigureProperty() {
         $pdm            = PropertyDataManager::init();
@@ -35,6 +35,5 @@ class PropertyDataManagerTest extends \PHPUnit_Framework_TestCase {
         $configuration  = [ 'name' => 'id', 'datatypes' => 'int' ];
         $propertySchema = $pdm->configure($configuration);
         $result         = $pdm->instantiate($propertySchema);
-        var_dump($result);
     }
 }

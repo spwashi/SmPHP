@@ -8,6 +8,7 @@
 namespace Sm\Query\Modules\Sql\Statements;
 
 
+use Sm\Query\Modules\Sql\Constraints\PrimaryKeyConstraintSchema;
 use Sm\Query\Statements\QueryComponent;
 
 /**
@@ -17,7 +18,7 @@ use Sm\Query\Statements\QueryComponent;
  *
  * @package Sm\Query\Modules\Sql\Statements
  */
-class CreateTableStatement extends QueryComponent {
+class CreateTableStatement extends QueryComponent implements \JsonSerializable {
     protected $name;
     protected $columns         = [];
     protected $constraints     = [];
@@ -26,11 +27,16 @@ class CreateTableStatement extends QueryComponent {
         $this->name = $name;
         $this->withColumns(...$columns);
     }
+    public static function init($name = null, ...$columns) {
+        if (!isset($name)) throw new \InvalidArgumentException("Must have a name");
+        return parent::init(...func_get_args());
+    }
+    
     public function withName(string $name) {
         $this->name = $name;
         return $this;
     }
-    public function withColumns(...$columns) {
+    public function withColumns(...$columns): CreateTableStatement {
         $this->columns = array_merge($this->columns, $columns);
         return $this;
     }
@@ -46,4 +52,19 @@ class CreateTableStatement extends QueryComponent {
     public function getName() { return $this->name; }
     public function getConstraints() { return $this->constraints; }
     public function getIndexedColumns(): array { return $this->indexed_columns; }
+    public function jsonSerialize() {
+        $essence             = get_object_vars($this);
+        $new_constraints_arr = [];
+        if (isset($essence['constraints'])) {
+            $_constraints = $essence['constraints'];
+            foreach ($_constraints as $key => $value) {
+                if ($value instanceof PrimaryKeyConstraintSchema) {
+                    unset($_constraints[ $key ]);
+                    $new_constraints_arr['primary'] = $value->getColumns();
+                }
+            }
+        }
+        $essence['constraints'] = $new_constraints_arr;
+        return $essence;
+    }
 }

@@ -20,7 +20,7 @@ use Sm\Data\Source\Database\Table\TableSourceSchema;
  *
  * @package Sm\Query\Modules\Sql\Data\Column
  */
-abstract class ColumnSchema implements Schema, DiscretelySourced {
+abstract class ColumnSchema implements Schema, DiscretelySourced, \JsonSerializable {
     protected $name;
     /** @var  bool */
     protected $can_be_null = true;
@@ -101,6 +101,9 @@ abstract class ColumnSchema implements Schema, DiscretelySourced {
      */
     public function getDataSource():?DataSourceSchema {
         return $this->getTableSchema();
+    }
+    function jsonSerialize() {
+        return get_object_vars($this);
     }
     
 }

@@ -19,6 +19,7 @@ use Sm\Data\SmEntity\SmEntityDataManager;
  * Handles the loading/configuration of
  */
 class ModelDataManager extends SmEntityDataManager {
+    protected $configuredModels = [];
     /** @var \Sm\Data\Property\PropertyDataManager */
     private $propertyDataManager;
     /**
@@ -36,11 +37,24 @@ class ModelDataManager extends SmEntityDataManager {
     }
     
     public function configure($configuration): ModelSchematic {
-        return ModelSchematic::init($this->propertyDataManager)
-                             ->load($configuration);
+        $item = ModelSchematic::init($this->propertyDataManager)
+                              ->load($configuration);
+        $smID = $item->getSmID();
+    
+        #
+        if ($smID) $this->configuredModels[ $smID ] = $item;
+    
+        #
+        return $item;
     }
     
     public function initializeDefaultSmEntityFactory(): SmEntityFactory {
         return ModelFactory::init();
+    }
+    /**
+     * @return \Sm\Data\Model\ModelSchematic[]
+     */
+    public function getConfiguredModels(): array {
+        return $this->configuredModels;
     }
 }

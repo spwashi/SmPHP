@@ -41,7 +41,7 @@ class MySqlQueryModule extends QueryModule {
      */
     public static function init() { return new static(...func_get_args()); }
     
-    public function registerAuthentication($mySqlAuthentication) {
+    public function registerAuthentication(MySqlAuthentication $mySqlAuthentication) {
         $this->authentication = $mySqlAuthentication;
         return $this;
     }

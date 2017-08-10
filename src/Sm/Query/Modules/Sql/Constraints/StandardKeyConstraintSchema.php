@@ -30,8 +30,8 @@ abstract class StandardKeyConstraintSchema implements KeyConstraintSchema {
     public function getColumns(): array {
         return $this->columns;
     }
-    public function addColumn(ColumnSchema $columnSchema) {
-        $this->columns[] = $columnSchema;
+    public function addColumn(ColumnSchema  ...$columnSchema) {
+        $this->columns = array_merge($this->columns, $columnSchema);
         return $this;
     }
 }

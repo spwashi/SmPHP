@@ -12,6 +12,8 @@ use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Paths\Exception\PathNotFoundException;
 use Sm\Core\Util;
 use Sm\Data\DataLayer;
+use Sm\Query\Modules\Sql\MySql\Authentication\MySqlAuthentication;
+use Sm\Query\Modules\Sql\MySql\Module\MySqlQueryModule;
 use Sm\Query\QueryLayer;
 
 /**
@@ -20,6 +22,7 @@ use Sm\Query\QueryLayer;
  * @property-read CommunicationLayer $communication
  * @property-read DataLayer          $data
  * @property-read QueryLayer         $query
+ * @property-read string             $path
  */
 class Application {
     protected $name;
@@ -56,7 +59,7 @@ class Application {
     public static function init($name, $root_path) {
         return new static(...func_get_args());
     }
-    public function boot() {
+    public function boot(): Application {
         $root_path = $this->root_path;
         if (!file_exists($root_path)) {
             $_rt_path_str = Util::canBeString($root_path) ? $root_path : json_encode($root_path);
@@ -102,11 +105,23 @@ class Application {
         #------------------------------------------------------------------------------
         $this->layerContainer->register('communication', $communicationLayer);
     }
-    protected function _registerQueryLayer() {
-        $this->layerContainer->register('query', new QueryLayer);
+    protected function _registerQueryLayer(): QueryLayer {
+        $queryLayer = new QueryLayer;
+        $this->_registerDefaultQueryModule($queryLayer);
+        $this->layerContainer->register('query', $queryLayer);
+        return $queryLayer;
     }
-    # endregion
+    protected function _registerDefaultQueryModule(QueryLayer $queryLayer) {
+        $module = new MySqlQueryModule;
+        $module->registerAuthentication(MySqlAuthentication::init()
+                                                           ->setCredentials("codozsqq",
+                                                                            "^bzXfxDc!Dl6",
+                                                                            "localhost",
+                                                                            'sm_test'));
+        $queryLayer->registerQueryModule($module, function () use ($module) { return $module; }, 0);
+    }
     
+    # endregion
     ##################################################
     # Getters/Setters
     ##################################################
@@ -116,6 +131,8 @@ class Application {
             case 'query':
             case 'data':
                 return $this->layerContainer->resolve($name);
+            case'path':
+                return $this->root_path;
         }
         throw new InvalidArgumentException("Cannot resolve {$name}");
     }

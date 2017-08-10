@@ -76,7 +76,6 @@ class DataLayer extends StandardLayer {
             
             $dataManager = $this->getDataManager($config_type);
             $schematic   = $dataManager->configure($configuration);
-//            var_dump(json_decode(json_encode($schematic), 1));
     
             if ($schematic instanceof Schematic) {
                 try {
