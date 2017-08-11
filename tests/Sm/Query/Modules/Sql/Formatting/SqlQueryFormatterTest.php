@@ -16,9 +16,9 @@ use Sm\Data\Source\Database\Table\TableSource;
 use Sm\Data\Source\Database\Table\TableSourceSchematic;
 use Sm\Query\Modules\Sql\Constraints\ForeignKeyConstraintSchema;
 use Sm\Query\Modules\Sql\Constraints\PrimaryKeyConstraintSchema;
+use Sm\Query\Modules\Sql\Constraints\UniqueKeyConstraintSchema;
 use Sm\Query\Modules\Sql\Data\Column\IntegerColumnSchema;
 use Sm\Query\Modules\Sql\Data\Column\VarcharColumnSchema;
-use Sm\Query\Modules\Sql\MySql\Authentication\MySqlAuthentication;
 use Sm\Query\Modules\Sql\MySql\Module\MySqlQueryModule;
 use Sm\Query\Modules\Sql\SqlExecutionContext;
 use Sm\Query\Modules\Sql\Statements\AlterTableStatement;
@@ -88,13 +88,15 @@ class SqlQueryFormatterTest extends \PHPUnit_Framework_TestCase {
         $primaryKey = PrimaryKeyConstraintSchema::init()
                                                 ->addColumn($vcColumn1)
                                                 ->addColumn($iColumn1);
-        $stmt       = CreateTableStatement::init('TableName')
-                                          ->withColumns($vcColumn1,
-                                                        $iColumn1,
-                                                        $vcColumn2,
-                                                        $vcColumn3)
-                                          ->index($iColumn1)
-                                          ->withConstraints($primaryKey);
+    
+        $uniqueKey = UniqueKeyConstraintSchema::init()->addColumn($vcColumn1, $vcColumn3);
+    
+        /** @var CreateTableStatement $stmt */
+        $stmt = CreateTableStatement::init('TableName')->withColumns($vcColumn1,
+                                                                     $iColumn1,
+                                                                     $vcColumn2,
+                                                                     $vcColumn3);
+        $stmt->index($iColumn1)->withConstraints($primaryKey, $uniqueKey);
         
         $result = $this->queryFormatter->format($stmt, new SqlExecutionContext);
         

@@ -15,6 +15,7 @@ use Sm\Data\Source\Schema\NamedDataSourceSchema;
 use Sm\Query\Exception\ImproperlyFormedQueryException;
 use Sm\Query\Modules\Sql\Constraints\ForeignKeyConstraintSchema;
 use Sm\Query\Modules\Sql\Constraints\PrimaryKeyConstraintSchema;
+use Sm\Query\Modules\Sql\Constraints\UniqueKeyConstraintSchema;
 use Sm\Query\Modules\Sql\Data\Column\ColumnSchema;
 use Sm\Query\Modules\Sql\Data\Column\IntegerColumnSchema;
 use Sm\Query\Modules\Sql\Formatting\Clauses\ConditionalClauseFormatter;
@@ -105,18 +106,18 @@ function register_formatting_handlers(SqlQueryFormatterFactory $formatterFactory
             String_QueryProxy::class                      => $formatterFactory->createFormatter(function (String_QueryProxy $proxy) {
                 return $proxy->getQuery();
             }),
-            StringResolvable::class                => $formatterFactory->createFormatter(function (StringResolvable $stringResolvable) {
+            StringResolvable::class                       => $formatterFactory->createFormatter(function (StringResolvable $stringResolvable) {
                 return '"' . $stringResolvable . '"';
             }),
-            SelectStatement::class                 => new SelectStatementFormatter($formatterFactory),
-            UpdateStatement::class                 => new UpdateStatementFormatter($formatterFactory),
-            CreateTableStatement::class            => new CreateTableStatementFormatter($formatterFactory),
-            AlterTableStatement::class             => new AlterTableStatementFormatter($formatterFactory),
-            InsertStatement::class                 => new InsertStatementFormatter($formatterFactory),
-            ConditionalClause::class               => new ConditionalClauseFormatter($formatterFactory),
-            ColumnSchema::class                    => new ColumnSchemaFormatter($formatterFactory),
-            IntegerColumnSchema::class             => new IntegerColumnSchemaFormatter($formatterFactory),
-            ColumnIdentifierFormattingProxy::class => new ColumnIdentifierFormattingProxyFormatter($formatterFactory),
+            SelectStatement::class                        => new SelectStatementFormatter($formatterFactory),
+            UpdateStatement::class                        => new UpdateStatementFormatter($formatterFactory),
+            CreateTableStatement::class                   => new CreateTableStatementFormatter($formatterFactory),
+            AlterTableStatement::class                    => new AlterTableStatementFormatter($formatterFactory),
+            InsertStatement::class                        => new InsertStatementFormatter($formatterFactory),
+            ConditionalClause::class                      => new ConditionalClauseFormatter($formatterFactory),
+            ColumnSchema::class                           => new ColumnSchemaFormatter($formatterFactory),
+            IntegerColumnSchema::class                    => new IntegerColumnSchemaFormatter($formatterFactory),
+            ColumnIdentifierFormattingProxy::class        => new ColumnIdentifierFormattingProxyFormatter($formatterFactory),
             String_ColumnIdentifierFormattingProxy::class => new String_ColumnIdentifierFormattingProxyFormatter($formatterFactory),
             TwoOperandStatement::class                    => new TwoOperandStatementFormatter($formatterFactory),
             PlaceholderFormattingProxy::class             =>
@@ -136,22 +137,32 @@ function register_formatting_handlers(SqlQueryFormatterFactory $formatterFactory
                     $column_name_string = join(', ', $column_names);
                     return "PRIMARY KEY({$column_name_string})";
                 }),
+            UniqueKeyConstraintSchema::class       =>
+                $formatterFactory->createFormatter(function (UniqueKeyConstraintSchema $primaryKeyConstraintSchema) use ($formatterFactory) {
+                    $columns      = $primaryKeyConstraintSchema->getColumns();
+                    $column_names = [];
+                    foreach ($columns as $column) {
+                        $column_names[] = $column->getName();
+                    }
+                    $column_name_string = join(', ', $column_names);
+                    return "UNIQUE KEY({$column_name_string})";
+                }),
             ForeignKeyConstraintSchema::class      =>
                 $formatterFactory->createFormatter(function (ForeignKeyConstraintSchema $foreignKeyConstraintSchema) use ($formatterFactory) {
                     $column_array            = $foreignKeyConstraintSchema->getColumns();
                     $referenced_column_array = $foreignKeyConstraintSchema->getReferencedColumns();
-            
+    
                     # Get each referencing column name
                     $column_names = [];
                     foreach ($column_array as $column) {
                         $column_names[] = $column->getName();
                     }
-            
+    
                     # Get each referenced column name
                     $table_name              = null;
                     $referenced_column_names = [];
                     foreach ($referenced_column_array as $referenced_column) {
-                
+    
                         # Set the table name being referenced
                         $referenced_table = $referenced_column->getTableSchema();
                         $new_table_name   = $referenced_table ? $referenced_table->getName() ?? $table_name : $table_name;
@@ -160,25 +171,25 @@ function register_formatting_handlers(SqlQueryFormatterFactory $formatterFactory
                         } else {
                             $table_name = $new_table_name;
                         }
-                
+    
                         # Add the referenced column name
                         $referenced_column_names[] = $referenced_column->getName();
                     }
-            
+    
                     # Throw an error if there is no matching table name
                     if (!isset($table_name)) throw new ImproperlyFormedQueryException("Cannot form foreign key without knowing referenced table");
-            
+    
                     $column_name_string            = join(', ', $column_names);
                     $referenced_column_name_string = join(', ', $referenced_column_names);
-            
+    
                     # Format the statement
                     $query = "FOREIGN KEY ({$column_name_string})\nREFERENCES {$table_name} ($referenced_column_name_string)";
-            
+    
                     # If there is a constraint name, allow us to name it
                     $constraintName = $foreignKeyConstraintSchema->getConstraintName();
                     if (isset($constraintName)) $query = "CONSTRAINT {$constraintName} {$query}";
-            
-            
+    
+    
                     return $query;
                 }),
             NamedDataSourceFormattingProxy::class  =>

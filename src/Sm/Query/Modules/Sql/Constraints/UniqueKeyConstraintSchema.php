@@ -10,7 +10,7 @@ namespace Sm\Query\Modules\Sql\Constraints;
 
 use Sm\Query\Modules\Sql\Data\Column\ColumnSchema;
 
-class PrimaryKeyConstraintSchema extends StandardKeyConstraintSchema {
+class UniqueKeyConstraintSchema extends StandardKeyConstraintSchema {
     protected $columns;
     public function __construct(ColumnSchema ...$columns) {
         $this->columns = $columns;

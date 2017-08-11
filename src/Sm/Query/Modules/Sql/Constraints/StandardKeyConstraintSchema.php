@@ -18,7 +18,7 @@ use Sm\Query\Modules\Sql\Data\Column\ColumnSchema;
  *
  * @package Sm\Query\Modules\Sql\Constraints
  */
-abstract class StandardKeyConstraintSchema implements KeyConstraintSchema {
+abstract class StandardKeyConstraintSchema implements KeyConstraintSchema, \JsonSerializable {
     /** @var \Sm\Query\Modules\Sql\Data\Column\ColumnSchema[] */
     protected $columns;
     public static function init() {
@@ -33,5 +33,8 @@ abstract class StandardKeyConstraintSchema implements KeyConstraintSchema {
     public function addColumn(ColumnSchema  ...$columnSchema) {
         $this->columns = array_merge($this->columns, $columnSchema);
         return $this;
+    }
+    function jsonSerialize() {
+        return get_object_vars($this);
     }
 }

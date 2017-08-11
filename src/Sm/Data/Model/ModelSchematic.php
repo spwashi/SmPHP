@@ -76,10 +76,13 @@ class ModelSchematic implements ModelSchema,
         # - convert the configurations to schematics
         $propertySchematic_array = [];
         foreach ($properties as $property_name => $property_config) {
+    
             if (is_array($property_config)) $property_config['name'] = $property_config['name'] ?? $property_name;
-            
-            $propertySchematic                         = $this->propertyDataManager->configure($property_config);
-            $propertySchematic_array[ $property_name ] = $propertySchematic;
+    
+            $name = $property_name;
+    
+            $propertySchematic                = $this->propertyDataManager->configure($property_config);
+            $propertySchematic_array[ $name ] = $propertySchematic;
         }
         
         # - register the properties
