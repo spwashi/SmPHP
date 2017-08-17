@@ -71,8 +71,9 @@ class Property extends Variable_ implements Readonly_able,
         $this->_fromSchematic_std($schematic);
         
         $rawDataTypes = $this->getRawDataTypes();
-        $this->setName($this->getName() ?? $schematic->getName());
-        $this->setDatatypes(count($rawDataTypes) ? $rawDataTypes : $schematic->getRawDataTypes());
+        $name         = $this->getName() ?? ($schematic ? $schematic->getName() : null);
+        if (isset($name)) $this->setName($name);
+        $this->setDatatypes(count($rawDataTypes) ? $rawDataTypes : ($schematic ? $schematic->getRawDataTypes() : null));
         return $this;
     }
     protected function checkCanUseSchematic($schematic) {

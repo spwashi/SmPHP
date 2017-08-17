@@ -18,7 +18,7 @@ class QueryModuleFactory extends StandardFactory {
         try {
             return parent::build(...$arguments);
         } catch (FactoryCannotBuildException $exception) {
-            throw new FactoryCannotBuildException("Cannot build module for " . Util::getShapeOfItem(...$arguments), 0, $exception);
+            throw new FactoryCannotBuildException("Cannot build module for " . Util::getShape(...$arguments), 0, $exception);
         }
     }
     protected function canCreateClass($object_type) {

@@ -164,6 +164,6 @@ class MiniCache extends MiniContainer implements CacheInterface {
      * @return string
      */
     private function generateCacheIndex($result) {
-        return Util::getShapeOfItem($result);
+        return Util::getShape($result);
     }
 }

@@ -13,6 +13,7 @@ trait StdSchematicizedSmEntity {
      */
     abstract public function checkCanUseSchematic($schematic);
     public function fromSchematic($schematic) {
+        if (!$schematic) return $this;
         $this->checkCanUseSchematic($schematic);
         
         if ($schematic instanceof SmEntitySchematic && property_exists($this, '_smID'))

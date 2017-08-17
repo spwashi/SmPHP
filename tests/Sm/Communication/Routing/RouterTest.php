@@ -9,6 +9,7 @@ namespace Sm\Communication\Routing;
 
 
 use Sm\Communication\Network\Http\Request\HttpRequest;
+use Sm\Communication\Request\NamedRequest;
 use Sm\Communication\Routing\Exception\RouteNotFoundException;
 use Sm\Core\Resolvable\FunctionResolvable;
 use Sm\Core\Resolvable\NullResolvable;
@@ -58,5 +59,18 @@ class RouterTest extends \PHPUnit_Framework_TestCase {
                             $Router->resolve(HttpRequest::init()->setUrl('11')));
         $this->assertEquals('API example',
                             $Router->resolve(HttpRequest::init()->setUrl('api/sections')));
+    }
+    /**
+     * @depends testCanCreate
+     *
+     * @param \Sm\Communication\Routing\Router $Router
+     */
+    public function testCanResolveNamedRrequests(Router $Router) {
+        $Router->register('test', Route::init(StringResolvable::init('TEST')));
+        $request    = NamedRequest::init()->setName('test');
+        $resolution = $Router->resolve($request);
+        
+        
+        $this->assertEquals($resolution, 'TEST');
     }
 }

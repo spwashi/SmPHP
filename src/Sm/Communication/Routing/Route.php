@@ -34,9 +34,8 @@ class Route extends FunctionResolvable {
     ####################################################
     #   Initializers
     ####################################################
-    public function __construct($resolution, $requestDescriptor, $backup = null) {
-        if (!isset($requestDescriptor)) {
-        }
+    public function __construct($resolution, $requestDescriptor = null, $backup = null) {
+        if (!isset($requestDescriptor)) $requestDescriptor = new RequestDescriptor;
         
         if ($requestDescriptor instanceof RequestDescriptor) {
             $this->setRequestDescriptor($requestDescriptor);
@@ -85,14 +84,16 @@ class Route extends FunctionResolvable {
     /**
      * Resolve the Route.
      *
-     * @param Request $request ,..
+     * @param Request                                               $request ,..
+     *
+     * @param \Sm\Communication\Routing\RouteResolutionContext|null $routeResolutionContext
      *
      * @return mixed
-     * @throws \Sm\Communication\Routing\MalformedRouteException
      * @throws \Sm\Core\Exception\InvalidArgumentException
+     * @throws \Sm\Core\Exception\TypeMismatchException
      * @throws \Sm\Core\Resolvable\Error\UnresolvableException
      */
-    public function resolve($request = null) {
+    public function resolve($request = null, RouteResolutionContext $routeResolutionContext = null) {
         if (!($request instanceof Request)) throw new InvalidArgumentException('Can only route requests');
         if (!($this->subject instanceof Resolvable)) throw new UnresolvableException("No way to resolve request.");
         
@@ -107,13 +108,14 @@ class Route extends FunctionResolvable {
     
         } catch (UnresolvableException $e) {
             if (isset($this->backupResolvable)) return $this->backupResolvable->resolve($request);
+            throw $e;
         } catch (InvalidArgumentException $e) {
             if (isset($this->backupResolvable)) return $this->backupResolvable->resolve($request);
+            throw $e;
         } catch (TypeMismatchException $e) {
             if (isset($this->backupResolvable)) return $this->backupResolvable->resolve($request);
+            throw $e;
         }
-        
-        throw new UnresolvableException("Cannot resolve route");
     }
     ####################################################
     #   Setters/Getters
@@ -149,7 +151,8 @@ class Route extends FunctionResolvable {
      * @return  Resolvable
      */
     protected function standardizeResolution($resolution) {
-        if (is_string($resolution) && strpos($resolution, '#') !== false && strpos($resolution, '::') !== false) {
+        if (is_string($resolution) && strpos($resolution, '::') !== false) {
+            
             $resolveMethod =
                 function ($Request = null) use ($resolution) {
                     $resolution_expl = explode('::', $resolution);
@@ -157,8 +160,8 @@ class Route extends FunctionResolvable {
                     $method_name     = $resolution_expl[1] ?? null;
                     
                     # If the class doesn't have the requested method, skip it
-                    if ((!$class_name || !$method_name) || !(class_exists($class_name) || !method_exists($class_name, $method_name))) {
-                        throw new UnresolvableException("Malformed method- {$resolution}");
+                    if ((!$class_name || !$method_name) || !class_exists($class_name) || !method_exists($class_name, $method_name)) {
+                        throw new UnresolvableException("Malformed method- {$class_name}::{$method_name}");
                     }
                     
                     $resolution = [ new $class_name, $method_name, ];

@@ -93,7 +93,7 @@ class SqlFormattingAliasContainer extends Container {
             while ($next_alias = $this->resolve($this->standardizeName($aliased))) {
                 $count++;
                 $aliased = $next_alias;
-                if ($count === 15) throw new Error("Looks like there might be some recursion. 15 calls to 'resolve' after [" . Util::getShapeOfItem($aliased) . ']');
+                if ($count === 15) throw new Error("Looks like there might be some recursion. 15 calls to 'resolve' after [" . Util::getShape($aliased) . ']');
             }
         } catch (InvalidArgumentException $e) {
         }
@@ -103,6 +103,6 @@ class SqlFormattingAliasContainer extends Container {
     protected function standardizeName($name): string {
         if ($name instanceof Identifiable) return $name->getObjectId();
         if (is_string($name) || is_scalar($name)) return "$name";
-        throw new Exception\InvalidAliasedItem("There is no way to alias this '" . Util::getShapeOfItem($name) . "' - " . json_encode($name));
+        throw new Exception\InvalidAliasedItem("There is no way to alias this '" . Util::getShape($name) . "' - " . json_encode($name));
     }
 }

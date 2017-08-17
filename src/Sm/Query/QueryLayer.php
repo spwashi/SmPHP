@@ -21,6 +21,7 @@ use Sm\Query\Module\QueryModuleFactory;
  * @package Sm\Query
  */
 class QueryLayer extends StandardLayer {
+    const LAYER_NAME = 'query';
     /** @var  QueryModuleFactory $queryModuleFactory */
     private $queryModuleFactory;
     public function __construct(ModuleContainer $moduleContainer = null, QueryModuleFactory $queryModuleFactory = null) {

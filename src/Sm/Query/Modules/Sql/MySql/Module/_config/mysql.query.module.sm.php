@@ -75,7 +75,7 @@ function register_proxy_handlers(SqlFormattingProxyFactory $formattingProxyFacto
                                               if (is_string($item)) {
                                                   return $formattingProxyFactory->build(String_ColumnIdentifierFormattingProxy::class, $item);
                                               }
-                                              throw new UnimplementedError('+ Anything but strings [' . Util::getShapeOfItem($item) . ']');
+                                              throw new UnimplementedError('+ Anything but strings [' . Util::getShape($item) . ']');
                                           },
                                           ColumnSchema_ColumnIdentifierFormattingProxy::class     => ColumnSchema_ColumnIdentifierFormattingProxy::class,
                                           String_ColumnIdentifierFormattingProxy::class           => String_ColumnIdentifierFormattingProxy::class,
@@ -93,8 +93,8 @@ function register_proxy_handlers(SqlFormattingProxyFactory $formattingProxyFacto
                                               if (is_string($item)) {
                                                   return $formattingProxyFactory->build(String_TableIdentifierFormattingProxy::class, $item);
                                               }
-            
-                                              throw new UnimplementedError('+ Anything but strings[' . Util::getShapeOfItem($item) . ']');
+    
+                                              throw new UnimplementedError('+ Anything but strings[' . Util::getShape($item) . ']');
                                           },
                                       ]);
 }

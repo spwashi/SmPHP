@@ -18,4 +18,5 @@ use Sm\Core\Context\Context;
  * @package Sm\Core\Context\Layer
  */
 interface LayerRoot extends Context {
+    public function getLayers(): LayerContainer;
 }

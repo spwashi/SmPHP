@@ -50,7 +50,7 @@ class ColumnSchemaContainer extends PropertySchemaContainer {
         } else if ($property instanceof Property) {
             $property_name = $property->name;
         } else {
-            $_property_type = Util::getShapeOfItem($property);
+            $_property_type = Util::getShape($property);
             throw new InvalidArgumentException("Cannot tell if {$_property_type} is primary or not");
         }
         return in_array($property_name, $this->_primary_keys);
@@ -61,7 +61,7 @@ class ColumnSchemaContainer extends PropertySchemaContainer {
             if ($property instanceof Property) {
                 $property = $property->getName();
             } else if (!is_string($property)) {
-                $type = Util::getShapeOfItem($property);
+                $type = Util::getShape($property);
                 throw new InvalidArgumentException("Cannot set '{$type}' as primary key.");
             }
             

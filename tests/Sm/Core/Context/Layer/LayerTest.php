@@ -29,7 +29,7 @@ class LayerTest extends \PHPUnit_Framework_TestCase {
         /** @var \Sm\Core\Context\Layer\LayerRoot|PHPUnit_Framework_MockObject_MockObject $layerRoot */
         $layerRoot = $this->createMock(LayerRoot::class);
         $layerRoot->method('getObjectId')->willReturn(Identifier::generateIdentity($layerRoot));
-        return $mock->initialize($layerRoot);
+        return $mock->setRoot($layerRoot);
     }
     public function testCanRegisterModule() {
         /** @var Layer|PHPUnit_Framework_MockObject_MockObject $mock */

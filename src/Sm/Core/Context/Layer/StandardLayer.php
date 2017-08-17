@@ -30,6 +30,8 @@ abstract class StandardLayer extends StandardContext implements Layer {
     protected $ModuleContainer;
     /** @var array An array of the Layer Roots we checked applicability for */
     protected $checked_layer_root_ids = [];
+    /** @var  LayerRoot $layerRoot */
+    protected $layerRoot;
     
     use HasObjectIdentityTrait;
     
@@ -38,31 +40,15 @@ abstract class StandardLayer extends StandardContext implements Layer {
         parent::__construct();
     }
     /**
-     * Check to see if this Layer is operational on this LayerRoot. Throw an exception otherwise
-     *
-     * @param \Sm\Core\Context\Layer\LayerRoot $layerRoot
-     *
-     * @return bool|null
-     * @throws \Sm\Core\Exception\Exception When the check fails
-     */
-    public function check(LayerRoot $layerRoot) {
-        # Null if we've already authorized this LayerRoot
-        if (in_array($layerRoot->getObjectId(), $this->checked_layer_root_ids)) return null;
-        
-        # Otherwise this is okay
-        return true;
-    }
-    /**
      * Initialize the Layer on the LayerRoot provided
      *
-     * @param \Sm\Core\Context\Layer\LayerRoot $layerRoot
+     * @param LayerRoot $layerRoot
      *
      * @return mixed
      */
-    public function initialize(LayerRoot $layerRoot): LayerProxy {
-        $this->check($layerRoot);
-        //todo do more on initialization... THINK!
-        return new LayerProxy($this, $layerRoot);
+    public function setRoot(LayerRoot $layerRoot) {
+        $this->layerRoot = $layerRoot;
+        return $this;
     }
     /**
      * Throw an error if the Module isn't one that we expect
@@ -110,5 +96,11 @@ abstract class StandardLayer extends StandardContext implements Layer {
      */
     protected function _listExpectedModules(): array {
         return [];
+    }
+    /**
+     * @return LayerRoot
+     */
+    public function getLayerRoot(): ?LayerRoot {
+        return $this->layerRoot;
     }
 }

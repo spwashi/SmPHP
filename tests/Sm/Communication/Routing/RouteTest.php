@@ -9,8 +9,17 @@ namespace Sm\Communication\Routing;
 
 
 use Sm\Communication\Network\Http\Request\HttpRequest;
+use Sm\Communication\Request\NamedRequest;
 use Sm\Core\Resolvable\PassiveResolvable;
 use Sm\Core\Resolvable\StringResolvable;
+
+
+class Controller {
+    public function index() {
+        return "HELLO";
+    }
+}
+
 
 class RouteTest extends \PHPUnit_Framework_TestCase {
     public function testCanCreate() {
@@ -48,6 +57,13 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
         $Request = HttpRequest::init()->setUrl('http://spwashi.com/api/sections');
         $this->assertTrue($Route->matches($Request), 'matching a simple request');
     }
+    
+    public function testCanUseController() {
+        $route   = Route::init('#::index')->setResolutionNamespaces(__NAMESPACE__);
+        $resolve = $route->resolve(NamedRequest::init());
+        $this->assertEquals('HELLO', $resolve);
+    }
+    
     public function testCanResolve() {
         $Route = new Route(null, 'api/{test}:[a-zA-Z_\d]*/test/{id}:[\d]*');
         $Route->setSubject(PassiveResolvable::init());

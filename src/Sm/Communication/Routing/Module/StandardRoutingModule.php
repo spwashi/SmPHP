@@ -17,11 +17,19 @@ use Sm\Core\Context\Layer\Module\LayerModule;
 use Sm\Core\Module\ModuleProxy;
 
 class StandardRoutingModule extends LayerModule implements RoutingModule {
+    public function registerNamedRoutes($routes, Layer $layerProxy = null) {
+        foreach ($routes as $route_name => $route) {
+            $this->getRouter($layerProxy)->register($route_name, $route);
+        }
+    }
+    
     public function registerRoutes($routes, Layer $layerProxy = null) {
         $this->getRouter($layerProxy)->registerBatch($routes);
     }
     public function route(Request $request, Layer $layerProxy = null) {
-        return $this->getRouter($layerProxy)->resolve($request);
+        /** @var Router $router */
+        $router = $this->getRouter($layerProxy);
+        return $router->resolve($request);
     }
     protected function _initialize(Layer $layer = null) {
         $this->setRouter($layer, new Router);

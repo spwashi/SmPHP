@@ -43,11 +43,11 @@ class SelectExpressionFormattingProxy extends SqlFormattingProxy {
                 throw new InvalidArgumentException("Can only accept arrays with 2 arguments like [source,alias]");
             }
             if (!(($subject[0]??null) instanceof DataSourceSchema) || !(($subject[1]??null) instanceof NamedDataSourceSchema)) {
-                throw new InvalidArgumentException("Can only accept arrays like[source,alias]\n" . Util::getShapeOfItem($subject) . ' given');
+                throw new InvalidArgumentException("Can only accept arrays like[source,alias]\n" . Util::getShape($subject) . ' given');
             }
             list($subject, $this->alias) = $subject;
         } else if (!($subject instanceof DataSourceSchema)) {
-            throw new InvalidArgumentException("Can only initialize with DataSourceSchemas [" . Util::getShapeOfItem($subject) . '] provided.');
+            throw new InvalidArgumentException("Can only initialize with DataSourceSchemas [" . Util::getShape($subject) . '] provided.');
         }
         parent::__construct($subject, $formattingProxyFactory);
     }

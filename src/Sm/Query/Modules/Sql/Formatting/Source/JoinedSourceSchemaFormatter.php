@@ -20,12 +20,12 @@ use Sm\Query\Statements\Clauses\ConditionalClause;
 
 class JoinedSourceSchemaFormatter extends SqlQueryFormatter {
     public function prime($joinedSourceSchema) {
-        if (!($joinedSourceSchema instanceof JoinedSourceSchema)) throw new InvalidArgumentException("Can only format JoinedSourceSchemas. [" . Util::getShapeOfItem($joinedSourceSchema) . '] given');
+        if (!($joinedSourceSchema instanceof JoinedSourceSchema)) throw new InvalidArgumentException("Can only format JoinedSourceSchemas. [" . Util::getShape($joinedSourceSchema) . '] given');
         $originalSource = $joinedSourceSchema->getOriginSources()[0];
         $this->createSelectExpression($originalSource);
     }
     public function format($joinedSourceSchema): string {
-        if (!($joinedSourceSchema instanceof JoinedSourceSchema)) throw new InvalidArgumentException("Can only format JoinedSourceSchemas. [" . Util::getShapeOfItem($joinedSourceSchema) . '] given');
+        if (!($joinedSourceSchema instanceof JoinedSourceSchema)) throw new InvalidArgumentException("Can only format JoinedSourceSchemas. [" . Util::getShape($joinedSourceSchema) . '] given');
         $originalSources = $joinedSourceSchema->getOriginSources();
         $joinedSources   = $joinedSourceSchema->getJoinedSources();
         if (count($originalSources) !== 1) throw new Error("Can only format JOINS on one source");

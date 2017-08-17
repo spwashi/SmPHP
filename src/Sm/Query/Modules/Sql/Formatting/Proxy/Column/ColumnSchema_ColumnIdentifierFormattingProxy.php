@@ -34,7 +34,7 @@ class ColumnSchema_ColumnIdentifierFormattingProxy extends ColumnIdentifierForma
      */
     public function __construct($subject, SqlFormattingProxyFactory $formattingProxyFactory = null) {
         if (!($subject instanceof ColumnSchema)) {
-            throw new InvalidArgumentException("Wrong Formatting Proxy for type [" . Util::getShapeOfItem($subject) . ']');
+            throw new InvalidArgumentException("Wrong Formatting Proxy for type [" . Util::getShape($subject) . ']');
         }
         parent::__construct($subject, $formattingProxyFactory);
     }

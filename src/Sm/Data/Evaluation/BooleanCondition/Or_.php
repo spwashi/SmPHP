@@ -30,8 +30,8 @@ class Or_ extends BooleanCondition {
                 if (boolval($item)) return true;
                 continue;
             }
-            
-            if (!is_object($item) || !($item instanceof Resolvable)) throw new TypeMismatchException("Cannot evaluate items of type " . Util::getShapeOfItem($item));
+    
+            if (!is_object($item) || !($item instanceof Resolvable)) throw new TypeMismatchException("Cannot evaluate items of type " . Util::getShape($item));
             
             if ($item->resolve()) return true;
         }

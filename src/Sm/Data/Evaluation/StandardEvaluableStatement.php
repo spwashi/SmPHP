@@ -52,7 +52,7 @@ abstract class StandardEvaluableStatement implements EvaluableStatement {
             # This gives us a bit more flexibility to decide how things get formatted
             $evaluator = $this->getEvaluatorFactory()->build(...$arguments);
             if (!($evaluator instanceof Resolvable) && isset($evaluator)) {
-                throw new TypeMismatchException("Evaluator should have been a Resolvable - " . Util::getShapeOfItem($evaluator) . " given");
+                throw new TypeMismatchException("Evaluator should have been a Resolvable - " . Util::getShape($evaluator) . " given");
             }
             return $evaluator->resolve(...$arguments);
         } catch (FactoryCannotBuildException $e) {

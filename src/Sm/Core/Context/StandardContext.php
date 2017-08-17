@@ -26,8 +26,6 @@ abstract class StandardContext implements Context {
      *                                    They are key identifiers of this context
      */
     protected $items;
-    /** @var array An array of strings that identify the core components of this Context */
-    protected $expected_items = [];
     
     /**
      * AbstractContext constructor.
@@ -37,17 +35,4 @@ abstract class StandardContext implements Context {
         $this->items = MiniContainer::init();
         $this->createSelfID();
     }
-    /**
-     * Method to identify an item on this Context as being part of the Context.
-     *
-     * @param $name
-     * @param $item
-     *
-     * @return mixed
-     */
-    protected function incorporate($name, $item) {
-        $this->items->register($name, $item);
-        return $this;
-    }
-    
 }

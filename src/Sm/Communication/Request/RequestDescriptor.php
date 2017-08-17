@@ -18,7 +18,7 @@ use Sm\Core\Exception\InvalidArgumentException;
  *
  * @package Sm\Communication\Request
  */
-abstract class RequestDescriptor extends ContextDescriptor {
+class RequestDescriptor extends ContextDescriptor {
     public function compare($request) {
         parent::compare($request);
         if (!($request instanceof Request)) throw new InvalidArgumentException("Not working with a Request");
@@ -35,5 +35,7 @@ abstract class RequestDescriptor extends ContextDescriptor {
      *
      * @return array
      */
-    abstract public function getArguments(Request $request);
+    public function getArguments(Request $request) {
+        return [];
+    }
 }

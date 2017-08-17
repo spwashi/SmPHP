@@ -11,16 +11,17 @@ namespace Sm\Core\System_;
 use Sm\Communication\CommunicationLayer;
 use Sm\Communication\Module\HttpCommunicationModule;
 use Sm\Communication\Routing\Module\StandardRoutingModule;
+use Sm\Controller\ControllerLayer;
 use Sm\Core\Context\Layer\LayerContainer;
 use Sm\Core\Context\Layer\LayerRoot;
 use Sm\Core\Context\StandardContext;
 use Sm\Core\Exception\InvalidArgumentException;
-use Sm\Core\Resolvable\StringResolvable;
 
 /**
  * Class Sm
  *
- * @property CommunicationLayer communication
+ * @property CommunicationLayer             $communication
+ * @property \Sm\Controller\ControllerLayer $controller
  *
  */
 class Sm extends StandardContext implements LayerRoot {
@@ -58,8 +59,8 @@ Sm::$instance = new Sm(LayerContainer::init());
 
 $routingModule      = new StandardRoutingModule;
 $communicationLayer = new CommunicationLayer;
-$communicationLayer->registerRoutingModule($routingModule)
-                   ->registerModule(CommunicationLayer::HTTP_MODULE, new HttpCommunicationModule)
-                   ->registerRoutes([ 'Sm' => StringResolvable::init('sam') ]);
+$communicationLayer->registerRoutingModule($routingModule)->registerModule(CommunicationLayer::HTTP_MODULE,
+                                                                           new HttpCommunicationModule);
 
-Sm::$instance->getLayers()->register('communication', $communicationLayer);
+Sm::$instance->getLayers()->register(CommunicationLayer::LAYER_NAME, $communicationLayer);
+Sm::$instance->getLayers()->register(ControllerLayer::LAYER_NAME, new ControllerLayer);

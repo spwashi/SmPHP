@@ -9,12 +9,16 @@ namespace Sm\Communication;
 
 
 use Sm\Communication\Network\Http\Request\HttpRequestFromEnvironment;
+use Sm\Communication\Request\NamedRequest;
 use Sm\Communication\Request\RequestFactory;
 use Sm\Communication\Response\ResponseDispatcher;
 use Sm\Communication\Response\ResponseFactory;
 use Sm\Communication\Routing\Module\RoutingModule;
+use Sm\Controller\ControllerLayer;
+use Sm\Core\Context\Layer\Exception\InaccessibleLayerException;
 use Sm\Core\Context\Layer\Module\Exception\MissingModuleException;
 use Sm\Core\Context\Layer\StandardLayer;
+use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Module\ModuleContainer;
 
 /**
@@ -23,9 +27,11 @@ use Sm\Core\Module\ModuleContainer;
  * Layer responsible for inter-service communication.
  * Modules for Routing and Dispatching Requests.
  *
- * @package Sm\Communication
+ * @property-read RoutingModule $routing
  */
 class CommunicationLayer extends StandardLayer {
+    const LAYER_NAME = 'communication';
+    
     const ROUTE_RESOLVE_REQUEST = 'ROUTE_RESOLVE_REQUEST';
     const ROUTING_MODULE        = 'routing';
     const HTTP_MODULE           = 'http';
@@ -57,6 +63,11 @@ class CommunicationLayer extends StandardLayer {
     ####################################################
     #   Resolvers
     ####################################################
+    public function __get($name) {
+        if ($name === 'routing') return $this->getRoutingModule();
+        # todo bad error
+        throw new UnimplementedError("Cannot access this portion of the communication layer");
+    }
     public function resolveRequest($name = null):? Request\Request {
         return $this->requestFactory->resolve($name ?? HttpRequestFromEnvironment::class);
     }
@@ -69,21 +80,41 @@ class CommunicationLayer extends StandardLayer {
      *
      * @param \Sm\Communication\Routing\Module\RoutingModule|\Sm\Core\Module\ModuleProxy $routingModule
      *
-     * @return  static
+     * @return  $this
      * */
     public function registerRoutingModule(RoutingModule $routingModule) {
         return $this->registerModule(static::ROUTING_MODULE, $routingModule);
     }
     /**
-     * Register a bunch of Routes on this Layer
+     * Register a bunch of Routes on this Layer.
+     *
+     * @param array $routes An array indexed by route pattern with resolutions as values.
+     *
+     * @return mixed
+     */
+    public function registerRoutes(array $routes) {
+        foreach ($routes as $pattern => &$resolution) {
+            $this->normalizeResolution($resolution);
+        }
+        
+        
+        return $this->getRoutingModule()->registerRoutes($routes);
+    }
+    /**
+     * Register routes in an array, but instead of being indexed by route pattern,
+     * they are indexed by route name
      *
      * @param $routes
      *
      * @return mixed
      */
-    public function registerRoutes($routes) {
-        return $this->getRoutingModule()->registerRoutes($routes);
+    public function registerNamedRoutes($routes) {
+        foreach ($routes as $route_name => &$resolution) {
+            $this->normalizeResolution($resolution);
+        }
+        return $this->getRoutingModule()->registerNamedRoutes($routes);
     }
+    
     /**
      * Register a bunch of things that are going to be used to resolve/create requests
      *
@@ -124,6 +155,9 @@ class CommunicationLayer extends StandardLayer {
      */
     public function route($request) {
         if ($request === static::ROUTE_RESOLVE_REQUEST) $request = $this->resolveRequest();
+        else if (is_string($request)) {
+            $request = NamedRequest::init()->setName($request);
+        }
         $routingModule = $this->getRoutingModule();
         if (!$routingModule) throw new MissingModuleException("Missing a Routing Module");
         return $routingModule->route($request);
@@ -149,7 +183,7 @@ class CommunicationLayer extends StandardLayer {
      * @return null|\Sm\Communication\Routing\Module\RoutingModule|\Sm\Core\Module\Module
      * @throws \Sm\Core\Context\Layer\Module\Exception\MissingModuleException
      */
-    protected function getRoutingModule(): RoutingModule {
+    public function getRoutingModule(): RoutingModule {
         $routingModule = $this->getModule(CommunicationLayer::ROUTING_MODULE);
         if (!$routingModule) throw new MissingModuleException("Missing a Routing Module");
         return $routingModule;
@@ -159,5 +193,30 @@ class CommunicationLayer extends StandardLayer {
      */
     protected function _listExpectedModules(): array {
         return [ CommunicationLayer::ROUTING_MODULE, CommunicationLayer::HTTP_MODULE ];
+    }
+    /**
+     * Make sure the resolution that we are assigning to route is in the format that we want it on a layer-to-layer basis.
+     * Mostly useful for creating Controller Proxies
+     *
+     * @param $resolution
+     *
+     * @throws \Sm\Core\Context\Layer\Exception\InaccessibleLayerException
+     */
+    private function normalizeResolution(&$resolution): void {
+        if (!is_string($resolution)) return;
+        $layerRoot = $this->layerRoot;
+        if (!isset($layerRoot)) return;
+        
+        # if there aren't any method-indicating functions, there's nothing to do with the controller
+        if (strpos($resolution, '#') === false && strpos($resolution, '@') === false && strpos($resolution, '::') === false) {
+            return;
+        }
+        
+        /** @var ControllerLayer $controllerLayer */
+        $controllerLayer = $layerRoot->getLayers()->resolve(ControllerLayer::LAYER_NAME);
+        
+        if (!isset($controllerLayer)) throw new InaccessibleLayerException("No controller available to resolve resolution " . json_encode($resolution));
+        
+        $resolution = $controllerLayer->createControllerResolvable($resolution);
     }
 }

@@ -25,6 +25,14 @@ interface RoutingModule {
      */
     public function registerRoutes($routes);
     /**
+     * Register an array of named routes
+     *
+     * @param $routes
+     *
+     * @return mixed
+     */
+    public function registerNamedRoutes($routes);
+    /**
      * Given a request, return the result of routing to it
      *
      * @param \Sm\Communication\Request\Request $request

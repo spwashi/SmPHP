@@ -7,8 +7,11 @@ namespace Sm\Application;
 use Sm\Communication\CommunicationLayer;
 use Sm\Communication\Module\HttpCommunicationModule;
 use Sm\Communication\Routing\Module\StandardRoutingModule;
+use Sm\Controller\ControllerLayer;
 use Sm\Core\Context\Layer\LayerContainer;
+use Sm\Core\Context\Layer\LayerRoot;
 use Sm\Core\Exception\InvalidArgumentException;
+use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
 use Sm\Core\Paths\Exception\PathNotFoundException;
 use Sm\Core\Util;
 use Sm\Data\DataLayer;
@@ -24,12 +27,14 @@ use Sm\Query\QueryLayer;
  * @property-read QueryLayer         $query
  * @property-read string             $path
  */
-class Application {
+class Application implements LayerRoot {
+    use HasObjectIdentityTrait;
     protected $name;
     protected $config_path = 'config/';
     
     /** @var  \Sm\Core\Context\Layer\LayerContainer $layerContainer */
     protected $layerContainer;
+    protected $controllerNamespaces = [];
     /** @var string $root_path Where is this application located? */
     private $root_path;
     
@@ -78,9 +83,16 @@ class Application {
      * @throws \Sm\Core\Paths\Exception\PathNotFoundException
      */
     protected function _configure() {
-        $_config_file = $this->root_path . $this->config_path . 'config.json';
-        if (!file_exists($_config_file)) throw new PathNotFoundException("Cannot configure app - missing {$_config_file}");
-        $config_json_str = file_get_contents($_config_file);
+        $app         = $this;
+        $_config_php = $this->root_path . $this->config_path . '_config/_config.php';
+        if (file_exists($_config_php)) {
+            require_once $_config_php;
+        }
+    
+    
+        $_config_json_file = $this->root_path . $this->config_path . 'config.json';
+        if (!file_exists($_config_json_file)) throw new PathNotFoundException("Cannot configure app - missing {$_config_json_file}");
+        $config_json_str = file_get_contents($_config_json_file);
         #
         $configuration = json_decode($config_json_str, true);
         $this->data->configure($configuration);
@@ -90,25 +102,30 @@ class Application {
     # region Layer Management
     protected function initLayers() {
         $this->_registerDataLayer();
+        $this->_registerControllerLayer();
         $this->_registerCommunicationLayer();
         $this->_registerQueryLayer();
     }
     protected function _registerDataLayer() {
-        $this->layerContainer->register('data', new DataLayer);
+        $this->layerContainer->register(DataLayer::LAYER_NAME, (new DataLayer)->setRoot($this));
+    }
+    protected function _registerControllerLayer() {
+        $this->layerContainer->register(ControllerLayer::LAYER_NAME, (new ControllerLayer)->setRoot($this));
     }
     protected function _registerCommunicationLayer() {
         $routingModule      = new StandardRoutingModule;
-        $communicationLayer = new CommunicationLayer;
+        $communicationLayer = (new CommunicationLayer)->setRoot($this);
         $communicationLayer->registerRoutingModule($routingModule)
-                           ->registerModule(CommunicationLayer::HTTP_MODULE, new HttpCommunicationModule);
+                           ->registerModule(CommunicationLayer::HTTP_MODULE,
+                                            new HttpCommunicationModule);
         
         #------------------------------------------------------------------------------
-        $this->layerContainer->register('communication', $communicationLayer);
+        $this->layerContainer->register(CommunicationLayer::LAYER_NAME, $communicationLayer);
     }
     protected function _registerQueryLayer(): QueryLayer {
-        $queryLayer = new QueryLayer;
+        $queryLayer = (new QueryLayer)->setRoot($this);
         $this->_registerDefaultQueryModule($queryLayer);
-        $this->layerContainer->register('query', $queryLayer);
+        $this->layerContainer->register(QueryLayer::LAYER_NAME, $queryLayer);
         return $queryLayer;
     }
     protected function _registerDefaultQueryModule(QueryLayer $queryLayer) {
@@ -127,9 +144,10 @@ class Application {
     ##################################################
     public function __get(string $name) {
         switch ($name) {
-            case 'communication':
-            case 'query':
-            case 'data':
+            case CommunicationLayer::LAYER_NAME:
+            case QueryLayer::LAYER_NAME:
+            case ControllerLayer::LAYER_NAME:
+            case DataLayer::LAYER_NAME:
                 return $this->layerContainer->resolve($name);
             case'path':
                 return $this->root_path;
@@ -139,5 +157,8 @@ class Application {
     protected function setRootPath(string $root_path) {
         $this->root_path = rtrim($root_path, '/') . '/';
         return $this;
+    }
+    public function getLayers(): LayerContainer {
+        return $this->layerContainer;
     }
 }

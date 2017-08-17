@@ -31,6 +31,7 @@ use Sm\Data\Source\DataSourceDataManager;
  * @package Sm\Data
  */
 class DataLayer extends StandardLayer {
+    const LAYER_NAME = 'data';
     /** @var  SmEntityDataManager[] */
     protected $managers;
     protected $configuredSmEntities = [];

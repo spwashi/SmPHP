@@ -19,12 +19,15 @@ use Sm\Core\Module\ModuleProxy;
  * @package Sm\Communication\Routing\Module
  */
 class RoutingModuleProxy extends ModuleProxy implements RoutingModule {
-    /** @var  \Sm\Core\Context\Layer\LayerProxy $context */
+    /** @var  \Sm\Core\Context\Layer\Layer $context */
     protected $context;
     /** @var  \Sm\Communication\Routing\Module\StandardRoutingModule $subject */
     protected $subject;
     public function registerRoutes($routes) {
         return $this->subject->registerRoutes([ $routes ], $this->getContext());
+    }
+    public function registerNamedRoutes($routes) {
+        return $this->subject->registerNamedRoutes($routes, $this->getContext());
     }
     public function route(Request $request) {
         return $this->subject->route($request, $this->context);

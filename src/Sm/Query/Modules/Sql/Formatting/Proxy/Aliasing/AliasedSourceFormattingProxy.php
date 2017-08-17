@@ -36,7 +36,7 @@ class AliasedSourceFormattingProxy extends NamedDataSourceFormattingProxy implem
      * @throws \Sm\Core\Exception\UnimplementedError
      */
     public function __construct($subject, SqlFormattingProxyFactory $formattingProxyFactory = null) {
-        if (!($subject instanceof DataSourceSchema)) throw new UnimplementedError("Can only alias Sources. [" . Util::getShapeOfItem($subject) . '] provided');
+        if (!($subject instanceof DataSourceSchema)) throw new UnimplementedError("Can only alias Sources. [" . Util::getShape($subject) . '] provided');
         parent::__construct($subject, $formattingProxyFactory);
     }
     public function getAlias():?string {

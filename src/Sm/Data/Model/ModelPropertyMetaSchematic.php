@@ -31,6 +31,7 @@ class ModelPropertyMetaSchematic implements Schematic, \JsonSerializable {
     #
     ##  Configuration
     public function load($configuration) {
+        if (!$configuration) return $this;
         if (!is_array($configuration)) {
             throw new UnimplementedError("Cannot configure schematic using something other than an array");
         }

@@ -151,7 +151,7 @@ class StandardFactory extends AbstractContainer implements Factory {
         $arg_shape =
             Util::canBeString($_args) ?
                 $_args :
-                (Util::getShapeOfItem($_args));
+                (Util::getShape($_args));
     
         if (is_array($_args) || ($_args instanceof \JsonSerializable)) {
             $arg_shape .= ' - ' . json_encode($_args);
@@ -229,7 +229,7 @@ class StandardFactory extends AbstractContainer implements Factory {
     }
     private function _checkCanInit($class_name) {
         if (!$this->canCreateClass($class_name) || !$this->do_create_missing) {
-            $type       = is_string($class_name) ? $class_name : Util::getShapeOfItem($class_name);
+            $type       = is_string($class_name) ? $class_name : Util::getShape($class_name);
             $self_class = static::class;
             throw new WrongFactoryException("{$self_class} not allowed to create class of type {$type}");
         }
