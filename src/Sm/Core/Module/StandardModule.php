@@ -51,7 +51,7 @@ abstract class StandardModule extends StandardContext implements HookHaver, Modu
      *
      * @return null|\Sm\Core\Module\ModuleProxy
      */
-    public function initialize(Context $context = null): ?ModuleProxy {
+    public function initialize(Context $context = null): Module {
         # Check to see if we can initialize the Module within this context
         $this->check($context);
         $this->resolveHook(Hook::INIT, $context);
@@ -162,10 +162,10 @@ abstract class StandardModule extends StandardContext implements HookHaver, Modu
      *
      * @param \Sm\Core\Context\Context $context
      *
-     * @return \Sm\Core\Module\ModuleProxy
+     * @return \Sm\Core\Module\ModuleProxy|\Sm\Core\Module\Module
      */
-    protected function createModuleProxy(Context $context): ModuleProxy {
-        return new ModuleProxy($this, $context);
+    protected function createModuleProxy(Context $context) {
+        return $this;
     }
     
 }

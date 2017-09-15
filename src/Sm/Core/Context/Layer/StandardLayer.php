@@ -10,7 +10,6 @@ namespace Sm\Core\Context\Layer;
 
 use Sm\Core\Context\StandardContext;
 use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
-use Sm\Core\Module\Error\InvalidModuleException;
 use Sm\Core\Module\Module;
 use Sm\Core\Module\ModuleContainer;
 
@@ -26,8 +25,8 @@ use Sm\Core\Module\ModuleContainer;
 abstract class StandardLayer extends StandardContext implements Layer {
     const COMMUNICATION = 'Communication';
     
-    /** @var \Sm\Core\Module\ModuleContainer $ModuleContainer */
-    protected $ModuleContainer;
+    /** @var ModuleContainer $moduleContainer */
+    protected $moduleContainer;
     /** @var array An array of the Layer Roots we checked applicability for */
     protected $checked_layer_root_ids = [];
     /** @var  LayerRoot $layerRoot */
@@ -35,8 +34,7 @@ abstract class StandardLayer extends StandardContext implements Layer {
     
     use HasObjectIdentityTrait;
     
-    public function __construct(ModuleContainer $moduleContainer = null) {
-        $this->ModuleContainer = $moduleContainer ?? new ModuleContainer;
+    public function __construct() {
         parent::__construct();
     }
     /**
@@ -53,31 +51,28 @@ abstract class StandardLayer extends StandardContext implements Layer {
     /**
      * Throw an error if the Module isn't one that we expect
      *
-     * @param                        $name
      * @param \Sm\Core\Module\Module $module
+     *
+     * @param                        $name
      *
      * @throws \Sm\Core\Module\Error\InvalidModuleException
      */
-    public function checkCanRegisterModule($name, Module $module) {
-        $expected_modules = $this->_listExpectedModules();
-        if (!in_array($name, $expected_modules)) {
-            $st_class = static::class;
-            throw new InvalidModuleException("Cannot register module {$name} on layer {$st_class}");
-        }
+    public function checkCanRegisterModule(Module $module, $name): void { }
+    public function getModuleContainer(): ModuleContainer {
+        return $this->moduleContainer = $this->moduleContainer ?? new ModuleContainer;
     }
     /**
      * Register a Module under this Layer
      *
-     * @param string                                             $name   The name that this Module will take under this Layer
      * @param \Sm\Core\Module\ModuleProxy|\Sm\Core\Module\Module $module The Module that we are registering under this Layer
+     * @param string                                             $name   The name that this Module will take under this Layer
      *
      * @return static
-     * @throws \Sm\Core\Module\Error\InvalidModuleException If we try to register a Module that we actually can't
      */
-    public function registerModule(string $name, Module $module) {
-        $this->checkCanRegisterModule($name, $module);
+    public function registerModule(Module $module, string $name) {
+        $this->checkCanRegisterModule($module, $name);
         $proxy = $module->initialize($this);
-        $this->ModuleContainer->register($name, $proxy);
+        $this->getModuleContainer()->register($name, $proxy);
         return $this;
     }
     
@@ -89,18 +84,16 @@ abstract class StandardLayer extends StandardContext implements Layer {
      * @return null|\Sm\Core\Module\Module
      */
     protected function getModule(string $name) {
-        return $this->ModuleContainer->resolve($name);
-    }
-    /**
-     * @return array An array of strings corresponding to the names of the modules that this layer needs to have
-     */
-    protected function _listExpectedModules(): array {
-        return [];
+        return $this->getModuleContainer()->resolve($name);
     }
     /**
      * @return LayerRoot
      */
     public function getLayerRoot(): ?LayerRoot {
         return $this->layerRoot;
+    }
+    public function setModuleContainer(ModuleContainer $moduleContainer): StandardLayer {
+        $this->moduleContainer = $moduleContainer;
+        return $this;
     }
 }

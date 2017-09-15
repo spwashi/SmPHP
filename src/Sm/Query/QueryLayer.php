@@ -25,7 +25,8 @@ class QueryLayer extends StandardLayer {
     /** @var  QueryModuleFactory $queryModuleFactory */
     private $queryModuleFactory;
     public function __construct(ModuleContainer $moduleContainer = null, QueryModuleFactory $queryModuleFactory = null) {
-        parent::__construct($moduleContainer);
+        parent::__construct();
+        $this->setModuleContainer($moduleContainer);
         $this->queryModuleFactory = $queryModuleFactory ?? new QueryModuleFactory;
     }
     /**
@@ -54,7 +55,7 @@ class QueryLayer extends StandardLayer {
      *                                                    accessible by name. If not, the method will only be accessible without a name.
      */
     public function registerQueryModule(QueryModule $queryModule, $factoryMethod = null, $do_name = true) {
-        $this->registerModule($queryModule->getQueryType(), $queryModule);
+        $this->registerModule($queryModule, $queryModule->getQueryType());
         if (isset($factoryMethod)) {
             # arguments like [query_type, factoryMethod]
             $args = [
@@ -69,9 +70,4 @@ class QueryLayer extends StandardLayer {
             $this->queryModuleFactory->register(...$args);
         }
     }
-    public function checkCanRegisterModule($name, Module $module) {
-        # I don't know if this is necessary
-        return true;
-    }
-    
 }

@@ -101,7 +101,7 @@ class Router implements Registry {
         }
         return $matching_route;
     }
-    public function resolve(Request $request = null, $resolutionNamespaces = []) {
+    public function resolve(Request $request = null) {
         if (!$request) {
             throw new UnimplementedError("Can only deal with requests");
         }
@@ -114,7 +114,8 @@ class Router implements Registry {
         }
         
         if (isset($matching_route)) {
-            return $matching_route->resolve($request);
+            $routeResolution = RequestContext::init($request);
+            return $matching_route->resolve($request, $routeResolution);
         }
         
         

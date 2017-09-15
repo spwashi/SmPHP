@@ -15,9 +15,6 @@ use Sm\Core\Module\Module;
 
 
 class LayerTest__ExampleLayer extends StandardLayer {
-    protected function _listExpectedModules(): array {
-        return [ 'test_module_1' ];
-    }
 }
 
 
@@ -36,9 +33,7 @@ class LayerTest extends \PHPUnit_Framework_TestCase {
         $mock = new LayerTest__ExampleLayer();
         /** @var Module $module */
         $module = $this->createMock(Module::class);
-        
-        $mock->registerModule('test_module_1', $module);
-        $this->expectException(InvalidModuleException::class);
-        $mock->registerModule('test_module_2', $module);
+    
+        $mock->registerModule($module, 'test_module_1');
     }
 }

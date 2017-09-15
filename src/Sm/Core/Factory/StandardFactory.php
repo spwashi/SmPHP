@@ -120,10 +120,7 @@ class StandardFactory extends AbstractContainer implements Factory {
         /** @var string $class_name */
         $class_name         = is_object($item) ? get_class($item) : $item;
         $previous_exception = null;
-        if (self::isProbablyClassname($class_name)
-            || (is_string($class_name) ? $class_name : ($class_name = gettype($class_name))
-                                                       && isset($this->class_registry[ $class_name ]))) {
-            
+        if ($this->shouldBuildClassInstance($class_name)) {
             try {
                 array_shift($args);
                 # If the original class exists or we found a match, create the class
@@ -147,15 +144,7 @@ class StandardFactory extends AbstractContainer implements Factory {
     
         #
         # Could not find instance
-        $_args     = count($args) === 1 ? $args[0] : $args;
-        $arg_shape =
-            Util::canBeString($_args) ?
-                $_args :
-                (Util::getShape($_args));
-    
-        if (is_array($_args) || ($_args instanceof \JsonSerializable)) {
-            $arg_shape .= ' - ' . json_encode($_args);
-        }
+        $arg_shape = self::__getArgShape($args);
         throw new FactoryCannotBuildException("Cannot find a matching build method for " . $arg_shape, null, $previous_exception);
     }
     /**
@@ -241,5 +230,33 @@ class StandardFactory extends AbstractContainer implements Factory {
      */
     private static function isProbablyClassname($class_name): bool {
         return is_string($class_name) && (strpos($class_name, '\\') !== false || class_exists($class_name));
+    }
+    /**
+     * @param $class_name
+     *
+     * @return bool
+     */
+    protected function shouldBuildClassInstance($class_name): bool {
+        return static::isProbablyClassname($class_name) ||
+               (is_string($class_name)
+                   ? $class_name
+                   : ($class_name = gettype($class_name)) && isset($this->class_registry[ $class_name ]));
+    }
+    /**
+     * @param $args
+     *
+     * @return string
+     */
+    private static function __getArgShape($args): string {
+        $_args     = count($args) === 1 ? $args[0] : $args;
+        $arg_shape =
+            Util::canBeString($_args) ?
+                $_args :
+                (Util::getShape($_args));
+        
+        if (is_array($_args) || ($_args instanceof \JsonSerializable)) {
+            $arg_shape .= ' - ' . json_encode($_args);
+        }
+        return $arg_shape;
     }
 }

@@ -27,10 +27,10 @@ interface Module extends Context {
      *
      * @param \Sm\Core\Context\Context $context
      *
-     * @return null|\Sm\Core\Module\ModuleProxy
+     * @return \Sm\Core\Module\Module|\Sm\Core\Module\ModuleProxy
      * @throws \Sm\Core\Module\Error\InvalidModuleException
      */
-    public function initialize(Context $context):?ModuleProxy;
+    public function initialize(Context $context);
     /**
      * Check to see if a Module can act in a Context
      *

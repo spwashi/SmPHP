@@ -20,6 +20,6 @@ class LayerModuleTest extends \PHPUnit_Framework_TestCase {
         $layer = $this->getMockForAbstractClass(StandardLayer::class);
         /** @var LayerRoot $layerRootMock */
         $layerRootMock = $this->createMock(LayerRoot::class);
-        $layerModule->initialize($layer->initialize($layerRootMock));
+        $layerModule->initialize($layer);
     }
 }

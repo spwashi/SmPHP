@@ -19,6 +19,8 @@ use Sm\Core\Context\Layer\Exception\InaccessibleLayerException;
 use Sm\Core\Context\Layer\Module\Exception\MissingModuleException;
 use Sm\Core\Context\Layer\StandardLayer;
 use Sm\Core\Exception\UnimplementedError;
+use Sm\Core\Module\Error\InvalidModuleException;
+use Sm\Core\Module\Module;
 use Sm\Core\Module\ModuleContainer;
 
 /**
@@ -49,11 +51,10 @@ class CommunicationLayer extends StandardLayer {
      * @param \Sm\Communication\Response\ResponseFactory|null    $responseFactory
      * @param \Sm\Communication\Response\ResponseDispatcher|null $responseDispatcher
      */
-    public function __construct(ModuleContainer $moduleContainer = null,
-                                RequestFactory $requestFactory = null,
+    public function __construct(RequestFactory $requestFactory = null,
                                 ResponseFactory $responseFactory = null,
                                 ResponseDispatcher $responseDispatcher = null) {
-        parent::__construct($moduleContainer);
+        parent::__construct();
         $this->requestFactory     = $requestFactory ?? new RequestFactory;
         $this->responseFactory    = $responseFactory ?? new ResponseFactory;
         $this->responseDispatcher = $responseDispatcher ?? new ResponseDispatcher;
@@ -83,7 +84,7 @@ class CommunicationLayer extends StandardLayer {
      * @return  $this
      * */
     public function registerRoutingModule(RoutingModule $routingModule) {
-        return $this->registerModule(static::ROUTING_MODULE, $routingModule);
+        return $this->registerModule($routingModule, static::ROUTING_MODULE);
     }
     /**
      * Register a bunch of Routes on this Layer.
@@ -187,6 +188,13 @@ class CommunicationLayer extends StandardLayer {
         $routingModule = $this->getModule(CommunicationLayer::ROUTING_MODULE);
         if (!$routingModule) throw new MissingModuleException("Missing a Routing Module");
         return $routingModule;
+    }
+    public function checkCanRegisterModule(Module $module, $name): void {
+        $expected_modules = $this->_listExpectedModules();
+        if (!in_array($name, $expected_modules)) {
+            $st_class = static::class;
+            throw new InvalidModuleException("Cannot register module {$name} on layer {$st_class}");
+        }
     }
     /**
      * @return array An array of strings corresponding to the names of the modules that this layer needs to have

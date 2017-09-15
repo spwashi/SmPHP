@@ -18,11 +18,14 @@ use Sm\Data\DataLayer;
 use Sm\Query\Modules\Sql\MySql\Authentication\MySqlAuthentication;
 use Sm\Query\Modules\Sql\MySql\Module\MySqlQueryModule;
 use Sm\Query\QueryLayer;
+use Sm\Representation\Module\Twig\TwigViewModule;
+use Sm\Representation\RepresentationLayer;
 
 /**
  * Class Application
  *
  * @property-read CommunicationLayer $communication
+ * @property-read ControllerLayer    $controller
  * @property-read DataLayer          $data
  * @property-read QueryLayer         $query
  * @property-read string             $path
@@ -108,6 +111,12 @@ class Application implements LayerRoot {
     }
     protected function _registerDataLayer() {
         $this->layerContainer->register(DataLayer::LAYER_NAME, (new DataLayer)->setRoot($this));
+    }
+    protected function _registerRepresentationLayer() {
+        /** @var \Sm\Representation\RepresentationLayer $representationLayer */
+        $representationLayer = (new RepresentationLayer)->setRoot($this);
+        $representationLayer->registerModule(new TwigViewModule);
+        $this->layerContainer->register(RepresentationLayer::LAYER_NAME, $representationLayer);
     }
     protected function _registerControllerLayer() {
         $this->layerContainer->register(ControllerLayer::LAYER_NAME, (new ControllerLayer)->setRoot($this));

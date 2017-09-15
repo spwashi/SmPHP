@@ -119,9 +119,8 @@ class ControllerLayer extends StandardLayer {
             $class           = null;
             $namespace_array = array_reverse($this->controller_namespaces);
             foreach ($namespace_array as $namespace) {
-                $new_class_name = $namespace . '\\' . $class_name;
+                $new_class_name = '\\' . trim($namespace, '\\') . '\\' . $class_name;
                 if (!class_exists($new_class_name)) continue;
-                
                 $class_name = $new_class_name;
                 break;
             }
@@ -137,7 +136,7 @@ class ControllerLayer extends StandardLayer {
      */
     protected function initController($class_name) {
         $instance = new $class_name;
-        if (is_a(Controller::class, $class_name)) {
+        if (is_a($class_name, Controller::class, true)) {
             /** @var \Sm\Controller\Controller $instance */
             if (isset($this->layerRoot)) {
                 $instance->setLayerRoot($this->layerRoot);

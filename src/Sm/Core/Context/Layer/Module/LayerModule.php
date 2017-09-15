@@ -7,10 +7,8 @@
 
 namespace Sm\Core\Context\Layer\Module;
 
-use Sm\Core\Context\Context;
 use Sm\Core\Context\Layer\Layer;
 use Sm\Core\Hook\HookContainer;
-use Sm\Core\Module\ModuleProxy;
 use Sm\Core\Module\StandardModule;
 
 /**
@@ -29,9 +27,6 @@ abstract class LayerModule extends StandardModule {
      */
     protected function getHookContainer(): ?HookContainer {
         return $this->hookContainer = $this->hookContainer ?? new HookContainer;
-    }
-    protected function createModuleProxy(Context $context = null): ModuleProxy {
-        return new LayerModuleProxy($this, $context);
     }
     
     protected function _check(Layer $context = null) { return parent::_check(); }

@@ -6,26 +6,27 @@
  */
 
 
-class HelloController {
-    public function index() {
-        return 'hello';
-    }
-    public function test() {
-        var_dump(func_get_args());
-        return 'here.test123';
-    }
-}
-
-
 use Sm\Communication\CommunicationLayer;
 use Sm\Communication\Network\Http\Request\HttpRequest;
 use Sm\Communication\Routing\Exception\RouteNotFoundException;
 use Sm\Communication\Routing\Module\StandardRoutingModule;
+use Sm\Communication\Routing\RequestContext;
 use Sm\Communication\Routing\Route;
 use Sm\Controller\ControllerLayer;
 use Sm\Core\Context\Layer\LayerContainer;
 use Sm\Core\Context\Layer\LayerRoot;
 use Sm\Core\Resolvable\StringResolvable;
+
+class HelloController {
+    public function index() {
+        return 'hello';
+    }
+    public function test(RequestContext $r) {
+        $thing = $r->getRequest();
+        var_dump($thing);
+        return 'here.test123';
+    }
+}
 
 class StdLayerRoot implements LayerRoot {
     protected $layerContainer;

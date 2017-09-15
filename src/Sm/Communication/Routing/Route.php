@@ -84,33 +84,32 @@ class Route extends FunctionResolvable {
     /**
      * Resolve the Route.
      *
-     * @param Request                                               $request ,..
+     * @param \Sm\Communication\Routing\RequestContext      $request ,..
      *
-     * @param \Sm\Communication\Routing\RouteResolutionContext|null $routeResolutionContext
+     * @param \Sm\Communication\Routing\RequestContext|null $routeResolutionContext
      *
      * @return mixed
      * @throws \Sm\Core\Exception\InvalidArgumentException
      * @throws \Sm\Core\Exception\TypeMismatchException
      * @throws \Sm\Core\Resolvable\Error\UnresolvableException
      */
-    public function resolve($request = null, RouteResolutionContext $routeResolutionContext = null) {
+    public function resolve($request = null, RequestContext $routeResolutionContext = null) {
         if (!($request instanceof Request)) throw new InvalidArgumentException('Can only route requests');
         if (!($this->subject instanceof Resolvable)) throw new UnresolvableException("No way to resolve request.");
+        
+        $routeResolutionContext = $routeResolutionContext ?? RequestContext::init($request);
         
         try {
             if ($this->matches($request)) {
                 $arguments = $this->requestDescriptor->getArguments($request);
-                array_unshift($arguments, $request);
+                $arguments = array_merge([ $routeResolutionContext ], $arguments);
                 return $this->subject->resolve(...array_values($arguments));
             }
     
             throw new UnresolvableException("Cannot match route with this request");
     
-        } catch (UnresolvableException $e) {
-            if (isset($this->backupResolvable)) return $this->backupResolvable->resolve($request);
-            throw $e;
-        } catch (InvalidArgumentException $e) {
-            if (isset($this->backupResolvable)) return $this->backupResolvable->resolve($request);
+        } catch (UnresolvableException|InvalidArgumentException $e) {
+            if (isset($this->backupResolvable)) return $this->backupResolvable->resolve($routeResolutionContext);
             throw $e;
         } catch (TypeMismatchException $e) {
             if (isset($this->backupResolvable)) return $this->backupResolvable->resolve($request);

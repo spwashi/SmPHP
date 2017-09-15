@@ -58,12 +58,6 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue($Route->matches($Request), 'matching a simple request');
     }
     
-    public function testCanUseController() {
-        $route   = Route::init('#::index')->setResolutionNamespaces(__NAMESPACE__);
-        $resolve = $route->resolve(NamedRequest::init());
-        $this->assertEquals('HELLO', $resolve);
-    }
-    
     public function testCanResolve() {
         $Route = new Route(null, 'api/{test}:[a-zA-Z_\d]*/test/{id}:[\d]*');
         $Route->setSubject(PassiveResolvable::init());

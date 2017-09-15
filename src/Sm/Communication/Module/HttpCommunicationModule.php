@@ -32,18 +32,21 @@ class HttpCommunicationModule extends CommunicationModule {
         ];
     }
     protected function getResponseResolutionMethods() {
-        return [ Http::class => function () { return new HttpResponse(); } ];
+        return [
+            Http::class => function () { return new HttpResponse(); },
+        ];
     }
     protected function getResponseDispatchMethods() {
         return [
-            Http::class => function ($result) {
-                if (!($result instanceof HttpResponse)) {
-                    $result = HttpResponse::init()
-                        ->setBody(StringResolvable::init($result));
-                }
-                $result->makeHeaders();
-                echo $result->getBody();
-            },
+            Http::class =>
+                function ($result) {
+                    if (!($result instanceof HttpResponse)) {
+                        $result = HttpResponse::init()
+                                              ->setBody(StringResolvable::init($result));
+                    }
+                    $result->makeHeaders();
+                    echo $result->getBody();
+                },
         ];
     }
     
