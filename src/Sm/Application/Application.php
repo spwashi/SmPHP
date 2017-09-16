@@ -122,11 +122,11 @@ class Application implements LayerRoot {
         $this->layerContainer->register(ControllerLayer::LAYER_NAME, (new ControllerLayer)->setRoot($this));
     }
     protected function _registerCommunicationLayer() {
-        $routingModule      = new StandardRoutingModule;
+        $routingModule = new StandardRoutingModule;
+        /** @var CommunicationLayer $communicationLayer $communicationLayer */
         $communicationLayer = (new CommunicationLayer)->setRoot($this);
         $communicationLayer->registerRoutingModule($routingModule)
-                           ->registerModule(CommunicationLayer::HTTP_MODULE,
-                                            new HttpCommunicationModule);
+                           ->registerModule(new HttpCommunicationModule, CommunicationLayer::HTTP_MODULE);
         
         #------------------------------------------------------------------------------
         $this->layerContainer->register(CommunicationLayer::LAYER_NAME, $communicationLayer);
