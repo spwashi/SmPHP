@@ -15,6 +15,6 @@ class TwigViewModuleTest extends \PHPUnit_Framework_TestCase {
         $representationLayer = new RepresentationLayer;
         $representationLayer->registerModule($twig_view_module);
         $test = $representationLayer->render('hello');
-        $this->assertEquals('THIS SHOULD SAY: hello', $test);
+        $this->assertEquals('THIS SHOULD SAY: hello?', $test);
     }
 }

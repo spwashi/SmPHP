@@ -19,8 +19,6 @@ class AbstractModuleTest extends \PHPUnit_Framework_TestCase {
         /** @var \Sm\Core\Context\Context $context */
         $context     = $this->getMockForAbstractClass(StandardContext::class);
         $moduleProxy = $abstractModule->initialize($context);
-        $this->assertInstanceOf(ModuleProxy::class, $moduleProxy);
-        $this->assertEquals($moduleProxy->getContext(), $context);
     }
     
     public function testCanRunDetach() {

@@ -49,9 +49,9 @@ abstract class StandardModule extends StandardContext implements HookHaver, Modu
      *
      * @param \Sm\Core\Context\Context $context
      *
-     * @return null|\Sm\Core\Module\ModuleProxy
+     * @return \Sm\Core\Module\ModuleProxy|\Sm\Core\Module\Module
      */
-    public function initialize(Context $context = null): Module {
+    public function initialize(Context $context = null) {
         # Check to see if we can initialize the Module within this context
         $this->check($context);
         $this->resolveHook(Hook::INIT, $context);
