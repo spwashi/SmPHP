@@ -9,7 +9,6 @@ namespace Sm\Query;
 
 
 use Sm\Core\Context\Layer\StandardLayer;
-use Sm\Core\Module\Module;
 use Sm\Core\Module\ModuleContainer;
 use Sm\Core\Query\Module\Exception\UnfoundQueryModuleException;
 use Sm\Query\Module\QueryModule;
@@ -26,7 +25,7 @@ class QueryLayer extends StandardLayer {
     private $queryModuleFactory;
     public function __construct(ModuleContainer $moduleContainer = null, QueryModuleFactory $queryModuleFactory = null) {
         parent::__construct();
-        $this->setModuleContainer($moduleContainer);
+        $this->setModuleContainer($moduleContainer ?? ModuleContainer::init());
         $this->queryModuleFactory = $queryModuleFactory ?? new QueryModuleFactory;
     }
     /**
