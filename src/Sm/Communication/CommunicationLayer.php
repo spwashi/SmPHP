@@ -215,7 +215,14 @@ class CommunicationLayer extends StandardLayer {
      * @throws \Sm\Core\Context\Layer\Exception\InaccessibleLayerException
      */
     private function normalizeResolution(&$resolution): void {
-        if (!is_string($resolution)) return;
+        if (!is_string($resolution)) {
+            if (is_array($resolution) && is_string($resolution['resolution'] ?? null)) {
+                $this->normalizeResolution($resolution['resolution']);
+                return;
+            } else {
+                return;
+            }
+        }
         $layerRoot = $this->layerRoot;
         if (!isset($layerRoot)) return;
         
