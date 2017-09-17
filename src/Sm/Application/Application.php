@@ -18,17 +18,17 @@ use Sm\Data\DataLayer;
 use Sm\Query\Modules\Sql\MySql\Authentication\MySqlAuthentication;
 use Sm\Query\Modules\Sql\MySql\Module\MySqlQueryModule;
 use Sm\Query\QueryLayer;
-use Sm\Representation\Module\Twig\TwigViewModule;
 use Sm\Representation\RepresentationLayer;
 
 /**
  * Class Application
  *
- * @property-read CommunicationLayer $communication
- * @property-read ControllerLayer    $controller
- * @property-read DataLayer          $data
- * @property-read QueryLayer         $query
- * @property-read string             $path
+ * @property-read CommunicationLayer  $communication
+ * @property-read ControllerLayer     $controller
+ * @property-read DataLayer           $data
+ * @property-read QueryLayer          $query
+ * @property-read RepresentationLayer $representation
+ * @property-read string              $path
  */
 class Application implements LayerRoot {
     use HasObjectIdentityTrait;
@@ -105,6 +105,7 @@ class Application implements LayerRoot {
     # region Layer Management
     protected function initLayers() {
         $this->_registerDataLayer();
+        $this->_registerRepresentationLayer();
         $this->_registerControllerLayer();
         $this->_registerCommunicationLayer();
         $this->_registerQueryLayer();
@@ -115,7 +116,6 @@ class Application implements LayerRoot {
     protected function _registerRepresentationLayer() {
         /** @var \Sm\Representation\RepresentationLayer $representationLayer */
         $representationLayer = (new RepresentationLayer)->setRoot($this);
-        $representationLayer->registerModule(new TwigViewModule);
         $this->layerContainer->register(RepresentationLayer::LAYER_NAME, $representationLayer);
     }
     protected function _registerControllerLayer() {
@@ -157,6 +157,7 @@ class Application implements LayerRoot {
             case QueryLayer::LAYER_NAME:
             case ControllerLayer::LAYER_NAME:
             case DataLayer::LAYER_NAME:
+            case RepresentationLayer::LAYER_NAME:
                 return $this->layerContainer->resolve($name);
             case'path':
                 return $this->root_path;

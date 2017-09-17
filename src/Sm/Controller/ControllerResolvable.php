@@ -5,14 +5,13 @@ namespace Sm\Controller;
 
 
 use Sm\Core\Resolvable\AbstractResolvable;
+use Sm\Core\Resolvable\Error\UnresolvableException;
 
 class ControllerResolvable extends AbstractResolvable {
     /** @var  ControllerLayer $controllerLayer */
     protected $controllerLayer;
     public function resolveController_default() {
-        var_dump($this->subject);
-        var_dump(...func_get_args());
-        return 'hello';
+        throw new UnresolvableException("Can't get a controller without a controller layer!");
     }
     public function getControllerLayer():?ControllerLayer {
         return $this->controllerLayer;
