@@ -18,6 +18,7 @@ use Sm\Data\DataLayer;
 use Sm\Query\Modules\Sql\MySql\Authentication\MySqlAuthentication;
 use Sm\Query\Modules\Sql\MySql\Module\MySqlQueryModule;
 use Sm\Query\QueryLayer;
+use Sm\Representation\Module\Twig\TwigViewModule;
 use Sm\Representation\RepresentationLayer;
 
 /**
@@ -116,6 +117,7 @@ class Application implements LayerRoot {
     protected function _registerRepresentationLayer() {
         /** @var \Sm\Representation\RepresentationLayer $representationLayer */
         $representationLayer = (new RepresentationLayer)->setRoot($this);
+        $representationLayer->registerModule(new TwigViewModule);
         $this->layerContainer->register(RepresentationLayer::LAYER_NAME, $representationLayer);
     }
     protected function _registerControllerLayer() {
