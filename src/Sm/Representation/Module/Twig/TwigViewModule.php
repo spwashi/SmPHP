@@ -3,7 +3,6 @@
 
 namespace Sm\Representation\Module\Twig;
 
-use Sm\Core\Context\Context;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Representation\Module\RepresentationModule;
 use Sm\Representation\Module\Twig\Exception\MissingEnvironmentException;
@@ -45,12 +44,14 @@ class TwigViewModule extends RepresentationModule {
                  * #todo
                  *
                  */
-                function ($item = null, $context = null) use ($twigViewModule) {
-                    $twigEnvironment = $twigViewModule->getTwigEnvironment($context);
-                    $view            = TwigView::init()->setItem($item)->setTwigEnvironment($twigEnvironment);
-                    
-                    
-                    return ViewProxy::init($view, $context);
+                function ($item = null, $vars = []) {
+                    $twigEnvironment = $this->getTwigEnvironment();
+                    $view            = TwigView::init()
+                                               ->setItem($item)
+                                               ->setTwigEnvironment($twigEnvironment);
+        
+        
+                    return ViewProxy::init($view, $this->representationContext);
                 },
             ]);
         
@@ -59,13 +60,11 @@ class TwigViewModule extends RepresentationModule {
     /**
      * Get the TwigEnvironment that we are going to use within some Context
      *
-     * @param \Sm\Core\Context\Context $context
-     *
      * @return \Twig_Environment
      * @throws \Sm\Core\Exception\UnimplementedError
      * @throws \Sm\Representation\Module\Twig\Exception\MissingEnvironmentException
      */
-    protected function getTwigEnvironment(Context $context = null): \Twig_Environment {
+    protected function getTwigEnvironment(): \Twig_Environment {
         if (isset($this->twigEnvironments)) throw new UnimplementedError("Can't get twig environments yet");
         
         if (!isset($this->_defaultTwigEnvironment)) throw new MissingEnvironmentException("There is no available Twig Environment by default");

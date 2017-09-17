@@ -23,6 +23,8 @@ use Sm\Representation\RepresentationLayer;
 abstract class RepresentationModule extends LayerModule {
     /** @var  \Sm\Representation\Factory\RepresentationFactory $representationFactory */
     protected $representationFactory;
+    /** @var  RepresentationContext $representationContext The context in which we are representing something */
+    protected $representationContext;
     
     
     public function __construct() {
@@ -43,15 +45,14 @@ abstract class RepresentationModule extends LayerModule {
     /**
      * Create a representation of this item based on some sort of representation context
      *
-     * @param                                                  $item
-     * @param \Sm\Representation\Context\RepresentationContext $representationContext The context in which we are representing this item. #todo is there only one?
-     *
-     * @return mixed|null|\Sm\Representation\Representation
+     * @return \Sm\Representation\Representation
      * @throws \Sm\Representation\Exception\CannotRepresentException
+     * @internal param $item
+     *
      */
-    public function represent($item, RepresentationContext $representationContext = null): Representation {
+    public function represent(): Representation {
         try {
-            return $this->representationFactory->resolve($item, $representationContext);
+            return $this->representationFactory->resolve(...func_get_args());
         } catch (FactoryCannotBuildException $exception) {
             throw new CannotRepresentException("There is no way to represent this item -- " . Util::getShape($item));
         }
@@ -67,6 +68,17 @@ abstract class RepresentationModule extends LayerModule {
      */
     public function registerRepresentationResolvers(array $resolvers) {
         $this->representationFactory->register($resolvers);
+        return $this;
+    }
+    /**
+     * Set the context in which we are going to be representing things
+     *
+     * @param \Sm\Representation\Context\RepresentationContext $representationContext
+     *
+     * @return $this
+     */
+    public function setRepresentationContext(RepresentationContext $representationContext) {
+        $this->representationContext = $representationContext;
         return $this;
     }
 }

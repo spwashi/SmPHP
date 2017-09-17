@@ -23,7 +23,6 @@ class HelloController {
     }
     public function test(RequestContext $r) {
         $thing = $r->getRequest();
-        var_dump($thing);
         return 'here.test123';
     }
 }

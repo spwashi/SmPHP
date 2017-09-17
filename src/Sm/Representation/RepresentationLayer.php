@@ -21,6 +21,8 @@ class RepresentationLayer extends StandardLayer {
     protected $representationFactory;
     /** @var array $representation_module_names An array of the names of Modules that we've made */
     protected $representation_module_names = [];
+    /** @var  RepresentationContext $representationContext The context in which we are going to be representing something */
+    protected $representationContext;
     
     
     /**
@@ -51,15 +53,12 @@ class RepresentationLayer extends StandardLayer {
     
     
     /**
-     * Create a representation
-     *
-     * @param mixed                                                 $item                  The item that we want to represent
-     * @param \Sm\Representation\Context\RepresentationContext|null $representationContext The context in which we are representing it
+     * Create a representation of whatever we pass in
      *
      * @return \Sm\Representation\Representation
      * @throws \Sm\Representation\Exception\CannotRepresentException
      */
-    public function represent($item, RepresentationContext $representationContext = null): Representation {
+    public function represent(): Representation {
         $modules_from_end = array_reverse($this->representation_module_names, true);
         $modules          = $this->getModuleContainer();
         
@@ -67,7 +66,10 @@ class RepresentationLayer extends StandardLayer {
             /** @var RepresentationModule $representationModule */
             $representationModule = $modules->{$module_name};
             try {
-                $result = $representationModule->represent($item, $representationContext);
+                if (isset($this->representationContext)) {
+                    $representationModule->setRepresentationContext($this->representationContext);
+                }
+                $result = $representationModule->represent(...func_get_args());
                 return $result;
             } catch (CannotRepresentException $exception) {
             }
@@ -79,13 +81,12 @@ class RepresentationLayer extends StandardLayer {
      * Represent something and Render it
      *
      * @param                                                       $item
-     * @param \Sm\Representation\Context\RepresentationContext|null $representationContext
      *
      * @return string
      * @throws \Sm\Core\Exception\UnimplementedError
      */
-    public function render($item, RepresentationContext $representationContext = null): string {
-        $representation = $this->represent($item, $representationContext);
+    public function render($item): string {
+        $representation = $this->represent($item);
         if ($representation instanceof ViewProxy) {
             return $representation->render();
         } else if (Util::canBeString($representation)) {
@@ -93,5 +94,14 @@ class RepresentationLayer extends StandardLayer {
         } else {
             throw new UnimplementedError("No stringifiable representation interface");
         }
+    }
+    /**
+     * @param RepresentationContext $representationContext
+     *
+     * @return RepresentationLayer
+     */
+    public function setRepresentationContext(RepresentationContext $representationContext) {
+        $this->representationContext = $representationContext;
+        return $this;
     }
 }

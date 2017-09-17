@@ -4,7 +4,6 @@
 namespace Sm\Representation\View;
 
 
-use Sm\Core\Context\Context;
 use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
 use Sm\Representation\Representation;
 
