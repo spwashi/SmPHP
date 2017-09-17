@@ -39,15 +39,15 @@ class TwigViewModule extends RepresentationModule {
         $this->registerRepresentationResolvers(
             [
                 /**
-                 * Typical Twig View renderer.
-                 * Doesn't have an index in this array because we want to run it as a (kind of) last resort as it is the most general
-                 * #todo
-                 *
+                 * @param string $string The name of the template. Just to get very basic templating going
+                 * @param array  $vars   An object/array of variables that are going to go into the View as variables
                  */
-                function ($item = null, $vars = []) {
+                function ($string = null, $vars = []) {
+                    if (!is_string($string)) return null;
                     $twigEnvironment = $this->getTwigEnvironment();
                     $view            = TwigView::init()
-                                               ->setItem($item)
+                                               ->setTwigTemplate($string)
+                                               ->setItem($vars)
                                                ->setTwigEnvironment($twigEnvironment);
         
         

@@ -19,6 +19,7 @@ use Sm\Representation\View\View;
 class TwigView extends View {
     /** @var  mixed $item The thing we're rendering */
     protected $item;
+    protected $template;
     /** @var  \Twig_Environment $twigEnvironment */
     private $twigEnvironment;
     #
@@ -71,15 +72,19 @@ class TwigView extends View {
         
         if (!isset($item)) return [];
         if (is_string($item)) return static::getTemplateValueArrayFromString($item);
-        
-        throw new UnimplementedError("Cannot yet get the item's variables for rendering this template");
+    
+        return $item;
     }
     
     #
     ##  Templating
+    public function setTwigTemplate(string $twig_template) {
+        $this->template = $twig_template;
+        return $this;
+    }
     protected function getTwigTemplate(): string {
-        return 'test.twig';
-        throw new UnimplementedError("Cannot yet get the item's template");
+        if (isset($this->template)) return $this->template;
+        throw new UnimplementedError("Can't find templates for this yet");
     }
     /**
      * Convert a string into an array of variables suitable for this template
