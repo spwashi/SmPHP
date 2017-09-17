@@ -11,6 +11,7 @@ define('TEST_AUTOLOAD_FILE', SM_TEST_PATH . 'config/autoload.php');
 # Src
 define('SRC_PATH', BASE_PATH . 'src/');
 define('SM_PATH', SRC_PATH . 'Sm/');
+define('SM_VENDOR_AUTOLOAD', BASE_PATH . 'vendor/autoload.php');
 
 # Logging
 define('SYSTEM_LOG_PATH', BASE_PATH . 'logs/');
@@ -18,3 +19,4 @@ define('SYSTEM_LOG_PATH', BASE_PATH . 'logs/');
 # Autoloading
 require_once SM_PATH . 'config/autoload.php';      # Autoloads typical classes
 if (file_exists(TEST_AUTOLOAD_FILE)) require_once TEST_AUTOLOAD_FILE;# Autoloads testing files
+if (file_exists(SM_VENDOR_AUTOLOAD)) require_once SM_VENDOR_AUTOLOAD;# Autoloads testing files

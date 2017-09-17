@@ -117,7 +117,6 @@ class Application implements LayerRoot {
     protected function _registerRepresentationLayer() {
         /** @var \Sm\Representation\RepresentationLayer $representationLayer */
         $representationLayer = (new RepresentationLayer)->setRoot($this);
-        $representationLayer->registerModule(new TwigViewModule);
         $this->layerContainer->register(RepresentationLayer::LAYER_NAME, $representationLayer);
     }
     protected function _registerControllerLayer() {
