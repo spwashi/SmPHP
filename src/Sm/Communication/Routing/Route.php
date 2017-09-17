@@ -152,17 +152,17 @@ class Route extends FunctionResolvable {
      */
     protected function standardizeResolution($resolution) {
         if (is_string($resolution) && strpos($resolution, '::') !== false) {
-            
+            $self          = $this;
             $resolveMethod =
-                function ($Request = null) use ($resolution) {
+                function ($Request = null) use ($resolution, $self) {
                     $resolution_expl = explode('::', $resolution);
                     $class_name      = $resolution_expl[0];
                     $method_name     = $resolution_expl[1] ?? null;
                     
                     # If the class doesn't have the requested method, skip it
-                    if ((!$class_name || !$method_name) || !class_exists($class_name) || !method_exists($class_name, $method_name)) {
-                        throw new UnresolvableException("Malformed method- {$class_name}::{$method_name}");
-                    }
+        
+        
+                    $self->checkClassMethod($class_name, $method_name);
                     
                     $resolution = [ new $class_name, $method_name, ];
                     return FunctionResolvable::init($resolution)->resolve(...func_get_args());
@@ -173,6 +173,15 @@ class Route extends FunctionResolvable {
             $resolution = ResolvableFactory::init()->build($resolution);
         }
         return $resolution;
+    }
+    private function checkClassMethod($class_name, $method_name) {
+        if (!$class_name || !$method_name) {
+            throw new UnresolvableException("Incomplete definition");
+        } else if (!class_exists($class_name)) {
+            throw new UnresolvableException("No class");
+        } else if (!method_exists($class_name, $method_name)) {
+            throw new UnresolvableException("Malformed method- {$class_name}::{$method_name}");
+        }
     }
     /**
      * @param array $parameters
