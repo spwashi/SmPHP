@@ -9,8 +9,8 @@ namespace Sm\Core;
 
 
 class Util {
-    const ALPHA     = 'abcdefghijjlmnopqrstuvwkyz';
-    const ALPHA_ALL = 'abcdefghijjlmnopqrstuvwkyzABCDEFGHIJJLMNOPQRSTUVWKYZ';
+    const ALPHA     = 'abcdefghijklmnopqrstuvwxyz';
+    const ALPHA_ALL = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     
     /**
      * Return a string representing the general structure of the item as a pipe-delimited string
@@ -32,7 +32,7 @@ class Util {
             foreach ($result as $item) {
                 $string .= static::getShape($item) . '|';
             }
-        
+    
             $string = trim($string, '|');
             $string .= ']';
             return $string;
@@ -48,6 +48,9 @@ class Util {
      */
     public static function canBeString($var) {
         return $var === null || is_scalar($var) || is_callable([ $var, '__toString' ]);
+    }
+    public static function endsWith(string $haystack, string $needle) {
+        return $needle === '' || substr_compare($haystack, $needle, -strlen($needle)) === 0;
     }
     /**
      * Get a string with just the characters of the alphabet
@@ -155,7 +158,7 @@ class Util {
             if ($i > $max_len || $i - $level >= $count) {
                 continue;
             }
-            $end[] = $s = array_filter($repl_item, function ($r) { return !!($r??false); });
+            $end[] = $s = array_filter($repl_item, function ($r) { return !!($r ?? false); });
         }
         $end = array_reverse($end);
         if ($count === 1) {

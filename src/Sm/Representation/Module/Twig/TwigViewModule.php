@@ -4,6 +4,7 @@
 namespace Sm\Representation\Module\Twig;
 
 use Sm\Core\Exception\UnimplementedError;
+use Sm\Core\Util;
 use Sm\Representation\Module\RepresentationModule;
 use Sm\Representation\Module\Twig\Exception\MissingEnvironmentException;
 use Sm\Representation\View\Proxy\ViewProxy;
@@ -43,14 +44,16 @@ class TwigViewModule extends RepresentationModule {
                  * @param array  $vars   An object/array of variables that are going to go into the View as variables
                  */
                 function ($string = null, $vars = []) {
-                    if (!is_string($string)) return null;
+                    # Only for function calls that are like 'twig_template_name.twig', $vars
+                    if (!is_string($string) && Util::endsWith($string, '.twig')) return null;
+                    
                     $twigEnvironment = $this->getTwigEnvironment();
                     $view            = TwigView::init()
                                                ->setTwigTemplate($string)
                                                ->setItem($vars)
                                                ->setTwigEnvironment($twigEnvironment);
-        
-        
+    
+    
                     return ViewProxy::init($view, $this->representationContext);
                 },
             ]);
