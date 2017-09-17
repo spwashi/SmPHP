@@ -29,6 +29,7 @@ class Route extends FunctionResolvable {
     protected $pattern;
     /** @var  \Sm\Communication\Request\RequestDescriptor $requestDescriptor */
     protected $requestDescriptor;
+    /** @var array An array pf */
     protected $parameters = [];
     
     ####################################################
@@ -172,5 +173,14 @@ class Route extends FunctionResolvable {
             $resolution = ResolvableFactory::init()->build($resolution);
         }
         return $resolution;
+    }
+    /**
+     * @param array $parameters
+     *
+     * @return Route
+     */
+    public function setParameters(array $parameters): Route {
+        $this->parameters = $parameters;
+        return $this;
     }
 }

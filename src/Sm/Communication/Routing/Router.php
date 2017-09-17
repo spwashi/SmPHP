@@ -56,6 +56,7 @@ class Router implements Registry {
      * @param null        $registrand
      *
      * @return $this
+     * @throws \Sm\Communication\Routing\MalformedRouteException
      * @throws \Sm\Core\Exception\InvalidArgumentException
      */
     public function register($name = null, $registrand = null) {
@@ -66,11 +67,7 @@ class Router implements Registry {
             $resolution = $pattern = null;
             
             if (is_array($registrand)) {
-                # allow us to register routes like [ 'pattern'=> 'resolution']
-                if (count($registrand) === 1) {
-                    $pattern    = key($registrand);
-                    $resolution = $registrand[ $pattern ];
-                }
+                static::getRouteCreationVariables__array($registrand, $name, $pattern, $resolution);
             } else if ($registrand instanceof Resolvable) {
                 $resolution = $registrand;
             }
@@ -101,6 +98,16 @@ class Router implements Registry {
         }
         return $matching_route;
     }
+    /**
+     * Resolve a Route based on the name of the route
+     *
+     * @param $name
+     *
+     * @return mixed
+     */
+    public function resolveName(string $name) {
+        return $this->resolve(NamedRequest::init()->setName($name));
+    }
     public function resolve(Request $request = null) {
         if (!$request) {
             throw new UnimplementedError("Can only deal with requests");
@@ -114,12 +121,39 @@ class Router implements Registry {
         }
         
         if (isset($matching_route)) {
-            $routeResolution = RequestContext::init($request);
-            return $matching_route->resolve($request, $routeResolution);
+            $routeResolutionContext = RequestContext::init($request);
+            return $matching_route->resolve($request, $routeResolutionContext);
         }
         
         
         $json_request = json_encode($request);
         throw new RouteNotFoundException("No matching routes for {$json_request}");
+    }
+    /**
+     * @param $registrand
+     * @param $name
+     * @param $pattern
+     * @param $resolution
+     *
+     * @throws \Sm\Communication\Routing\MalformedRouteException
+     */
+    private static function getRouteCreationVariables__array($registrand, &$name, &$pattern, &$resolution): void {
+# allow us to register routes like [ 'pattern'=> 'resolution']
+        if (count($registrand) === 1) {
+            $pattern    = key($registrand);
+            $resolution = $registrand[ $pattern ];
+        } else if (isset($registrand['resolution'])) {
+            
+            # allow us to register routes like [ 'pattern' => '...', 'resolution' => ..., 'name' => ... ]
+            
+            if (!isset($registrand['pattern']) && !isset($registrand['name'])) {
+                throw new MalformedRouteException("Cannot register a resolution without a name or pattern to go with it");
+            }
+            
+            $name       = $registrand['name'] ?? null;
+            $resolution = $registrand['resolution'] ?? null;
+            $pattern    = $registrand['pattern'] ?? null;
+            
+        }
     }
 }

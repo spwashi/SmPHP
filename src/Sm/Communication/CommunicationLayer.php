@@ -147,6 +147,8 @@ class CommunicationLayer extends StandardLayer {
     /**
      * Given a request, return the proper response
      *
+     * If the request is a string, this navigates to the Routing Mo
+     *
      * @todo should return Response, accept Request
      *
      * @param $request
@@ -155,8 +157,10 @@ class CommunicationLayer extends StandardLayer {
      * @throws \Sm\Core\Context\Layer\Module\Exception\MissingModuleException
      */
     public function route($request) {
-        if ($request === static::ROUTE_RESOLVE_REQUEST) $request = $this->resolveRequest();
-        else if (is_string($request)) {
+        # If we want to resolve the Request from the Environment, do that here
+        if ($request === static::ROUTE_RESOLVE_REQUEST) {
+            $request = $this->resolveRequest();
+        } else if (is_string($request)) {
             $request = NamedRequest::init()->setName($request);
         }
         $routingModule = $this->getRoutingModule();

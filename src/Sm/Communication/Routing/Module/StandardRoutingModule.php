@@ -31,6 +31,19 @@ class StandardRoutingModule extends LayerModule implements RoutingModule {
         $router = $this->getRouter($layerProxy);
         return $router->resolve($request);
     }
+    /**
+     * Return the Route belonging to a certain name
+     *
+     * @param                                   $name
+     * @param \Sm\Core\Context\Layer\Layer|null $layerProxy
+     *
+     * @return Route
+     */
+    public function routeNamed($name, Layer $layerProxy = null) {
+        /** @var Router $router */
+        $router = $this->getRouter($layerProxy);
+        return $router->resolveName($name);
+    }
     protected function _initialize(Layer $layer = null) {
         $this->setRouter($layer, new Router);
         $route = new Route(function () { var_dump('HTHTHT'); }, 'Smd');
