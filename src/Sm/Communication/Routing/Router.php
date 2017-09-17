@@ -84,7 +84,14 @@ class Router implements Registry {
         }
         return $this;
     }
-    protected function _getRouteFromName($name): ?Route {
+    /**
+     * Get a route identified by some sort of name
+     *
+     * @param $name
+     *
+     * @return null|\Sm\Communication\Routing\Route
+     */
+    public function getNamed($name): ?Route {
         return $this->routes[ $name ] ?? null;
     }
     protected function _getRouteFromRequest(Request $request):?Route {
@@ -115,7 +122,7 @@ class Router implements Registry {
         
         /** @var \Sm\Communication\Routing\Route $matching_route */
         if ($request instanceof NamedRequest) {
-            $matching_route = $this->_getRouteFromName($request->getName());
+            $matching_route = $this->getNamed($request->getName());
         } else {
             $matching_route = $this->_getRouteFromRequest($request);
         }

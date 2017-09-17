@@ -9,11 +9,14 @@ namespace Sm\Communication\Routing\Module;
 
 
 use Sm\Communication\Request\Request;
+use Sm\Communication\Request\RequestDescriptor;
+use Sm\Communication\Routing\Exception\RouteNotFoundException;
 use Sm\Communication\Routing\Route;
 use Sm\Communication\Routing\Router;
 use Sm\Core\Context\Context;
 use Sm\Core\Context\Layer\Layer;
 use Sm\Core\Context\Layer\Module\LayerModule;
+use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Module\ModuleProxy;
 
 class StandardRoutingModule extends LayerModule implements RoutingModule {
@@ -21,12 +24,33 @@ class StandardRoutingModule extends LayerModule implements RoutingModule {
         foreach ($routes as $route_name => $route) {
             $this->getRouter($layerProxy)->register($route_name, $route);
         }
+        return $this;
     }
     
     public function registerRoutes($routes, Layer $layerProxy = null) {
         $this->getRouter($layerProxy)->registerBatch($routes);
+        return $this;
     }
-    
+    /**
+     * Describe a route
+     *
+     * @param                                   $route_or_name
+     * @param \Sm\Core\Context\Layer\Layer|null $layerProxy
+     *
+     * @return \Sm\Communication\Request\RequestDescriptor
+     * @throws \Sm\Communication\Routing\Exception\RouteNotFoundException
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     */
+    public function describe($route_or_name, Layer $layerProxy = null): RequestDescriptor {
+        if ($route_or_name instanceof Route) $route = $route_or_name;
+        else if (is_string($route_or_name)) $route = $this->getRouter($layerProxy)->getNamed($route_or_name);
+        else throw new InvalidArgumentException("Can only accept strings or routes");
+        
+        if (!isset($route)) throw new RouteNotFoundException("Cannot find route with name '{$route_or_name}'");
+        
+        # Maybe we should check to see if this route is in this router? probably not...
+        return $route->getRequestDescriptor();
+    }
     public function route(Request $request, Layer $layerProxy = null) {
         /** @var Router $router */
         $router = $this->getRouter($layerProxy);

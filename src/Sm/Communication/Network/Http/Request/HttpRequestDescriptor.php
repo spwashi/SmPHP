@@ -12,10 +12,13 @@ use Sm\Communication\Request\Request;
 use Sm\Communication\Request\RequestDescriptor;
 use Sm\Core\Context\Exception\InvalidContextException;
 use Sm\Core\Exception\InvalidArgumentException;
+use Sm\Core\Exception\UnimplementedError;
+use Sm\Core\Util;
 
 class HttpRequestDescriptor extends RequestDescriptor {
     protected $matching_context_classes = [ HttpRequest::class ];
     protected $url_path_pattern;
+    protected $original_url_path;
     /** @var array These are the things that we want to identify as a parameter to the Route (made available to the route) */
     protected $argument_names = [];
     
@@ -53,10 +56,37 @@ class HttpRequestDescriptor extends RequestDescriptor {
      * @return $this
      */
     public function setMatchingUrlPattern($url_path_pattern) {
+        $this->original_url_path = $url_path_pattern;
         $this->setStringPattern($url_path_pattern);
         return $this;
     }
-    public function getArguments(Request $request) {
+    
+    /**
+     * Create a URL path from this provided some arguments
+     *
+     * @param $arguments
+     *
+     * @return string
+     */
+    public function asUrlPath($arguments = null): string {
+        $this->checkHttpRequestArguments($arguments);
+        $argument_names = $this->argument_names;
+        $expl           = explode('/',
+                                  ltrim(trim($this->original_url_path, '/'), '/'));
+        $end_url_arr    = [];
+        foreach ($expl as $url_part) {
+            if (($url_part[0] ?? 0) === '{') { #  This is an argument to the URL
+                $_arg_name     = array_shift($argument_names);
+                $end_url_arr[] = $this->getArgumentForUrl($_arg_name, $arguments);
+            } else {
+                $end_url_arr[] = $url_part;
+            }
+        }
+        
+        return '/' . implode('/', $end_url_arr);
+    }
+    public function getArguments(Request $request = null) {
+        if (empty($this->argument_names)) return [];
         if (!($request instanceof HttpRequest)) throw new InvalidArgumentException("Expected an HttpRequest");
         
         return $this->getArgumentsFromUrlPathString($request->getUrlPath());
@@ -98,8 +128,8 @@ class HttpRequestDescriptor extends RequestDescriptor {
                 
                 # Add the parameter name to the list of parameters so we can get the matches in order
                 $this->argument_names[] = $parameter_name;
-                
-                # We only want the regex
+    
+                # We only want the regex, default to alpha or underscore followed by anything (because these might be methods?)
                 $url_pattern_segment = !empty($match_container_arr[2]) ? $match_container_arr[2] : '[a-zA-Z_]+[a-zA-Z_\d]*';
                 
                 # Wrap it in parentheses so we can get the value
@@ -179,5 +209,41 @@ class HttpRequestDescriptor extends RequestDescriptor {
         
         # If there is anything else in the "matches" array, also include that. Not sure why #todo
         return array_merge($arguments, $matches);
+    }
+    /**
+     * Check to make sure the arguments that we are using to create a URL are going to work
+     *
+     * @param $arguments
+     *
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     */
+    protected function checkHttpRequestArguments($arguments) {
+        if (!is_array($arguments)) throw new InvalidArgumentException("Can only accept associative arrays");
+        foreach ($this->argument_names as $argument_name) {
+            if (!isset($arguments[ $argument_name ])) throw new InvalidArgumentException("Missing {$argument_name} from request");
+        }
+    }
+    /**
+     * Get an argument name from a provided variable of arguments that we are going to inject into the URL we're creating
+     *
+     * @param $_arg_name
+     * @param $arguments
+     *
+     * @return string
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     * @throws \Sm\Core\Exception\UnimplementedError
+     */
+    protected function getArgumentForUrl($_arg_name, $arguments): string {
+        
+        if (!isset($_arg_name)) throw new InvalidArgumentException("No argument name was provided!");
+        
+        # Right now only associative arrays work
+        if (is_array($arguments) && isset($arguments[ $_arg_name ])) {
+            $arg = $arguments[ $_arg_name ];
+            if (!Util::canBeString($arg)) throw new UnimplementedError("Cannot get Arguments from " . Util::getShape($arg));
+            return $arg;
+        }
+        
+        throw new UnimplementedError("Can only get arguments from a string");
     }
 }

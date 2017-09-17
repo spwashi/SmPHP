@@ -163,9 +163,7 @@ class CommunicationLayer extends StandardLayer {
         } else if (is_string($request)) {
             $request = NamedRequest::init()->setName($request);
         }
-        $routingModule = $this->getRoutingModule();
-        if (!$routingModule) throw new MissingModuleException("Missing a Routing Module");
-        return $routingModule->route($request);
+        return $this->getRoutingModule()->route($request);
     }
     /**
      * Given a response, send it to where it needs to go.
@@ -177,6 +175,9 @@ class CommunicationLayer extends StandardLayer {
      */
     public function dispatch($type, $response) {
         return $this->responseDispatcher->resolve($type, $response);
+    }
+    public function describe(string $name) {
+        return $this->getRoutingModule()->describe($name);
     }
     
     ####################################################

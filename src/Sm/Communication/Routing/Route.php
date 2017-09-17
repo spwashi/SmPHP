@@ -27,7 +27,7 @@ class Route extends FunctionResolvable {
     /** @var  AbstractResolvable $subject */
     protected $subject;
     protected $pattern;
-    /** @var  \Sm\Communication\Request\RequestDescriptor $requestDescriptor */
+    /** @var  RequestDescriptor $requestDescriptor */
     protected $requestDescriptor;
     /** @var array An array pf */
     protected $parameters = [];
@@ -131,10 +131,13 @@ class Route extends FunctionResolvable {
         $this->backupResolvable = $DefaultResolvable;
         return $this;
     }
+    public function getRequestDescriptor(): RequestDescriptor {
+        return $this->requestDescriptor;
+    }
     /**
      * Set the Descriptor we'll use to see if a Request matches
      *
-     * @param \Sm\Communication\Request\RequestDescriptor $requestDescriptor
+     * @param RequestDescriptor $requestDescriptor
      *
      * @return $this
      * @throws \Sm\Core\Exception\UnimplementedError

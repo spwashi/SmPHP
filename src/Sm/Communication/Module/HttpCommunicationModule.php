@@ -41,10 +41,11 @@ class HttpCommunicationModule extends CommunicationModule {
             Http::class =>
                 function ($result) {
                     if (!($result instanceof HttpResponse)) {
-                        $result = HttpResponse::init()
-                                              ->setBody(StringResolvable::init($result));
+                        $result = HttpResponse::init()->setBody(StringResolvable::init($result));
                     }
+    
                     $result->makeHeaders();
+    
                     echo $result->getBody();
                 },
         ];
