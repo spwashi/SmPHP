@@ -98,10 +98,6 @@ class CommunicationLayer extends StandardLayer {
             $this->normalizeResolution($resolution);
         }
     
-        echo '<pre>';
-        print_r($routes);
-        echo '</pre>';
-    
         return $this->getRoutingModule()
                     ->registerRoutes($routes);
     }
