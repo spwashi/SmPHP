@@ -97,9 +97,13 @@ class CommunicationLayer extends StandardLayer {
         foreach ($routes as $pattern => &$resolution) {
             $this->normalizeResolution($resolution);
         }
-        
-        
-        return $this->getRoutingModule()->registerRoutes($routes);
+    
+        echo '<pre>';
+        print_r($routes);
+        echo '</pre>';
+    
+        return $this->getRoutingModule()
+                    ->registerRoutes($routes);
     }
     /**
      * Register routes in an array, but instead of being indexed by route pattern,
@@ -224,6 +228,7 @@ class CommunicationLayer extends StandardLayer {
             }
         }
         $layerRoot = $this->layerRoot;
+    
         if (!isset($layerRoot)) return;
         
         # if there aren't any method-indicating functions, there's nothing to do with the controller
