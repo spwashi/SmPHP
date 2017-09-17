@@ -26,6 +26,7 @@ class StandardRoutingModule extends LayerModule implements RoutingModule {
     public function registerRoutes($routes, Layer $layerProxy = null) {
         $this->getRouter($layerProxy)->registerBatch($routes);
     }
+    
     public function route(Request $request, Layer $layerProxy = null) {
         /** @var Router $router */
         $router = $this->getRouter($layerProxy);

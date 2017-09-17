@@ -47,7 +47,9 @@ class RoutingModuleTest extends \PHPUnit_Framework_TestCase {
         $this->communicationLayer = $layer->registerRoutingModule($routingModule);
     }
     public function testCanRegisterRoutes() {
-        $this->communicationLayer->registerRoutes([ 'test' => StringResolvable::init(123) ]);
+        $this->communicationLayer->registerRoutes([
+                                                      [ 'test' => StringResolvable::init(123) ],
+                                                  ]);
         $resp = $this->communicationLayer->route(HttpRequest::init('test'));
         $this->assertEquals('123', $resp);
         $this->expectException(RouteNotFoundException::class);
