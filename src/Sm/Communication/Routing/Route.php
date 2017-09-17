@@ -160,8 +160,8 @@ class Route extends FunctionResolvable {
                     $method_name     = $resolution_expl[1] ?? null;
                     
                     # If the class doesn't have the requested method, skip it
-        
-        
+    
+    
                     $self->checkClassMethod($class_name, $method_name);
                     
                     $resolution = [ new $class_name, $method_name, ];
@@ -178,9 +178,9 @@ class Route extends FunctionResolvable {
         if (!$class_name || !$method_name) {
             throw new UnresolvableException("Incomplete definition");
         } else if (!class_exists($class_name)) {
-            throw new UnresolvableException("No class");
+            throw new UnresolvableException("No class {$class_name}");
         } else if (!method_exists($class_name, $method_name)) {
-            throw new UnresolvableException("Malformed method- {$class_name}::{$method_name}");
+            throw new UnresolvableException("Method '{$method_name}' not found on '{$class_name}'");
         }
     }
     /**
