@@ -45,7 +45,7 @@ class TwigViewModule extends RepresentationModule {
                  */
                 function ($string = null, $vars = []) {
                     # Only for function calls that are like 'twig_template_name.twig', $vars
-                    if (!is_string($string) && Util::endsWith($string, '.twig')) return null;
+                    if (!(is_string($string) && Util::endsWith($string, '.twig'))) return null;
                     
                     $twigEnvironment = $this->getTwigEnvironment();
                     $view            = TwigView::init()

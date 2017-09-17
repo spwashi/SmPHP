@@ -54,7 +54,7 @@ abstract class RepresentationModule extends LayerModule {
         try {
             return $this->representationFactory->resolve(...func_get_args());
         } catch (FactoryCannotBuildException $exception) {
-            throw new CannotRepresentException("There is no way to represent this item -- " . Util::getShape($item));
+            throw new CannotRepresentException("There is no way to represent this item -- " . Util::getShape(...func_get_args()));
         }
     }
     
