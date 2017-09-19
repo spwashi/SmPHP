@@ -37,12 +37,15 @@ abstract class StandardLayer extends StandardContext implements Layer {
     public function __construct() {
         parent::__construct();
     }
+    public static function init() {
+        return new static;
+    }
     /**
      * Initialize the Layer on the LayerRoot provided
      *
      * @param LayerRoot $layerRoot
      *
-     * @return mixed
+     * @return $this
      */
     public function setRoot(LayerRoot $layerRoot) {
         $this->layerRoot = $layerRoot;

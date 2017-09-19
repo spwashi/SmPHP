@@ -36,18 +36,17 @@ class Route extends FunctionResolvable {
     #   Initializers
     ####################################################
     public function __construct($resolution, $requestDescriptor = null, $backup = null) {
-        if (!isset($requestDescriptor)) $requestDescriptor = new RequestDescriptor;
-        
         if ($requestDescriptor instanceof RequestDescriptor) {
             $this->setRequestDescriptor($requestDescriptor);
         } else if (class_exists(HttpRequestDescriptor::class) && is_scalar($requestDescriptor)) {
             $this->setRequestDescriptor(new HttpRequestDescriptor($requestDescriptor));
-        } else {
+        } else if (isset($requestDescriptor)) {
             # Trying to register something that isn't a string (when we have the Http module) and isn't a RequestDescriptor
             throw new UnimplementedError("Cannot accept RequestDescriptors that aren't RequestDescriptors ");
         }
         
         if ($backup instanceof Resolvable) $this->setBackup($backup);
+    
         /** @var Resolvable $resolution */
         $resolution = $this->standardizeResolution($resolution);
         parent::__construct($resolution);
@@ -76,6 +75,7 @@ class Route extends FunctionResolvable {
      */
     public function matches(Request $request) {
         try {
+            if (!isset($this->requestDescriptor)) return false;
             $this->requestDescriptor->compare($request);
         } catch (Exception $e) {
             return false;
@@ -131,7 +131,7 @@ class Route extends FunctionResolvable {
         $this->backupResolvable = $DefaultResolvable;
         return $this;
     }
-    public function getRequestDescriptor(): RequestDescriptor {
+    public function getRequestDescriptor(): ?RequestDescriptor {
         return $this->requestDescriptor;
     }
     /**

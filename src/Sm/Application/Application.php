@@ -18,7 +18,6 @@ use Sm\Data\DataLayer;
 use Sm\Query\Modules\Sql\MySql\Authentication\MySqlAuthentication;
 use Sm\Query\Modules\Sql\MySql\Module\MySqlQueryModule;
 use Sm\Query\QueryLayer;
-use Sm\Representation\Module\Twig\TwigViewModule;
 use Sm\Representation\RepresentationLayer;
 
 /**
@@ -80,7 +79,8 @@ class Application implements LayerRoot {
         return $this;
     }
     
-    # region Configuration
+    #
+    ##  Configuration
     /**
      * Configure the Application using the path set on it based on the root path.
      *
@@ -101,9 +101,10 @@ class Application implements LayerRoot {
         $configuration = json_decode($config_json_str, true);
         $this->data->configure($configuration);
     }
-    # endregion
     
-    # region Layer Management
+    
+    #
+    ##  Layer Management
     protected function initLayers() {
         $this->_registerDataLayer();
         $this->_registerRepresentationLayer();
@@ -112,22 +113,23 @@ class Application implements LayerRoot {
         $this->_registerQueryLayer();
     }
     protected function _registerDataLayer() {
-        $this->layerContainer->register(DataLayer::LAYER_NAME, (new DataLayer)->setRoot($this));
+        $this->layerContainer->register(DataLayer::LAYER_NAME, DataLayer::init()->setRoot($this));
     }
     protected function _registerRepresentationLayer() {
         /** @var \Sm\Representation\RepresentationLayer $representationLayer */
-        $representationLayer = (new RepresentationLayer)->setRoot($this);
+        $representationLayer = RepresentationLayer::init()->setRoot($this);
+        #------------------------------------------------------------------------
         $this->layerContainer->register(RepresentationLayer::LAYER_NAME, $representationLayer);
     }
     protected function _registerControllerLayer() {
         $this->layerContainer->register(ControllerLayer::LAYER_NAME, (new ControllerLayer)->setRoot($this));
     }
     protected function _registerCommunicationLayer() {
-        $routingModule = new StandardRoutingModule;
         /** @var CommunicationLayer $communicationLayer $communicationLayer */
-        $communicationLayer = (new CommunicationLayer)->setRoot($this);
-        $communicationLayer->registerRoutingModule($routingModule)
-                           ->registerModule(new HttpCommunicationModule, CommunicationLayer::HTTP_MODULE);
+        $communicationLayer = CommunicationLayer::init()
+                                                ->setRoot($this)
+                                                ->registerRoutingModule(new StandardRoutingModule)
+                                                ->registerModule(new HttpCommunicationModule, CommunicationLayer::HTTP_MODULE);
         
         #------------------------------------------------------------------------------
         $this->layerContainer->register(CommunicationLayer::LAYER_NAME, $communicationLayer);
@@ -140,15 +142,13 @@ class Application implements LayerRoot {
     }
     protected function _registerDefaultQueryModule(QueryLayer $queryLayer) {
         $module = new MySqlQueryModule;
-        $module->registerAuthentication(MySqlAuthentication::init()
-                                                           ->setCredentials("codozsqq",
-                                                                            "^bzXfxDc!Dl6",
-                                                                            "localhost",
-                                                                            'sm_test'));
-        $queryLayer->registerQueryModule($module, function () use ($module) { return $module; }, 0);
+        $module->registerAuthentication(MySqlAuthentication::init()->setCredentials("codozsqq",
+                                                                                    "^bzXfxDc!Dl6",
+                                                                                    "localhost",
+                                                                                    'sm_test'));
+        $queryLayer->registerQueryModule($module, function () use ($module) { return $module; }, false);
     }
     
-    # endregion
     ##################################################
     # Getters/Setters
     ##################################################

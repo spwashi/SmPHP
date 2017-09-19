@@ -20,6 +20,9 @@ use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Module\ModuleProxy;
 
 class StandardRoutingModule extends LayerModule implements RoutingModule {
+    public static function init() {
+        return new static;
+    }
     public function registerNamedRoutes($routes, Layer $layerProxy = null) {
         foreach ($routes as $route_name => $route) {
             $this->getRouter($layerProxy)->register($route_name, $route);
