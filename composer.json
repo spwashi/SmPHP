@@ -1,12 +1,13 @@
 {
-  "name":              "spwashi/sm",
-  "description":       "This is a simple PHP Framework aimed to accomodate for legacy code while also laying the groundwork for newer development.",
+  "name":              "spwashi/smphp",
+  "description":       "PHP Framework for when you (I) have a fear of commitment",
   "minimum-stability": "dev",
+  "type":              "library",
   "license":           "proprietary",
   "authors":           [
     {
       "name":  "Sam Washington",
-      "email": "sam@spwashi.com"
+      "email": "sam.p.washington@gmail.com"
     }
   ],
   "require":           {
