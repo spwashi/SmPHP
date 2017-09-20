@@ -4,6 +4,7 @@
   "minimum-stability": "dev",
   "type":              "library",
   "license":           "proprietary",
+  "version":           "0.7.1",
   "authors":           [
     {
       "name":  "Sam Washington",
