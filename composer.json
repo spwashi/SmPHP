@@ -10,10 +10,12 @@
       "email": "sam.p.washington@gmail.com"
     }
   ],
-  "require":           {
+  "require-dev":       {
     "squizlabs/php_codesniffer": "3.0.x-dev",
-    "phpunit/phpunit":           "5.7.9",
-    "twig/twig":                 "2.4.*",
-    "monolog/monolog":           "1.9.*"
+    "phpunit/phpunit":           "5.7.9"
+  },
+  "require":           {
+    "twig/twig":       "2.4.*",
+    "monolog/monolog": "1.9.*"
   }
 }
