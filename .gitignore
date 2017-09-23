@@ -2,4 +2,4 @@ vendor/
 logs/
 tests/results/
 composer.lock
-.idea/
+git .idea/
