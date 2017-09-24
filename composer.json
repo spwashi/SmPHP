@@ -1,5 +1,6 @@
 {
   "name":              "spwashi/smphp",
+
   "description":       "PHP Framework for when you (I) have a fear of commitment",
   "minimum-stability": "dev",
   "type":              "library",
