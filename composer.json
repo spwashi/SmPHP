@@ -4,11 +4,14 @@
   "minimum-stability": "dev",
   "type":              "library",
   "license":           "proprietary",
-  "version":           "0.7.1",
+  "version":           "0.7.2-beta",
+  "autoload": {
+    "files": ["src/Sm.php"]
+  },
   "authors":           [
     {
       "name":  "Sam Washington",
-      "email": "sam.p.washington@gmail.com"
+      "email": "sam@spwashi.com"
     }
   ],
   "require-dev":       {
