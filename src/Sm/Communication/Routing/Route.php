@@ -9,6 +9,7 @@ namespace Sm\Communication\Routing;
 
 
 use Sm\Communication\Network\Http\Request\HttpRequestDescriptor;
+use Sm\Communication\Request\InternalRequest;
 use Sm\Communication\Request\Request;
 use Sm\Communication\Request\RequestDescriptor;
 use Sm\Core\Exception\Exception;
@@ -67,7 +68,9 @@ class Route extends FunctionResolvable {
     #   Resolution
     ####################################################
     /**
-     * Check to see if two Requests match
+     * Check to see if two Requests match.
+     *
+     * Internal Requests are assumed to math this Route. #todo reconsider?
      *
      * @param \Sm\Communication\Request\Request $request
      *
@@ -75,6 +78,7 @@ class Route extends FunctionResolvable {
      */
     public function matches(Request $request) {
         try {
+            if ($request instanceof InternalRequest) return true;
             if (!isset($this->requestDescriptor)) return false;
             $this->requestDescriptor->compare($request);
         } catch (Exception $e) {
@@ -102,7 +106,7 @@ class Route extends FunctionResolvable {
         
         try {
             if ($this->matches($request)) {
-                $arguments = $this->requestDescriptor->getArguments($request);
+                $arguments = $this->requestDescriptor ? $this->requestDescriptor->getArguments($request) : [];
                 $arguments = array_merge([ $routeResolutionContext ], $arguments);
                 return $this->subject->resolve(...array_values($arguments));
             }
