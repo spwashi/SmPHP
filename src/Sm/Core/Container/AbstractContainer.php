@@ -141,7 +141,7 @@ abstract class AbstractContainer extends MiniContainer {
         $args = func_get_args();
         $item = parent::resolve($name);
         if (!($item instanceof Resolvable)) {
-            $this->noteEvent(AbstractContainer::ITEM_NOT_RESOLVABLE, $name, ...$args);
+            $this->noteEvent(AbstractContainer::ITEM_NOT_RESOLVABLE, $name, $args);
             return $item;
         }
         array_shift($args);

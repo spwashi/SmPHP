@@ -32,4 +32,10 @@ class PropertyTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals('sam', $this->property->value);
         $this->assertInstanceOf(StringResolvable::class, $this->property->raw_value);
     }
+    public function testCanKeepTrackOfPropertyHistory() {
+        $this->property->value = 'hi';
+        $this->property->value = 'whatup';
+        
+        echo json_encode($this->property->getValueHistory(), JSON_PRETTY_PRINT);
+    }
 }

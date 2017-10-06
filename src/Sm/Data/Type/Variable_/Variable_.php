@@ -17,10 +17,10 @@ use Sm\Data\Type\Variable_\Exception\InvalidVariableTypeError;
 /**
  * Class Variable_
  *
- * @property-read mixed $default_value      The Resolvable that holds the value of the Variable_
- * @property string     $name               The name of the Variable_
- * @property mixed      $value              The resolved value of this Variable_'s subject
- * @property Resolvable $raw_value          The raw, unresolved Resolvable that this Variable_ holds a reference to
+ * @property-read mixed $default_value        The Resolvable that holds the value of the Variable_
+ * @property string     $name                 The name of the Variable_
+ * @property mixed      $value                The resolved value of this Variable_'s subject
+ * @property Resolvable $raw_value            The raw, unresolved Resolvable that this Variable_ holds a reference to
  *
  * @package Sm\Type\Variable_
  */

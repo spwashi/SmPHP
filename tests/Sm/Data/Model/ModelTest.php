@@ -12,9 +12,6 @@ use Sm\Data\Property\Property;
 use Sm\Data\Property\PropertySchemaContainer;
 
 class ModelTest extends \PHPUnit_Framework_TestCase {
-    public function testWillShutupAboutNoTestsInModelGeez__also_i_should_figure_this_out() {
-        $this->assertNotEquals("todo:", "figure out how to not have PHPUnit raise a warning for empties?");
-    }
     public function testModelCanHaveProperties() {
         $model      = new Model;
         $properties = $model->getProperties();

@@ -14,7 +14,6 @@ namespace Sm\Core\Container;
 use Sm\Core\Container\Mini\MiniCache;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Factory\Factory;
-use Sm\Core\Internal\Monitor\Monitor;
 use Sm\Core\Resolvable\FunctionResolvable;
 use Sm\Core\Resolvable\NullResolvable;
 use Sm\Core\Resolvable\Resolvable;
@@ -204,7 +203,7 @@ class Container extends AbstractContainer implements \JsonSerializable {
      */
     protected function markConsumed($args) {
         $this->ConsumedItems->cache($args, true);
-        $this->noteEvent(Container::ITEM_NOW_CONSUMED, Monitor::STD, ...$args);
+        $this->noteEvent(Container::ITEM_NOW_CONSUMED, static::class, $args);
         return $this->ConsumedItems->canResolve($args);
     }
     /**

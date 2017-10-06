@@ -3,28 +3,41 @@
 
 namespace Sm\Core\Internal\Monitor;
 
+use Sm\Core\Event\Event;
+use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
+use Sm\Core\Internal\Identification\Identifiable;
+
 /**
- * Class Monitor
+ * Class History
  *
  * Just meant to keep track of events in an undefined way
  */
-class Monitor {
-    const STD  = '.';
+class History implements \JsonSerializable, Identifiable {
     const NOTE = 'note';
-    protected $events = [];
+    #
+    /** @var Event[] */
+    protected $events      = [];
+    protected $date_format = DATE_ATOM;
+    use HasObjectIdentityTrait;
+    public function __construct() {
+        $this->createSelfID();
+    }
+    
+    
     /**
      * Make note that an event happened
      *
-     * @param        $event_name
-     * @param array  ...$event_details
+     * @param \Sm\Core\Event\Event $event
      *
      * @return $this
+     * @internal param $event_name
+     * @internal param mixed $event_details
+     *
+     * @internal param null|\Sm\Core\Internal\Identification\Identifiable $source
+     *
      */
-    public function appendEvent($event_name, ...$event_details) {
-        $this->events[] = [
-            'event'   => $event_name,
-            'details' => empty($event_details) ? null : (count($event_details) === 1 ? $event_details[0] : $event_details),
-        ];
+    public function append(Event $event) {
+        $this->events[] = $event;
         return $this;
     }
     /**
@@ -49,5 +62,11 @@ class Monitor {
         if (isset($event_type)) $this->events[ $event_type ] = [];
         else $this->events = [];
         return $this;
+    }
+    function jsonSerialize() {
+        return [
+            'object_id' => $this->getObjectId(),
+            'events'    => $this->events,
+        ];
     }
 }
