@@ -1,0 +1,17 @@
+{
+  "name":              "",
+  "license":           "proprietary",
+  "description":       "Beginning stages of the spwashi website",
+  "type":              "project",
+  "version":           "0.0.1",
+  "authors":           [
+    {
+      "name":  "Sam Washington",
+      "email": "sam@spwashi.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require":           {
+    "spwashi/smphp": "dev-master"
+  }
+}

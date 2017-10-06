@@ -1,0 +1,38 @@
+{
+    "name":       "APP_NAME",
+
+
+    //
+    // Paths we should check for the autoloaders.
+    // If this is an object, the keys represent the environment.
+    //   [.php] files   - executed as PHP scripts
+    //
+    "autoloader": {
+        "_":   ["./autoload/autoload.php"],
+        "dev": ["./autoload/autoload.php"]
+    },
+
+    //
+    // Information about the controllers we're going to use
+    //
+    "controller": {
+        "namespace": "\\APP_NAME\\Controller\\"
+    },
+
+
+    //
+    // These are the paths referenced by the application/framework
+    //
+    "paths":      {
+        "models":  [
+            "./models/models.json"
+        ],
+        "routes":  [
+            "./routes/routes.json",
+            "./routes/routes.php"
+        ],
+        "sources": [
+            "./sources/sources.json"
+        ]
+    }
+}

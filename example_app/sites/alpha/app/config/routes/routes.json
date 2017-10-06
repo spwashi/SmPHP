@@ -1,0 +1,15 @@
+{
+
+    "[internal]": [
+        {
+            "name":       404,
+            "resolution": "#ErrorController::rt_404"
+        }
+    ],
+
+    "$":          {
+        "name":       "home",
+        "controller": "#HomeController::index"
+    }
+
+}
