@@ -40,7 +40,7 @@ class MiniContainer implements Registry, \Iterator {
         return $variable;
     }
     /**
-     * Get the Key that we are going to iterate on
+     * Get the what's the name of this class's registry? UGLY
      *
      * @return null|string
      */

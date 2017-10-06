@@ -14,6 +14,7 @@ namespace Sm\Core\Container;
 use Sm\Core\Container\Mini\MiniCache;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Factory\Factory;
+use Sm\Core\Internal\Monitor\Monitor;
 use Sm\Core\Resolvable\FunctionResolvable;
 use Sm\Core\Resolvable\NullResolvable;
 use Sm\Core\Resolvable\Resolvable;
@@ -24,11 +25,16 @@ use Sm\Core\Resolvable\ResolvableFactory;
  *
  * @package Sm\Core\Container
  *
- * @property \Sm\Core\Container\Mini\MiniCache $Cache
+ * @property \Sm\Core\Container\Mini\MiniCache $cache
  *
  * @coupled \Sm\Core\Resolvable\Resolvable
  */
 class Container extends AbstractContainer implements \JsonSerializable {
+    const ITEM_NOW_CONSUMED      = 'Container::x|no_consumed';
+    const ITEM_NOT_IN_CACHE      = 'Container::x|no_cache';
+    const ITEM_COULD_NOT_RESOLVE = 'Container::x|no_resolve';
+    const ITEM_IS_CONSUMED       = 'Container::-|consumed_id';
+    
     /**
      * @var Factory
      */
@@ -160,11 +166,13 @@ class Container extends AbstractContainer implements \JsonSerializable {
         
         # If we've already resolved for this item and that matters, return
         if ($this->do_consume && $this->ConsumedItems->resolve($args)) {
+            $this->noteEvent(Container::ITEM_IS_CONSUMED, $name, $args);
             return null;
         }
         
         # Check the cache first for the result
-        if (null !== ($result = $this->Cache->resolve($args))) {
+        if (null !== ($result = $this->cache->resolve($args))) {
+            $this->noteEvent(Container::ITEM_NOT_IN_CACHE, $name, $args);
             return $result;
         }
         
@@ -173,6 +181,7 @@ class Container extends AbstractContainer implements \JsonSerializable {
         
         # Huh
         if (!isset($result)) {
+            $this->noteEvent(Container::ITEM_COULD_NOT_RESOLVE, static::class, $name, $args);
             return null;
         }
         
@@ -180,7 +189,7 @@ class Container extends AbstractContainer implements \JsonSerializable {
         if ($this->do_consume) $this->markConsumed($args);
         
         # Cache the result if we've decided that's necessary (the cache was started)
-        $this->Cache->cache($args, $result);
+        $this->cache->cache($args, $result);
         
         
         return $result;
@@ -195,6 +204,7 @@ class Container extends AbstractContainer implements \JsonSerializable {
      */
     protected function markConsumed($args) {
         $this->ConsumedItems->cache($args, true);
+        $this->noteEvent(Container::ITEM_NOW_CONSUMED, Monitor::STD, ...$args);
         return $this->ConsumedItems->canResolve($args);
     }
     /**

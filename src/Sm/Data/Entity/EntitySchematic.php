@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Sm\Data\Model;
+namespace Sm\Data\Entity;
 
 
 use Sm\Core\SmEntity\SmEntitySchematic;
@@ -10,21 +10,21 @@ use Sm\Data\Property\PropertyDataManager;
 use Sm\Data\Property\PropertySchemaContainer;
 
 /**
- * Class ModelSchematic
+ * Class EntitySchematic
  *
- * Represents the structure of a Model
+ * Represents the structure of a Entity
  */
-class ModelSchematic implements ModelSchema,
-                                SmEntitySchematic,
-                                \JsonSerializable {
-    use ModelTrait;
+class EntitySchematic implements EntitySchema,
+                                 SmEntitySchematic,
+                                 \JsonSerializable {
+    use EntityTrait;
     use StdSmEntitySchematicTrait {
         load as protected _load_std;
     }
     
     
     protected $properties;
-    protected $protoSmID = '[Model]';
+    protected $protoSmID = '[Entity]';
     protected $propertyMeta;
     /** @var PropertyDataManager $propertyDataManager The SmEntityDataManager that will help configure PropertySchemas for us */
     private $propertyDataManager;
@@ -32,7 +32,7 @@ class ModelSchematic implements ModelSchema,
     #
     ##  Constructors/Initialization
     /**
-     * ModelSchematic constructor.
+     * EntitySchematic constructor.
      *
      * @param PropertyDataManager $propertyDataManager
      */
@@ -54,7 +54,7 @@ class ModelSchematic implements ModelSchema,
     /**
      * @param mixed $properties
      *
-     * @return ModelSchematic
+     * @return EntitySchematic
      */
     public function setProperties(PropertySchemaContainer $properties) {
         $this->properties = $properties;
@@ -66,23 +66,22 @@ class ModelSchematic implements ModelSchema,
     protected function _configArraySet__properties($configuration) {
         $propertySchemaContainer = PropertySchemaContainer::init();
         $properties              = $configuration['properties'] ?? [];
-    
+        
         $meta = $configuration['propertyMeta'] ?? null;
-    
-        $this->propertyMeta = ModelPropertyMetaSchematic::init($propertySchemaContainer)->load($meta);
+        
+        $this->propertyMeta = EntityPropertyMetaSchematic::init($propertySchemaContainer)->load($meta);
         
         if (!count($properties)) return;
         
         # - convert the configurations to schematics
         $propertySchematic_array = [];
         foreach ($properties as $property_name => $property_config) {
-    
+            
             if (is_array($property_config)) $property_config['name'] = $property_config['name'] ?? $property_name;
-    
+            
             $name = $property_name;
-            /** @var PropertyDataManager $propertyDataManager */
-            $propertyDataManager              = $this->propertyDataManager;
-            $propertySchematic                = $propertyDataManager->configure($property_config);
+            
+            $propertySchematic                = $this->propertyDataManager->configure($property_config);
             $propertySchematic_array[ $name ] = $propertySchematic;
         }
         
@@ -108,7 +107,7 @@ class ModelSchematic implements ModelSchema,
     public function getPropertyDataManager(): PropertyDataManager {
         return $this->propertyDataManager;
     }
-    public function getPropertyMeta(): ModelPropertyMetaSchematic {
+    public function getPropertyMeta(): EntityPropertyMetaSchematic {
         return $this->propertyMeta;
     }
 }

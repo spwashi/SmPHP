@@ -12,10 +12,10 @@ use Sm\Core\Resolvable\StringResolvable;
 use Sm\Data\Property\Exception\ReadonlyPropertyException;
 
 class PropertyTest extends \PHPUnit_Framework_TestCase {
-    /** @var  \Sm\Data\Property\Property $Property */
-    protected $Property;
+    /** @var  \Sm\Data\Property\Property $property */
+    protected $property;
     public function setUp() {
-        $this->Property = new Property;
+        $this->property = new Property;
     }
     public function testCanCreate() {
         $Property = new Property();
@@ -23,13 +23,13 @@ class PropertyTest extends \PHPUnit_Framework_TestCase {
         $this->assertInstanceOf(Property::class, $Property);
     }
     public function testCanMarkReadonlyAndNotSet() {
-        $this->Property->markReadonly();
+        $this->property->markReadonly();
         $this->expectException(ReadonlyPropertyException::class);
         $this->testCanSetValue();
     }
     public function testCanSetValue() {
-        $this->Property->value = 'sam';
-        $this->assertEquals('sam', $this->Property->value);
-        $this->assertInstanceOf(StringResolvable::class, $this->Property->raw_value);
+        $this->property->value = 'sam';
+        $this->assertEquals('sam', $this->property->value);
+        $this->assertInstanceOf(StringResolvable::class, $this->property->raw_value);
     }
 }

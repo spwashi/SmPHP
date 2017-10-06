@@ -3,7 +3,11 @@
 
 namespace Sm\Core\SmEntity;
 
-
+/**
+ * Trait StdSchematicizedSmEntity
+ *
+ * For SmEntities that we would identify as being Schematicized (schema,schematic,
+ */
 trait StdSchematicizedSmEntity {
     /**
      *

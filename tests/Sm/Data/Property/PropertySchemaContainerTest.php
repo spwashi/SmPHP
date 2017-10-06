@@ -22,7 +22,8 @@ class PropertySchemaContainerTest extends \PHPUnit_Framework_TestCase {
     public function testCanRegisterProperty() {
         $Property = new Property;
         $this->propertySchemaContainer->register('title', $Property);
-        
+        $titlePropertySchema = $this->propertySchemaContainer->resolve('title');
+        $this->assertInstanceOf(PropertySchema::class, $titlePropertySchema);
         $this->expectException(InvalidArgumentException::class);
         $this->propertySchemaContainer->register('first_name', new \stdClass);
     }

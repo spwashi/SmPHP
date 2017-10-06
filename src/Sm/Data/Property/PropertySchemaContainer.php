@@ -35,9 +35,13 @@ class PropertySchemaContainer extends Container {
         $item = $this->{$this->getRegistryName()}[ $this->key() ];
         return $item instanceof Resolvable ? $item->resolve() : $item;
     }
-    public function resolve($name = null): PropertySchema {
+    public function resolve($name = null): ?PropertySchema {
         return parent::resolve($name);
     }
+    protected function getResolvedValue(Resolvable $item, $args):?PropertySchema {
+        return $item instanceof PropertySchema ? $item : $item->resolve();
+    }
+    
     /**
      * Add a Property to this class, naming it if it is not already named.
      *
@@ -71,9 +75,7 @@ class PropertySchemaContainer extends Container {
         }
         
         # We can only register Properties
-        if (!($registrand instanceof PropertySchema)) {
-            throw new InvalidArgumentException("Can only add Properties to the PropertyContainer");
-        }
+        $this->checkRegistrandIsCorrectType($registrand);
         
         
         # We can only register named Properties
@@ -82,9 +84,7 @@ class PropertySchemaContainer extends Container {
         }
         
         # Set the name of the property based on this one
-        if (!isset($registrand->name)) {
-            $registrand->setName($name);
-        }
+        if (!isset($registrand->name)) $registrand->setName($name);
         
         /** @var static $result */
         parent::register($name, $registrand);
@@ -105,5 +105,15 @@ class PropertySchemaContainer extends Container {
             throw new ReadonlyPropertyException("Cannot remove elements from a readonly PropertyContainer.");
         }
         return parent::remove($name);
+    }
+    /**
+     * @param $registrand
+     *
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     */
+    protected function checkRegistrandIsCorrectType($registrand): void {
+        if (!($registrand instanceof PropertySchema)) {
+            throw new InvalidArgumentException("Can only add Properties to the PropertyContainer");
+        }
     }
 }

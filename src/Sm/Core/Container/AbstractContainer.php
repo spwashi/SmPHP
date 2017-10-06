@@ -10,6 +10,7 @@ namespace Sm\Core\Container;
 
 use Sm\Core\Container\Mini\MiniCache;
 use Sm\Core\Container\Mini\MiniContainer;
+use Sm\Core\Internal\Monitor\HasMonitorTrait;
 use Sm\Core\Resolvable\Resolvable;
 use Sm\Core\Util;
 
@@ -20,9 +21,11 @@ use Sm\Core\Util;
  * @property-write $search_ancestry
  */
 abstract class AbstractContainer extends MiniContainer {
-    /** @var  \Sm\Core\Container\Mini\MiniCache $Cache */
+    use HasMonitorTrait;
+    const ITEM_NOT_RESOLVABLE = 'AbstractContainer::x|not_resolvable';
     
-    protected $Cache;
+    /** @var  \Sm\Core\Container\Mini\MiniCache $cache */
+    protected $cache;
     protected $registry = [];
     #todo figure this out
     protected $_registered_defaults = [];
@@ -35,7 +38,7 @@ abstract class AbstractContainer extends MiniContainer {
     
     #  Constructors/Initializers
     public function __construct() {
-        $this->Cache = new MiniCache;
+        $this->cache = new MiniCache;
     }
     /**
      * @return \Sm\Core\Container\Container|static
@@ -46,7 +49,7 @@ abstract class AbstractContainer extends MiniContainer {
     #-----------------------------------------------------------------------------------
     public function __get($name) {
         if ($name === 'Cache') {
-            return $this->Cache;
+            return $this->cache;
         } else {
             return parent::__get($name);
         }
@@ -125,6 +128,7 @@ abstract class AbstractContainer extends MiniContainer {
         }
     
         $registrand = $this->standardizeRegistrand($registrand);
+        $this->noteEvent('register', $name, $registrand);
         parent::register($name, $registrand);
         return $this;
     }
@@ -137,12 +141,11 @@ abstract class AbstractContainer extends MiniContainer {
         $args = func_get_args();
         $item = parent::resolve($name);
         if (!($item instanceof Resolvable)) {
+            $this->noteEvent(AbstractContainer::ITEM_NOT_RESOLVABLE, $name, ...$args);
             return $item;
         }
-        
         array_shift($args);
-        $result = $item->resolve(...$args);
-        return $result;
+        return $this->getResolvedValue($item, $args);
     }
     
     #-----------------------------------------------------------------------------------
@@ -187,7 +190,7 @@ abstract class AbstractContainer extends MiniContainer {
     
         # If there was a default value provided for this, remove that default.
         # todo why is this a thing again?
-        if ($this->_registered_defaults[ $name ]??false) {
+        if ($this->_registered_defaults[ $name ] ?? false) {
             unset($this->_registered_defaults[ $name ]);
         }
     
@@ -210,5 +213,17 @@ abstract class AbstractContainer extends MiniContainer {
             return Util::getItemByClassAncestry($name, $this->registry);
         }
         return parent::getItem($name);
+    }
+    /**
+     * Resolve the final value of something in this class
+     *
+     * @param Resolvable $item
+     * @param            $args
+     *
+     * @return mixed
+     */
+    protected function getResolvedValue(Resolvable $item, $args) {
+        $result = $item->resolve(...$args);
+        return $result;
     }
 }

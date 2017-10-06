@@ -5,7 +5,7 @@
  * Time: 11:46 AM
  */
 
-namespace Sm\Data\Model;
+namespace Sm\Data\Entity;
 
 
 use Sm\Core\Exception\InvalidArgumentException;
@@ -16,26 +16,25 @@ use Sm\Core\SmEntity\StdSmEntityTrait;
 use Sm\Data\Property\PropertyContainer;
 
 /**
- * Class Model
+ * Class Entity
  *
- * Really a DAO (Data Access Object) but named Model because of other MVC Frameworks
+ * Really a DAO (Data Access Object) but named Entity because of other MVC Frameworks
  *
- * Models represent a collection of Data, wherever they are, however they are stored.
+ * Entitys represent a collection of Data, wherever they are, however they are stored.
  * Meant to abstract the basic operations that we will perform on Data, regardless
  * of if they are JSON, a row in a Table (most common) or some other form of Data.
  *
- * Each Model should have a DataSource.
+ * Each Entity should have a DataSource.
  *
  *
- * @package Sm\Data\Model
- * @property PropertyContainer $properties
+ * @package Sm\Data\Entity
  */
-class Model implements ModelSchema,
-                       Schematicized,
-                       SmEntity,
-                       \JsonSerializable {
+class Entity implements EntitySchema,
+                        Schematicized,
+                        SmEntity,
+                        \JsonSerializable {
     use StdSmEntityTrait;
-    use ModelTrait;
+    use EntityTrait;
     use StdSchematicizedSmEntity {
         fromSchematic as protected _fromSchematic_std;
     }
@@ -44,14 +43,6 @@ class Model implements ModelSchema,
     
     #
     ## Getters and Setters
-    public function __get($name) {
-        switch ($name) {
-            case 'properties':
-                return $this->getProperties();
-            default:
-                return null;
-        }
-    }
     public function getProperties(): PropertyContainer {
         return $this->properties = $this->properties ?? PropertyContainer::init();
     }
@@ -63,7 +54,7 @@ class Model implements ModelSchema,
     #
     ##  Configuration/Initialization
     public function fromSchematic($schematic) {
-        /** @var \Sm\Data\Model\ModelSchematic $schematic */
+        /** @var \Sm\Data\Entity\EntitySchematic $schematic */
         $this->_fromSchematic_std($schematic);
         
         $this->setName($this->getName() ?? $schematic->getName());
@@ -78,8 +69,8 @@ class Model implements ModelSchema,
         return $this;
     }
     public function checkCanUseSchematic($schematic) {
-        if (!($schematic instanceof ModelSchematic)) {
-            throw new InvalidArgumentException("Cannot use anything except for a Model Schema to initialize these");
+        if (!($schematic instanceof EntitySchematic)) {
+            throw new InvalidArgumentException("Cannot use anything except for a Entity Schema to initialize these");
         }
     }
     

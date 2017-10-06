@@ -8,8 +8,32 @@
 namespace Sm\Data\Model;
 
 
+use Sm\Data\Property\Property;
+use Sm\Data\Property\PropertySchemaContainer;
+
 class ModelTest extends \PHPUnit_Framework_TestCase {
     public function testWillShutupAboutNoTestsInModelGeez__also_i_should_figure_this_out() {
         $this->assertNotEquals("todo:", "figure out how to not have PHPUnit raise a warning for empties?");
+    }
+    public function testModelCanHaveProperties() {
+        $model      = new Model;
+        $properties = $model->getProperties();
+        $this->assertInstanceOf(PropertySchemaContainer::class, $properties);
+    }
+    public function testModelCanSetProperties() {
+        $model = new Model;
+        $model->getProperties()
+              ->register('title',
+                         new Property('title'));
+        
+        $this->assertNull($model->getProperties()->id);
+        $this->assertInstanceOf(Property::class, $model->getProperties()->resolve('title'));
+        $this->assertInstanceOf(Property::class, $model->properties->title);
+    }
+    public function testModelCanSetPropertyValues() {
+        $model = new Model;
+        $model->properties->register('title', new Property);
+        $model->properties->title = 'test';
+        $this->assertEquals('test', $model->properties->title->value);
     }
 }

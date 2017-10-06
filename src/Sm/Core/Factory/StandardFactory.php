@@ -29,8 +29,8 @@ class StandardFactory extends AbstractContainer implements Factory {
     /** Mode of creating factories: Create classes that aren't registered (as long as it's okay to) */
     const MODE_DO_CREATE_MISSING = 'do_create_missing';
     
-    /** @var  \Sm\Core\Container\Mini\MiniCache $Cache */
-    protected $Cache;
+    /** @var  \Sm\Core\Container\Mini\MiniCache $cache */
+    protected $cache;
     /** @var Resolvable[] */
     protected $registry = [];
     /** @var array $class_registry */

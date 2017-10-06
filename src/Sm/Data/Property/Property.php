@@ -28,7 +28,6 @@ use Sm\Data\Type\Variable_\Variable_;
  *
  * @package Sm\Data\Property
  *
- * @property-read \Sm\Data\Property\Property|false $reference
  * @property-read string                           $object_id
  * @property-read array                            $potential_types
  */

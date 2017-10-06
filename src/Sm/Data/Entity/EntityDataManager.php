@@ -5,7 +5,7 @@
  * Time: 12:21 PM
  */
 
-namespace Sm\Data\Model;
+namespace Sm\Data\Entity;
 
 
 use Sm\Core\SmEntity\SmEntityFactory;
@@ -13,18 +13,17 @@ use Sm\Data\DataLayer;
 use Sm\Data\Property\PropertyDataManager;
 use Sm\Data\SmEntity\SmEntityDataManager;
 
-/*
- * Class ModelDataManager
+/**
+ * Class EntityDataManager
  *
  * Handles the loading/configuration of
  */
-
-class ModelDataManager extends SmEntityDataManager {
-    protected $configuredModels = [];
+class EntityDataManager extends SmEntityDataManager {
+    protected $configuredEntitys = [];
     /** @var \Sm\Data\Property\PropertyDataManager */
     private $propertyDataManager;
     /**
-     * ModelDataManager constructor.
+     * EntityDataManager constructor.
      *
      * @param \Sm\Data\DataLayer                         $dataLayer
      * @param SmEntityFactory                            $smEntityFactory
@@ -37,24 +36,25 @@ class ModelDataManager extends SmEntityDataManager {
         $this->propertyDataManager = $datatypeFactory ?? PropertyDataManager::init();
     }
     
-    public function configure($configuration): ModelSchematic {
-        $item = ModelSchematic::init($this->propertyDataManager)->load($configuration);
+    public function configure($configuration): EntitySchematic {
+        $item = EntitySchematic::init($this->propertyDataManager)
+                               ->load($configuration);
         $smID = $item->getSmID();
-    
+        
         #
-        if ($smID) $this->configuredModels[ $smID ] = $item;
-    
+        if ($smID) $this->configuredEntitys[ $smID ] = $item;
+        
         #
         return $item;
     }
     
     public function initializeDefaultSmEntityFactory(): SmEntityFactory {
-        return ModelFactory::init();
+        return EntityFactory::init();
     }
     /**
-     * @return \Sm\Data\Model\ModelSchematic[]
+     * @return \Sm\Data\Entity\EntitySchematic[]
      */
-    public function getConfiguredModels(): array {
-        return $this->configuredModels;
+    public function getConfiguredEntitys(): array {
+        return $this->configuredEntitys;
     }
 }
