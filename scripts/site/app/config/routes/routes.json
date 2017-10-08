@@ -1,5 +1,4 @@
 {
-
     "[internal]": [
         {
             "name":       404,
@@ -9,7 +8,8 @@
 
     "$":          {
         "name":       "home",
-        "controller": "#HomeController::index"
-    }
-
+        "controller": "#Home::index"
+    },
+    "test":       "#Home::item",
+    "{method}":   "#Home::test"
 }

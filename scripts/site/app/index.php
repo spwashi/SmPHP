@@ -3,7 +3,7 @@
 define('SM_IS_CLI', php_sapi_name() === 'cli');
 error_reporting(E_ALL);
 
-const APP_PATH   = __DIR__ . '/';
+const APP_PATH   = __DIR__ . 'index.php/';
 const APP_SRC    = __DIR__ . '/src/';
 const APP_CONFIG = __DIR__ . '/config/';
 

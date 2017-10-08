@@ -1,7 +1,0 @@
-<?php
-
-
-
-return [
-    ['$'=> '#HomeController::index']
-];
