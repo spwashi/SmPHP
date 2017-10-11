@@ -7,6 +7,6 @@
 spl_autoload_register(function ($class_string) {
     $class = explode('\\', $class_string);
     $class = implode('/', $class);
-    $path  = SRC_PATH . "{$class}.php";
+    $path  = SM_SRC_PATH . "{$class}.php";
     if (is_file($path)) require_once($path);
 });

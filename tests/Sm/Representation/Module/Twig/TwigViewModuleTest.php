@@ -5,7 +5,7 @@ namespace Sm\Representation\Module\Twig;
 
 use Sm\Representation\RepresentationLayer;
 
-const PATH_TO_TWIG_TEMPLATES = '/var/www/SmPHP/example/sites/full/app/view/twig';
+const PATH_TO_TWIG_TEMPLATES = '/var/www/SmPHP/example/app/view/twig';
 
 
 class TwigViewModuleTest extends \PHPUnit_Framework_TestCase {

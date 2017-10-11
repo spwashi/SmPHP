@@ -1,17 +1,19 @@
 {
-  "name":              "",
-  "license":           "proprietary",
-  "description":       "Beginning stages of the spwashi website",
-  "type":              "project",
-  "version":           "0.0.1",
-  "authors":           [
-    {
-      "name":  "Sam Washington",
-      "email": "sam@spwashi.com"
+    "name":              "app-package/app-name",
+    "license":           "proprietary",
+    "description":       "Beginning stages of the spwashi website",
+    "type":              "project",
+    "version":           "0.0.1",
+    "authors":           [
+        {
+            "name":  "Sam Washington",
+            "email": "sam@spwashi.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable":     true,
+
+    "require":           {
+        "spwashi/smphp": "v0.8.3-beta"
     }
-  ],
-  "minimum-stability": "dev",
-  "require":           {
-    "spwashi/smphp": "dev-master"
-  }
 }

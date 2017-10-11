@@ -1,5 +1,12 @@
 #!/bin/bash
 
+
+if [ "$#" -ne 1 ]
+then
+  echo "Should have supplied a path relative to the SmPHP installation root."
+  exit 1
+fi
+
 echo "creating..."
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 site_path=$1
