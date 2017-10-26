@@ -20,6 +20,7 @@ use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Module\ModuleProxy;
 
 class StandardRoutingModule extends LayerModule implements RoutingModule {
+    public const INTERNAL = '[internal]';
     public static function init() {
         return new static;
     }

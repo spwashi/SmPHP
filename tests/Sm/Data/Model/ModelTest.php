@@ -11,6 +11,24 @@ namespace Sm\Data\Model;
 use Sm\Data\Property\Property;
 use Sm\Data\Property\PropertySchemaContainer;
 
+/**
+ * Interface t_PropertyContainer
+ *
+ * @property Property $title
+ */
+interface t_PropertyContainer {
+
+}
+
+/**
+ * Interface t_Model
+ *
+ * @property t_PropertyContainer|\Sm\Data\Property\PropertyContainer $properties
+ */
+interface t_Model {
+
+}
+
 class ModelTest extends \PHPUnit_Framework_TestCase {
     public function testModelCanHaveProperties() {
         $model      = new Model;
@@ -28,9 +46,13 @@ class ModelTest extends \PHPUnit_Framework_TestCase {
         $this->assertInstanceOf(Property::class, $model->properties->title);
     }
     public function testModelCanSetPropertyValues() {
+        /** @var t_Model|Model $model */
         $model = new Model;
         $model->properties->register('title', new Property);
         $model->properties->title = 'test';
         $this->assertEquals('test', $model->properties->title->value);
+        $model->properties->title = 'yellow';
+    
+        echo json_encode($model->properties->title->valueHistory, JSON_PRETTY_PRINT);
     }
 }

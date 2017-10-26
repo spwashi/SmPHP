@@ -165,13 +165,13 @@ class Container extends AbstractContainer implements \JsonSerializable {
         
         # If we've already resolved for this item and that matters, return
         if ($this->do_consume && $this->ConsumedItems->resolve($args)) {
-            $this->noteEvent(Container::ITEM_IS_CONSUMED, $name, $args);
+            $this->__info_monitor__log(Container::ITEM_IS_CONSUMED, $name, $args);
             return null;
         }
         
         # Check the cache first for the result
         if (null !== ($result = $this->cache->resolve($args))) {
-            $this->noteEvent(Container::ITEM_NOT_IN_CACHE, $name, $args);
+            $this->__info_monitor__log(Container::ITEM_NOT_IN_CACHE, $name, $args);
             return $result;
         }
         
@@ -180,7 +180,7 @@ class Container extends AbstractContainer implements \JsonSerializable {
         
         # Huh
         if (!isset($result)) {
-            $this->noteEvent(Container::ITEM_COULD_NOT_RESOLVE, static::class, $name, $args);
+            $this->__info_monitor__log(Container::ITEM_COULD_NOT_RESOLVE, static::class, $name, $args);
             return null;
         }
         
@@ -203,7 +203,7 @@ class Container extends AbstractContainer implements \JsonSerializable {
      */
     protected function markConsumed($args) {
         $this->ConsumedItems->cache($args, true);
-        $this->noteEvent(Container::ITEM_NOW_CONSUMED, static::class, $args);
+        $this->__info_monitor__log(Container::ITEM_NOW_CONSUMED, static::class, $args);
         return $this->ConsumedItems->canResolve($args);
     }
     /**

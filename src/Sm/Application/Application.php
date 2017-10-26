@@ -11,6 +11,7 @@ use Sm\Controller\ControllerLayer;
 use Sm\Core\Context\Layer\LayerContainer;
 use Sm\Core\Context\Layer\LayerRoot;
 use Sm\Core\Exception\InvalidArgumentException;
+use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
 use Sm\Core\Paths\Exception\PathNotFoundException;
 use Sm\Core\Util;
@@ -32,18 +33,24 @@ use Sm\Representation\RepresentationLayer;
  */
 class Application implements LayerRoot {
     use HasObjectIdentityTrait;
-    protected $name;
-    protected $config_path = 'config/';
     
+    # -- the application name
+    protected $name;
+    
+    # -- paths
+    protected $config_path = 'config/';
+    /** @var string $root_path Where is this application located? */
+    protected $root_path;
+    
+    # -- class properties
     /** @var  \Sm\Core\Context\Layer\LayerContainer $layerContainer */
     protected $layerContainer;
-    protected $controllerNamespaces = [];
-    /** @var string $root_path Where is this application located? */
-    private $root_path;
+    /** @var  \Sm\Application\AppSettings $settings */
+    protected $settings;
     
-    ##################################################
+    ##########################################################################
     # Constructors/Initialization
-    ##################################################
+    ##########################################################################
     /**
      * Application constructor.
      *
@@ -51,9 +58,9 @@ class Application implements LayerRoot {
      * @param string $root_path Where the application is located
      */
     protected function __construct($name, $root_path) {
-        $this->name = $name;
-        $this->setRootPath($root_path);
-        $this->layerContainer = LayerContainer::init();
+        $this->initSettings()
+             ->setName($name)
+             ->setRootPath($root_path);
         $this->initLayers();
     }
     /**
@@ -87,25 +94,28 @@ class Application implements LayerRoot {
      * @throws \Sm\Core\Paths\Exception\PathNotFoundException
      */
     protected function _configure() {
-        $app         = $this;
-        $_config_php = $this->root_path . $this->config_path . '_config/_config.php';
+        $_config_php = $this->root_path . $this->config_path . 'config.php';
+        
         if (file_exists($_config_php)) {
+            $app = $this; # defined for the include
             require_once $_config_php;
         }
     
+        $_routes_config_json_path = $this->root_path . $this->config_path . 'routes/routes.json';
+        $_routes_config_php_path  = $this->root_path . $this->config_path . 'routes/routes.php';
+        $this->registerRoutes($_routes_config_php_path);
+        $this->registerRoutes($_routes_config_json_path);
     
-        $_config_json_file = $this->root_path . $this->config_path . 'config.json';
-        if (!file_exists($_config_json_file)) throw new PathNotFoundException("Cannot configure app - missing {$_config_json_file}");
-        $config_json_str = file_get_contents($_config_json_file);
-        #
-        $configuration = json_decode($config_json_str, true);
-        $this->data->configure($configuration);
+    
+        #$this->data->configure($configuration);
     }
     
     
     #
     ##  Layer Management
     protected function initLayers() {
+        $this->layerContainer = LayerContainer::init();
+        
         $this->_registerDataLayer();
         $this->_registerRepresentationLayer();
         $this->_registerControllerLayer();
@@ -129,7 +139,7 @@ class Application implements LayerRoot {
         $communicationLayer = CommunicationLayer::init()
                                                 ->setRoot($this)
                                                 ->registerRoutingModule(new StandardRoutingModule)
-                                                ->registerModule(new HttpCommunicationModule, CommunicationLayer::HTTP_MODULE);
+                                                ->registerModule(new HttpCommunicationModule, CommunicationLayer::MODULE_HTTP);
         
         #------------------------------------------------------------------------------
         $this->layerContainer->register(CommunicationLayer::LAYER_NAME, $communicationLayer);
@@ -149,9 +159,9 @@ class Application implements LayerRoot {
         $queryLayer->registerQueryModule($module, function () use ($module) { return $module; }, false);
     }
     
-    ##################################################
+    ##########################################################################
     # Getters/Setters
-    ##################################################
+    ##########################################################################
     public function __get(string $name) {
         switch ($name) {
             case CommunicationLayer::LAYER_NAME:
@@ -166,10 +176,51 @@ class Application implements LayerRoot {
         throw new InvalidArgumentException("Cannot resolve {$name}");
     }
     protected function setRootPath(string $root_path) {
-        $this->root_path = rtrim($root_path, '/') . '/';
+        $this->root_path      = rtrim($root_path, '/') . '/';
+        $this->settings->path = $root_path;
         return $this;
     }
     public function getLayers(): LayerContainer {
         return $this->layerContainer;
+    }
+    /**
+     * @param $routes_path
+     *
+     * @throws \Sm\Core\Exception\UnimplementedError
+     */
+    protected function registerRoutes($routes_path): void {
+        if (file_exists($routes_path)) {
+            $extension = pathinfo($routes_path, PATHINFO_EXTENSION);
+            switch ($extension) {
+                case 'php':
+                    $routes = include $routes_path;
+                    break;
+                case 'json':
+                    $routes = file_get_contents($routes_path);
+                    break;
+                default:
+                    throw new UnimplementedError("Can only configure routes that are JSON or PHP");
+                
+            }
+            $this->communication->registerRoutes($routes);
+        }
+    }
+    
+    /**
+     * Initialize the Settings of this Application
+     *
+     * @return $this
+     */
+    protected function initSettings() {
+        $this->settings           = new AppSettings;
+        $this->settings->path     = '';
+        $this->settings->name     = '';
+        $this->settings->base_url = '';
+        
+        return $this;
+    }
+    protected function setName($name) {
+        $this->name = $name;
+        return $this;
     }
 }

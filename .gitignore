@@ -4,3 +4,4 @@ tests/results/
 composer.lock
 .idea/
 example/
+/scripts/site/node_modules/

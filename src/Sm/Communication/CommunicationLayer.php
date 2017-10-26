@@ -18,6 +18,7 @@ use Sm\Controller\ControllerLayer;
 use Sm\Core\Context\Layer\Exception\InaccessibleLayerException;
 use Sm\Core\Context\Layer\Module\Exception\MissingModuleException;
 use Sm\Core\Context\Layer\StandardLayer;
+use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Module\Error\InvalidModuleException;
 use Sm\Core\Module\Module;
@@ -32,11 +33,18 @@ use Sm\Core\Module\ModuleContainer;
  * @property-read RoutingModule $routing
  */
 class CommunicationLayer extends StandardLayer {
+    # -- class properties
     const LAYER_NAME = 'communication';
     
+    # -- routing --
     const ROUTE_RESOLVE_REQUEST = 'ROUTE_RESOLVE_REQUEST';
-    const ROUTING_MODULE        = 'routing';
-    const HTTP_MODULE           = 'http';
+    
+    # -- name of the 'routing' module
+    const MODULE_ROUTING = 'routing';
+    const MODULE_HTTP    = 'http';
+    
+    
+    # -- class properties
     /** @var \Sm\Communication\Request\RequestFactory Factory used to resolve Requests */
     protected $requestFactory;
     /** @var \Sm\Communication\Response\ResponseFactory Factory used to resolve Responses */
@@ -65,7 +73,11 @@ class CommunicationLayer extends StandardLayer {
     #   Resolvers
     ####################################################
     public function __get($name) {
+        $item = parent::__get($name);
+        if (isset($item)) return $name;
+        
         if ($name === 'routing') return $this->getRoutingModule();
+    
         # todo bad error
         throw new UnimplementedError("Cannot access this portion of the communication layer");
     }
@@ -84,22 +96,28 @@ class CommunicationLayer extends StandardLayer {
      * @return  $this
      * */
     public function registerRoutingModule(RoutingModule $routingModule) {
-        return $this->registerModule($routingModule, static::ROUTING_MODULE);
+        return $this->registerModule($routingModule, static::MODULE_ROUTING);
     }
     /**
      * Register a bunch of Routes on this Layer.
      *
-     * @param array $routes An array indexed by route pattern with resolutions as values.
+     * @param array|string $routes An array indexed by route pattern with resolutions as values.
      *
      * @return mixed
+     * @throws \Sm\Core\Exception\InvalidArgumentException
      */
-    public function registerRoutes(array $routes) {
+    public function registerRoutes($routes) {
+        if (is_string($routes)) {
+            $routes = json_decode($routes, 1);
+        } else if (!is_array($routes)) {
+            throw new InvalidArgumentException("Can only register JSON or arrays");
+        }
+        
         foreach ($routes as $pattern => &$resolution) {
             $this->normalizeResolution($resolution);
         }
-    
-        return $this->getRoutingModule()
-                    ->registerRoutes($routes);
+        
+        return $this->getRoutingModule()->registerRoutes($routes);
     }
     /**
      * Register routes in an array, but instead of being indexed by route pattern,
@@ -180,9 +198,7 @@ class CommunicationLayer extends StandardLayer {
         return $this->getRoutingModule()->describe($name);
     }
     
-    ####################################################
-    #   Protected Methods
-    ####################################################
+    
     /**
      * Get the Module used for Routing
      *
@@ -190,7 +206,7 @@ class CommunicationLayer extends StandardLayer {
      * @throws \Sm\Core\Context\Layer\Module\Exception\MissingModuleException
      */
     public function getRoutingModule(): RoutingModule {
-        $routingModule = $this->getModule(CommunicationLayer::ROUTING_MODULE);
+        $routingModule = $this->getModule(CommunicationLayer::MODULE_ROUTING);
         if (!$routingModule) throw new MissingModuleException("Missing a Routing Module");
         return $routingModule;
     }
@@ -201,11 +217,15 @@ class CommunicationLayer extends StandardLayer {
             throw new InvalidModuleException("Cannot register module {$name} on layer {$st_class}");
         }
     }
+    
+    ####################################################
+    #   Protected Methods
+    ####################################################
     /**
      * @return array An array of strings corresponding to the names of the modules that this layer needs to have
      */
     protected function _listExpectedModules(): array {
-        return [ CommunicationLayer::ROUTING_MODULE, CommunicationLayer::HTTP_MODULE ];
+        return [ CommunicationLayer::MODULE_ROUTING, CommunicationLayer::MODULE_HTTP ];
     }
     /**
      * Make sure the resolution that we are assigning to route is in the format that we want it on a layer-to-layer basis.

@@ -40,4 +40,5 @@ class ModelDataManagerTest extends \PHPUnit_Framework_TestCase {
         $propertySchema = $propertySchemaContainer->id;
         $this->assertInstanceOf(PropertySchema::class, $propertySchema);
     }
+    
 }

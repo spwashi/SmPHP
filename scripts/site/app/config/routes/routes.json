@@ -1,15 +1,20 @@
-{
-    "[internal]": [
-        {
-            "name":       404,
-            "resolution": "#ErrorController::rt_404"
-        }
-    ],
-
-    "$":          {
-        "name":       "home",
-        "controller": "#Home::index"
+[
+    {
+        "name":       404,
+        "resolution": "#ErrorController::rt_404"
     },
-    "test":       "#Home::item",
-    "{method}":   "#Home::test"
-}
+    {
+        "name":       "home",
+
+        "pattern":    "$",
+        "resolution": "#Home::index"
+    },
+    {
+        "pattern":    "test",
+        "resolution": "#Home::item"
+    },
+    {
+        "pattern":    "{method}",
+        "resolution": "#Home::test"
+    }
+]

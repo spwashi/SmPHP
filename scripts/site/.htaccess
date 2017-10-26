@@ -1,7 +1,7 @@
 # Redirect /index.php to / (optional, but recommended I guess)
 RewriteEngine On
 RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /.*index\.php
-RewriteRule ^index.php/?(.*)$ $1 [R=301,L]
+RewriteRule ^/index.php/?(.*)$ $1 [R=301,L]
 
 # Run everything else but real files through index.php
 RewriteCond %{REQUEST_FILENAME} !-d

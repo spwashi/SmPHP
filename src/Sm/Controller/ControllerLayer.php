@@ -4,6 +4,7 @@
 namespace Sm\Controller;
 
 
+use Sm\Controller\Event\Attempt_ResolveControllerClass;
 use Sm\Controller\Exception\MalformedControllerException;
 use Sm\Core\Context\Layer\StandardLayer;
 use Sm\Core\Exception\InvalidArgumentException;
@@ -13,7 +14,11 @@ use Sm\Core\Resolvable\Resolvable;
 use Sm\Core\Util;
 
 class ControllerLayer extends StandardLayer {
-    const LAYER_NAME = 'controller';
+    # -- class constants --
+    const LAYER_NAME                = 'controller';
+    const MONITOR__CLASS_RESOLUTION = 'class_resolution';
+    
+    # -- class properties
     protected $default_controller_name = 'Controller';
     protected $controller_namespaces   = [
         __NAMESPACE__,
@@ -118,10 +123,22 @@ class ControllerLayer extends StandardLayer {
             $class_name      = substr($class_name, 1);
             $class           = null;
             $namespace_array = array_reverse($this->controller_namespaces);
+            
+            /** @var \Sm\Core\Internal\Monitor\Monitor $class_resolution__Monitor */
+            $class_resolution__Monitor = $this->monitors->{ControllerLayer::MONITOR__CLASS_RESOLUTION};
+            
             foreach ($namespace_array as $namespace) {
                 $new_class_name = '\\' . trim($namespace, '\\') . '\\' . $class_name;
-                if (!class_exists($new_class_name)) continue;
+                
+                $attempt = Attempt_ResolveControllerClass::init($new_class_name);
+                
+                $class_resolution__Monitor->append($attempt);
+                
+                if (!class_exists($new_class_name)) {
+                    continue;
+                }
                 $class_name = $new_class_name;
+                $attempt->declareSuccessful();
                 break;
             }
         }

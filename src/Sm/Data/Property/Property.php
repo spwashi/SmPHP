@@ -11,7 +11,7 @@ namespace Sm\Data\Property;
 use Sm\Core\Abstraction\Readonly_able;
 use Sm\Core\Abstraction\ReadonlyTrait;
 use Sm\Core\Exception\InvalidArgumentException;
-use Sm\Core\Internal\Monitor\History;
+use Sm\Core\Internal\Monitor\Monitor;
 use Sm\Core\Schema\Schematicized;
 use Sm\Core\SmEntity\SmEntity;
 use Sm\Core\SmEntity\StdSchematicizedSmEntity;
@@ -30,7 +30,7 @@ use Sm\Data\Type\Variable_\Variable_;
  *
  * @package Sm\Data\Property
  *
- * @property-read \Sm\Core\Internal\Monitor\History $valueHistory              A History of this Property & it's values
+ * @property-read \Sm\Core\Internal\Monitor\Monitor $valueHistory              A History of this Property & it's values
  * @property-read string                            $object_id
  * @property-read array                             $potential_types
  */
@@ -45,10 +45,10 @@ class Property extends Variable_ implements Readonly_able,
     use StdSchematicizedSmEntity {
         fromSchematic as protected _fromSchematic_std;
     }
-    /** @var  \Sm\Core\Internal\Monitor\History $valueHistory */
+    /** @var  \Sm\Core\Internal\Monitor\Monitor $valueHistory */
     protected $valueHistory;
     public function __construct($name = null) {
-        $this->valueHistory = new History;
+        $this->valueHistory = new Monitor;
         parent::__construct($name);
     }
     
@@ -57,7 +57,7 @@ class Property extends Variable_ implements Readonly_able,
     public function __get($name) {
         if ($name === 'object_id') return $this->getObjectId();
         if ($name === 'potential_types') return $this->getPotentialTypes();
-        if ($name === 'history') return $this->getValueHistory();
+        if ($name === 'valueHistory') return $this->getValueHistory();
         
         return parent::__get($name);
     }
@@ -74,16 +74,20 @@ class Property extends Variable_ implements Readonly_able,
         parent::__set($name, $value);
     }
     public function setSubject($subject) {
+        $previous_value = $this->subject;
         parent::setSubject($subject);
-        $this->valueHistory->append(PropertyValueChange::init($this, $subject));
+    
+        if ($this->getSubject() !== $previous_value) {
+            $this->valueHistory->append(PropertyValueChange::init($this, $subject, $previous_value));
+        }
         return $this;
     }
     /**
      * Get a History of the values held by this Property (in this session?)
      *
-     * @return \Sm\Core\Internal\Monitor\History
+     * @return \Sm\Core\Internal\Monitor\Monitor
      */
-    public function getValueHistory(): History {
+    public function getValueHistory(): Monitor {
         return $this->valueHistory;
     }
     

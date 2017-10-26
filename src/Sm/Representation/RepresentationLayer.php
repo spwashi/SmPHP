@@ -5,24 +5,23 @@ namespace Sm\Representation;
 
 
 use Sm\Core\Context\Layer\StandardLayer;
+use Sm\Core\Event\GenericEvent;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Module\Error\InvalidModuleException;
 use Sm\Core\Module\Module;
 use Sm\Core\Util;
-use Sm\Representation\Context\RepresentationContext;
 use Sm\Representation\Exception\CannotRepresentException;
 use Sm\Representation\Factory\RepresentationFactory;
 use Sm\Representation\Module\RepresentationModule;
 use Sm\Representation\View\Proxy\ViewProxy;
 
 class RepresentationLayer extends StandardLayer {
-    const LAYER_NAME = 'representation';
+    const LAYER_NAME              = 'representation';
+    const MONITOR__REPRESENTATION = 'monitor.representation';
     /** @var  \Sm\Representation\Factory\RepresentationFactory $representationFactory */
     protected $representationFactory;
     /** @var array $representation_module_names An array of the names of Modules that we've made */
     protected $representation_module_names = [];
-    /** @var  RepresentationContext $representationContext The context in which we are going to be representing something */
-    protected $representationContext;
     
     
     /**
@@ -66,10 +65,8 @@ class RepresentationLayer extends StandardLayer {
             /** @var RepresentationModule $representationModule */
             $representationModule = $modules->{$module_name};
             try {
-                if (isset($this->representationContext)) {
-                    $representationModule->setRepresentationContext($this->representationContext);
-                }
                 $result = $representationModule->represent(...func_get_args());
+                $this->monitors->{RepresentationLayer::MONITOR__REPRESENTATION}->append(GenericEvent::init('use ' . $module_name));
                 return $result;
             } catch (CannotRepresentException $exception) {
             }
@@ -86,7 +83,7 @@ class RepresentationLayer extends StandardLayer {
      * @throws \Sm\Core\Exception\UnimplementedError
      */
     public function render($item): string {
-        $representation = $this->represent($item);
+        $representation = $this->represent(...func_get_args());
         if ($representation instanceof ViewProxy) {
             return $representation->render();
         } else if (Util::canBeString($representation)) {
@@ -94,14 +91,5 @@ class RepresentationLayer extends StandardLayer {
         } else {
             throw new UnimplementedError("No stringifiable representation interface");
         }
-    }
-    /**
-     * @param RepresentationContext $representationContext
-     *
-     * @return RepresentationLayer
-     */
-    public function setRepresentationContext(RepresentationContext $representationContext) {
-        $this->representationContext = $representationContext;
-        return $this;
     }
 }

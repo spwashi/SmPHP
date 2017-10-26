@@ -17,8 +17,6 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
     protected $protoSmID = '[Property]';
     protected $datatypeFactory;
     protected $length;
-    protected $unique    = false;
-    protected $primary   = false;
     use PropertyTrait;
     use StdSmEntitySchematicTrait {
         load as protected _load_std;

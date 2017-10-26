@@ -10,19 +10,24 @@ use Sm\Core\Event\GenericEvent;
  * For classes that keep track of their internal events
  */
 trait HasMonitorTrait {
-    /** @var  History $_monitor Keep track of things that happen */
-    protected $_monitors = [];
+    /** @var  \Sm\Core\Internal\Monitor\MonitorContainer $monitorContainer Keep track of things that happen */
+    protected $monitorContainer;
     /** Set the Monitor that will keep track of this class' inner workings
      *
      * @param string $type
      *
-     * @return \Sm\Core\Internal\Monitor\History
+     * @return \Sm\Core\Internal\Monitor\Monitor
      */
-    public function getMonitor($type = History::NOTE) {
-        $monitor = $this->_monitors[ $type ] = $this->_monitors[ $type ] ?? new History;
-        return $monitor;
+    public function getMonitor($type) {
+        return $this->getMonitorContainer()->resolve($type);
     }
-    protected function noteEvent($name, $details) {
-        $this->getMonitor()->append(new GenericEvent($name, $details));
+    protected function __info_monitor__log($name, $details) {
+        $monitorContainer = $this->getMonitorContainer();
+        
+        $monitorContainer->info->append(new GenericEvent($name, $details));
+    }
+    protected function getMonitorContainer(): MonitorContainer {
+        if (!isset($this->monitorContainer)) $this->monitorContainer = new MonitorContainer;
+        return $this->monitorContainer;
     }
 }

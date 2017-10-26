@@ -59,7 +59,7 @@ Sm::$instance = new Sm(LayerContainer::init());
 
 $routingModule      = new StandardRoutingModule;
 $communicationLayer = new CommunicationLayer;
-$communicationLayer->registerRoutingModule($routingModule)->registerModule(new HttpCommunicationModule, CommunicationLayer::HTTP_MODULE);
+$communicationLayer->registerRoutingModule($routingModule)->registerModule(new HttpCommunicationModule, CommunicationLayer::MODULE_HTTP);
 
 Sm::$instance->getLayers()->register(CommunicationLayer::LAYER_NAME, $communicationLayer);
 Sm::$instance->getLayers()->register(ControllerLayer::LAYER_NAME, new ControllerLayer);

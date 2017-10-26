@@ -10,7 +10,7 @@ fi
 echo "creating..."
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 site_path=$1
-site_path="$DIR/../$site_path"
+site_path="$DIR/../../$site_path"
 
 echo "in $site_path"
 
@@ -58,4 +58,19 @@ mkdir -p ${site_path}/storage/app/compiled
 ###############################################
 # Creating files
 ###############################################
-cp -r ./site/. ${site_path}
+cp -r "$DIR/site/". ${site_path}
+
+cd "${site_path}" && composer install
+
+smJS_site_path="${site_path}/app/resources/js/lib/SmJS"
+
+if [ ! -d "${smJS_site_path}" ]; then
+  git clone "https://github.com/spwashi/SmJS" "${site_path}/app/resources/js/lib/SmJS"
+fi
+
+
+rm -rf "${site_path}/vendor/spwashi/smphp/src"
+rm -rf "${site_path}/vendor/spwashi/smphp/tests"
+
+cp -r "$DIR/../src/". "${site_path}/vendor/spwashi/smphp/src"
+cp -r "$DIR/../tests/". "${site_path}/vendor/spwashi/smphp/tests"

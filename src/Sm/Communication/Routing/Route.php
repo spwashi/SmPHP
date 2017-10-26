@@ -53,7 +53,9 @@ class Route extends FunctionResolvable {
         parent::__construct($resolution);
     }
     public static function init($resolution = null, $pattern = null, $default = null) {
-        if (!isset($resolution)) throw new InvalidArgumentException("Cannot initialize route without a resolution");
+        if (!isset($resolution)) {
+            throw new InvalidArgumentException("Cannot initialize route without a resolution");
+        }
         if ($resolution instanceof Route) return $resolution;
     
         $Route = new static($resolution, $pattern, $default);

@@ -54,7 +54,7 @@ class TwigViewModule extends RepresentationModule {
                                                ->setTwigEnvironment($twigEnvironment);
     
     
-                    return ViewProxy::init($view, $this->representationContext);
+                    return ViewProxy::init($view);
                 },
             ]);
         

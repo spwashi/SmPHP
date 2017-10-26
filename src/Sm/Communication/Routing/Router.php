@@ -67,7 +67,10 @@ class Router implements Registry {
             $resolution = $pattern = null;
             
             if (is_array($registrand)) {
-                static::getRouteCreationVariables__array($registrand, $name, $pattern, $resolution);
+                static::getRouteCreationVariables__array($registrand,
+                                                         $name,
+                                                         $pattern,
+                                                         $resolution);
             } else if ($registrand instanceof Resolvable) {
                 $resolution = $registrand;
             }

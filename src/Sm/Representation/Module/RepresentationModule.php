@@ -9,7 +9,6 @@ use Sm\Core\Context\Layer\Layer;
 use Sm\Core\Context\Layer\Module\LayerModule;
 use Sm\Core\Factory\Exception\FactoryCannotBuildException;
 use Sm\Core\Util;
-use Sm\Representation\Context\RepresentationContext;
 use Sm\Representation\Exception\CannotRepresentException;
 use Sm\Representation\Factory\RepresentationFactory;
 use Sm\Representation\Representation;
@@ -23,8 +22,6 @@ use Sm\Representation\RepresentationLayer;
 abstract class RepresentationModule extends LayerModule {
     /** @var  \Sm\Representation\Factory\RepresentationFactory $representationFactory */
     protected $representationFactory;
-    /** @var  RepresentationContext $representationContext The context in which we are representing something */
-    protected $representationContext;
     
     
     public function __construct() {
@@ -68,17 +65,6 @@ abstract class RepresentationModule extends LayerModule {
      */
     public function registerRepresentationResolvers(array $resolvers) {
         $this->representationFactory->register($resolvers);
-        return $this;
-    }
-    /**
-     * Set the context in which we are going to be representing things
-     *
-     * @param \Sm\Representation\Context\RepresentationContext $representationContext
-     *
-     * @return $this
-     */
-    public function setRepresentationContext(RepresentationContext $representationContext) {
-        $this->representationContext = $representationContext;
         return $this;
     }
 }

@@ -128,7 +128,7 @@ abstract class AbstractContainer extends MiniContainer {
         }
     
         $registrand = $this->standardizeRegistrand($registrand);
-        $this->noteEvent('register', $name, $registrand);
+        $this->__info_monitor__log('register', $name, $registrand);
         parent::register($name, $registrand);
         return $this;
     }
@@ -141,7 +141,7 @@ abstract class AbstractContainer extends MiniContainer {
         $args = func_get_args();
         $item = parent::resolve($name);
         if (!($item instanceof Resolvable)) {
-            $this->noteEvent(AbstractContainer::ITEM_NOT_RESOLVABLE, $name, $args);
+            $this->__info_monitor__log(AbstractContainer::ITEM_NOT_RESOLVABLE, $name, $args);
             return $item;
         }
         array_shift($args);

@@ -15,6 +15,9 @@ final class GenericEvent extends Event {
         $this->event_name    = $event_name;
         $this->event_details = $event_details;
     }
+    public static function init(string $event_name, $event_details = null) {
+        return new static ($event_name, $event_details);
+    }
     function jsonSerialize() {
         return array_merge(parent::jsonSerialize(),
                            [
@@ -22,5 +25,4 @@ final class GenericEvent extends Event {
                                'details' => $this->event_details,
                            ]);
     }
-    
 }

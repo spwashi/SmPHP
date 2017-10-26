@@ -129,6 +129,9 @@ class Variable_ extends AbstractResolvable implements \JsonSerializable {
     public function setValue($value) {
         return $this->setSubject($value);
     }
+    public function getValue() {
+        return $this->resolve();
+    }
     
     /**
      * Return the Value of this subject or null if the subject doesn't exist

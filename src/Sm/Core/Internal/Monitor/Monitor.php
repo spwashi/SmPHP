@@ -8,12 +8,12 @@ use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
 use Sm\Core\Internal\Identification\Identifiable;
 
 /**
- * Class History
+ * Class Monitor
  *
  * Just meant to keep track of events in an undefined way
  */
-class History implements \JsonSerializable, Identifiable {
-    const NOTE = 'note';
+class Monitor implements \JsonSerializable, Identifiable {
+    const INFO = 'note';
     #
     /** @var Event[] */
     protected $events      = [];
@@ -41,17 +41,6 @@ class History implements \JsonSerializable, Identifiable {
         return $this;
     }
     /**
-     * Get the events that have been noted by this class.
-     *
-     * @param string|null $event_type The type of event type that we want to get the information about
-     *
-     * @return array|null
-     */
-    public function getEvents(string $event_type = null): ? array {
-        if (isset($event_type)) return $this->events[ $event_type ] ?? null;
-        return $this->events;
-    }
-    /**
      * Clear the event information that we've been holding at a specified index or in general
      *
      * @param string|null $event_type
@@ -68,5 +57,11 @@ class History implements \JsonSerializable, Identifiable {
             'object_id' => $this->getObjectId(),
             'events'    => $this->events,
         ];
+    }
+    /**
+     * @return \Sm\Core\Event\Event[]
+     */
+    public function dump(): array {
+        return $this->events;
     }
 }

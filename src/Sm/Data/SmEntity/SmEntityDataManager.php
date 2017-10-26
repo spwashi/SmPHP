@@ -65,6 +65,8 @@ abstract class SmEntityDataManager implements SmEntityManager {
     #
     ##  Getters/Setters
     /**
+     * The Factory that helps us create instances of our SmEntities
+     *
      * @param SmEntityFactory $smEntityFactory
      *
      * @return SmEntityDataManager

@@ -9,7 +9,6 @@ namespace Sm\Representation\Factory;
 
 
 use Sm\Core\Factory\StandardFactory;
-use Sm\Representation\Context\RepresentationContext;
 use Sm\Representation\Representation;
 
 /**
@@ -26,14 +25,13 @@ class RepresentationFactory extends StandardFactory {
     /**
      *
      *
-     * @param null                                                  $item
-     * @param \Sm\Representation\Context\RepresentationContext|null $context The context in which we are representing this item
+     * @param null $item
      *
      * @return \Sm\Representation\Representation
      * @internal param null $name
      */
-    public function resolve($item = null, RepresentationContext $context = null): Representation {
-        return parent::resolve($item, $context);
+    public function resolve($item = null): Representation {
+        return parent::resolve(...func_get_args());
     }
     
     public function shouldBuildClassInstance($class_name): bool {

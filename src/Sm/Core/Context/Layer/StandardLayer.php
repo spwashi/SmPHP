@@ -10,6 +10,7 @@ namespace Sm\Core\Context\Layer;
 
 use Sm\Core\Context\StandardContext;
 use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
+use Sm\Core\Internal\Monitor\HasMonitorTrait;
 use Sm\Core\Module\Module;
 use Sm\Core\Module\ModuleContainer;
 
@@ -19,6 +20,8 @@ use Sm\Core\Module\ModuleContainer;
  * @inheritdoc
  *
  * Represents standard functionality of a Layer
+ *
+ * @property \Sm\Core\Internal\Monitor\MonitorContainer $monitors
  *
  * @package Sm\Core\Context\Layer
  */
@@ -32,6 +35,7 @@ abstract class StandardLayer extends StandardContext implements Layer {
     /** @var  LayerRoot $layerRoot */
     protected $layerRoot;
     
+    use HasMonitorTrait;
     use HasObjectIdentityTrait;
     
     public function __construct() {
@@ -39,6 +43,13 @@ abstract class StandardLayer extends StandardContext implements Layer {
     }
     public static function init() {
         return new static;
+    }
+    public function __get($name) {
+        switch ($name) {
+            case 'monitors':
+                return $this->getMonitorContainer();
+        }
+        return null;
     }
     /**
      * Initialize the Layer on the LayerRoot provided

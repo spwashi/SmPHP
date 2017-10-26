@@ -47,18 +47,23 @@ class DataLayer extends StandardLayer {
         switch ($name) {
             case 'models':
             case '[Model]':
+            case Model::class:
                 return $this->initStdSmEntityManager(Model::class);
+    
             case 'properties':
             case '[Property]':
+            case Property::class:
                 return $this->initStdSmEntityManager(Property::class);
+    
             case 'sources':
             case '[DataSource]':
+            case DataSource::class:
                 return $this->initStdSmEntityManager(DataSource::class);
         }
         throw new InvalidArgumentException("Cannot resolve {$name} manager");
     }
     
-    public function configure(array $configuration_array) {
+    public function configure(array $configuration_array = null) {
         /** @var \stdClass $configuration */
         foreach ($configuration_array as $configuration) {
             if (!isset($configuration['smID'])) continue;

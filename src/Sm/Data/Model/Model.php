@@ -62,17 +62,17 @@ class Model implements ModelSchema,
     
     #
     ##  Configuration/Initialization
-    public function fromSchematic($schematic) {
-        /** @var \Sm\Data\Model\ModelSchematic $schematic */
-        $this->_fromSchematic_std($schematic);
+    public function fromSchematic($modelSchematic) {
+        /** @var \Sm\Data\Model\ModelSchematic $modelSchematic */
+        $this->_fromSchematic_std($modelSchematic);
         
-        $this->setName($this->getName() ?? $schematic->getName());
+        $this->setName($this->getName() ?? $modelSchematic->getName());
         
-        $pdm             = $schematic->getPropertyDataManager();
-        $propertySchemas = $schematic->getProperties();
-        $properties      = [];
+        $propertyDataManager = $modelSchematic->getPropertyDataManager();
+        $propertySchemas     = $modelSchematic->getProperties();
+        $properties          = [];
         foreach ($propertySchemas as $index => $propertySchema) {
-            $properties[ $index ] = $pdm->instantiate($propertySchema);
+            $properties[ $index ] = $propertyDataManager->instantiate($propertySchema);
         }
         $this->getProperties()->register($properties);
         return $this;
