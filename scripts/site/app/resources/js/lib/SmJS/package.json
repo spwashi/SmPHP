@@ -1,16 +1,20 @@
 {
-    "name":            "app-name",
-    "version":         "0.0.1",
-    "description":     "",
-    "main":            "gulpfile.babel.js",
+    "name":            "spwashi-sm",
+    "private":         false,
+    "version":         "0.0.2-b",
+    "description":     "A framework to assist with PHP web development",
+    "main":            "index.js",
     "scripts":         {
-        "test": "gulp mocha"
+        "test":  "gulp mocha",
+        "flow":  "flow",
+        "build": "gulp browserify"
     },
-    "author":          "",
-    "license":         "ISC",
+    "author":          "Sam Washington",
+    "license":         "MIT",
     "devDependencies": {
         "babel-cli":                                 "^6.24.1",
         "babel-core":                                "^6.0.20",
+        "babel-plugin-transform-builtin-extend":     "^1.1.2",
         "babel-plugin-transform-class-properties":   "^6.24.1",
         "babel-plugin-transform-object-rest-spread": "^6.23.0",
         "babel-plugin-transform-regenerator":        "^6.24.1",
@@ -31,18 +35,17 @@
         "gulp":                                      "^3.9.1",
         "gulp-mocha":                                "^4.3.1",
         "gulp-rename":                               "^1.2.2",
-        "gulp-sourcemaps":     "^2.6.0",
-        "gulp-uglify":         "^2.1.2",
-        "gulp-util":           "latest",
-        "mocha":               "latest",
-        "node-sass":           "^4.5.3",
-        "utils-merge":         "^1.0.0",
-        "vinyl-buffer":        "^1.0.0",
-        "vinyl-source-stream": "^1.1.0",
-        "trim":                "^0.0.1",
-        "watchify":            "^3.9.0"
+        "gulp-sourcemaps":                           "^2.6.0",
+        "gulp-uglify":                               "^2.1.2",
+        "gulp-util":                                 "latest",
+        "mocha":                                     "latest",
+        "strip-json-comments":                       "^2.0.1",
+        "utils-merge":                               "^1.0.0",
+        "vinyl-buffer":                              "^1.0.0",
+        "vinyl-source-stream":                       "^1.1.0",
+        "watchify":                                  "^3.9.0"
     },
     "dependencies":    {
-        "spwashi-sm": "^0.0.1-b"
+        "react": "latest"
     }
 }

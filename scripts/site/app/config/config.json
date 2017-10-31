@@ -1,5 +1,7 @@
 {
-    "name":       "EXAMPLE_APP",
+    "name":        "example-app",
+    "namespace":   "EXAMPLE_APP",
+    "environment": "dev",
 
 
     //
@@ -7,35 +9,27 @@
     // If this is an object, the keys represent the environment.
     //   [.php] files   - executed as PHP scripts
     //
-    "autoload":   {
+    "autoload":    {
         "_":   [ "CONFIG_PATH/autoload/autoload.php" ],
         "dev": [ "CONFIG_PATH/autoload/autoload.php" ]
     },
 
+
     //
     // Information about the controllers we're going to use
     //
-    "controller": {
-        "namespace": "\\EXAMPLE_APP_NAMESPACE\\Controller\\"
+    "controller":  {
+        "namespace": "Controller\\"
     },
 
 
     //
     // These are the paths referenced by the application/framework
     //
-    "paths":      {
+    "paths":       {
         "views":   "APP_PATH/VIEW/",
-        "models":  [
-            "CONFIG_PATH/models/models.json"
-        ],
-        "routes":  [
-            "CONFIG_PATH/routes/routes.json",
-            "CONFIG_PATH/routes/routes.php"
-        ],
-        "sources": {
-            "_": [
-                "CONFIG_PATH/sources/sources.json"
-            ]
-        }
+        "models":  "CONFIG_PATH/models/",
+        "routes":  "CONFIG_PATH/routes/",
+        "sources": "CONFIG_PATH/sources/"
     }
 }
