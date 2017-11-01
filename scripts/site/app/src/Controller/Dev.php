@@ -4,6 +4,7 @@ namespace EXAMPLE_APP_NAMESPACE\Controller;
 
 use Error;
 use Sm\Application\Controller\BaseApplicationController;
+use Sm\Core\Exception\UnimplementedError;
 use Sm\Data\Model\Model;
 use Sm\Data\Property\PropertySchematic;
 use Sm\Query\Modules\Sql\Constraints\PrimaryKeyConstraintSchema;
@@ -40,11 +41,12 @@ class Dev extends BaseApplicationController {
                 $column = $this->_initStringColumn($propertySchema);
                 break;
             default :
-                $column = $first_datatype;
+                throw new UnimplementedError("Cannot create property for {$first_datatype} yet");
         }
         
         if (isset($column)) {
             $is_null = in_array('[Datatype]null', $datatypes);
+            var_dump($column);
             $column->setNullability($is_null);
         }
         
