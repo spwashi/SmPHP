@@ -7,11 +7,24 @@ app_loader.setBase(__dirname, Sm)
     
               application.createConfigRequireFile()
                          .then(response => {
-                             const configModels = config.models && Sm._config.initialize(config.models(Sm), Sm.entities.Model);
-                             Promise.resolve(configModels);
+                             const configModels = config.models
+                                 ? config.models(Sm)
+                                         .then(models => {
+                                             const _sm__config = Sm._config;
+                                             console.log(_sm__config);
+                                             return _sm__config.initialize(models,
+                                                                           Sm.entities.Model);
+                                         })
+                                 : null;
+                             return Promise.resolve(configModels)
+                                           .then(modelPromises => Promise.all(modelPromises))
+                                           .catch(error => console.log(error));
                          })
                          .then(result => {
-                             // console.log(result)
+                             console.log(JSON.stringify(result, ' ', 3));
+                         })
+                         .catch(i => {
+                             console.error(i);
                          });
     
           });

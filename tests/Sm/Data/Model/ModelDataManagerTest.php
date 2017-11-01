@@ -19,6 +19,14 @@ class ModelDataManagerTest extends \PHPUnit_Framework_TestCase {
         $this->assertInstanceOf(ModelSchematic::class, $modelSchema);
         $this->assertEquals($model_name, $modelSchema->getName());
     }
+    public function testCanInstantiateConfiguredModel() {
+        $mdm           = ModelDataManager::init();
+        $model_name    = 'modelName';
+        $configuration = [ 'name' => $model_name, 'smID' => '[Model]modelName' ];
+        $modelSchema   = $mdm->configure($configuration);
+        $this->assertInstanceOf(Model::class, $mdm->instantiate('[Model]modelName'));
+        $this->assertEquals($model_name, $modelSchema->getName());
+    }
     public function testCanConfigureProperties() {
         $mdm                     = ModelDataManager::init();
         $model_name              = 'id';

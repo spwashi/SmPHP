@@ -8,6 +8,7 @@
 namespace Sm\Data\SmEntity;
 
 
+use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Schema\Schematic;
 use Sm\Core\Schema\Schematicized;
 use Sm\Core\SmEntity\SmEntityFactory;
@@ -53,7 +54,9 @@ abstract class SmEntityDataManager implements SmEntityManager {
     
     #
     ##  Configuration/
-    public function instantiate(Schematic $schematic = null) {
+    public function instantiate($schematic = null) {
+        if (!($schematic instanceof Schematic)) throw new InvalidArgumentException("Can only use Schematics to initialize DataManagers");
+        
         $item = $this->smEntityFactory->resolve(null, $schematic);
         
         if (isset($schematic) && $item instanceof Schematicized) {

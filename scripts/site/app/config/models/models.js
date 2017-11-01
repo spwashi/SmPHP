@@ -1,15 +1,25 @@
 export default Sm => {
-    Sm.entities.Datatype.init('string');
-    Sm.entities.Datatype.init('null');
-    Sm.entities.Datatype.init('course_number', {inherits: 'string'});
-    
-    const models = {
+    const dataPromises = [
+        Sm.entities.Datatype.init('string'),
+        Sm.entities.Datatype.init('null'),
+        Sm.entities.Datatype.init('int'),
+        Sm.entities.Datatype.init('datetime'),
+        Sm.entities.Datatype.init('bool'),
+    ];
+    const models       = {
         _:            {
             properties: {
-                id: {primary: !0},
-                
-                creation_dt:    {},
-                last_update_dt: {},
+                id:             {primary: !0},
+                delete_dt:      {
+                    datatypes: 'datetime',
+                },
+                creation_dt:    {
+                    datatypes: 'datetime',
+                    _default:  'now'
+                },
+                last_update_dt: {
+                    datatypes: 'datetime'
+                },
             }
         },
         universities: {
@@ -37,5 +47,6 @@ export default Sm => {
         }
     };
     
-    return models;
+    return Promise.all(dataPromises)
+                  .then(result => models);
 };

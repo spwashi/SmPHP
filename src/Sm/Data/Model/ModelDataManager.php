@@ -8,6 +8,7 @@
 namespace Sm\Data\Model;
 
 
+use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\SmEntity\SmEntityFactory;
 use Sm\Data\DataLayer;
 use Sm\Data\Property\PropertyDataManager;
@@ -36,14 +37,24 @@ class ModelDataManager extends SmEntityDataManager {
         parent::__construct($dataLayer, $smEntityFactory);
         $this->propertyDataManager = $datatypeFactory ?? PropertyDataManager::init();
     }
+    public function instantiate($schematic = null) {
+        if (is_string($schematic)) {
+            if (isset($this->configuredModels[ $schematic ])) {
+                $schematic = $this->configuredModels[ $schematic ];
+            } else {
+                throw new InvalidArgumentException("Cannot find Model to match '{$schematic}'");
+            }
+        }
+        return parent::instantiate($schematic);
+    }
     
     public function configure($configuration): ModelSchematic {
         $item = ModelSchematic::init($this->propertyDataManager)->load($configuration);
         $smID = $item->getSmID();
-    
+        
         #
         if ($smID) $this->configuredModels[ $smID ] = $item;
-    
+        
         #
         return $item;
     }
