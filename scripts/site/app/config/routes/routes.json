@@ -1,6 +1,8 @@
 [
     {
-        "name":       404,
+        "name":       "rt_404",
+
+        "pattern":    "404/{error}",
         "resolution": "#ErrorController::rt_404"
     },
     {
@@ -14,7 +16,7 @@
         "resolution": "#Home::item"
     },
     {
-        "pattern":    "{method}",
-        "resolution": "#Home::test"
+        "pattern":    "wanghorn/dev/models",
+        "resolution": "#Dev::modelsToTables"
     }
 ]
