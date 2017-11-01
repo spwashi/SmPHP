@@ -18,6 +18,7 @@ use Sm\Controller\ControllerLayer;
 use Sm\Core\Context\Layer\Exception\InaccessibleLayerException;
 use Sm\Core\Context\Layer\Module\Exception\MissingModuleException;
 use Sm\Core\Context\Layer\StandardLayer;
+use Sm\Core\Event\GenericEvent;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Module\Error\InvalidModuleException;
@@ -116,7 +117,7 @@ class CommunicationLayer extends StandardLayer {
         foreach ($routes as $pattern => &$resolution) {
             $this->normalizeResolution($resolution);
         }
-        
+        $this->getMonitorContainer()->info->append(GenericEvent::init('add-routes', $routes));
         return $this->getRoutingModule()->registerRoutes($routes);
     }
     /**
@@ -169,18 +170,23 @@ class CommunicationLayer extends StandardLayer {
      *
      * @todo should return Response, accept Request
      *
-     * @param $request
+     * @param            $request
+     *
+     * @param array|null $parameters These are the parameters that we are going to pass into whatever we are using.
+     *                               This is only used for NamedRequests right now @ todo
      *
      * @return mixed
-     * @throws \Sm\Core\Context\Layer\Module\Exception\MissingModuleException
      */
-    public function route($request) {
+    public function route($request, array $parameters = null) {
         # If we want to resolve the Request from the Environment, do that here
         if ($request === static::ROUTE_RESOLVE_REQUEST) {
             $request = $this->resolveRequest();
         } else if (is_string($request)) {
-            $request = NamedRequest::init()->setName($request);
+            $request = NamedRequest::init($request);
         }
+        
+        if ($request instanceof NamedRequest) $request->setParameters($parameters);
+        
         return $this->getRoutingModule()->route($request);
     }
     /**

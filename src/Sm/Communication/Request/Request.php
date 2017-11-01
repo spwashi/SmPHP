@@ -19,9 +19,18 @@ use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
  */
 abstract class Request implements Context, \JsonSerializable {
     use HasObjectIdentityTrait;
-    
+    /** @var  \Sm\Communication\Request\Request $parentRequest The request that spawned this one */
+    protected $parentRequest;
     public static function init($item = null) {
         if ($item instanceof Request) return $item;
         return new static;
     }
+    public function getParentRequest(): ?Request {
+        return $this->parentRequest;
+    }
+    public function setParentRequest(Request $parentRequest) {
+        $this->parentRequest = $parentRequest;
+        return $this;
+    }
+    
 }

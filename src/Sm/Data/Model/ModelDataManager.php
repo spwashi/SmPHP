@@ -37,7 +37,8 @@ class ModelDataManager extends SmEntityDataManager {
         parent::__construct($dataLayer, $smEntityFactory);
         $this->propertyDataManager = $datatypeFactory ?? PropertyDataManager::init();
     }
-    public function instantiate($schematic = null) {
+    
+    public function instantiate($schematic = null): Model {
         if (is_string($schematic)) {
             if (isset($this->configuredModels[ $schematic ])) {
                 $schematic = $this->configuredModels[ $schematic ];

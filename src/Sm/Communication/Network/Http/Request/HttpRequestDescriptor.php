@@ -8,6 +8,7 @@
 namespace Sm\Communication\Network\Http\Request;
 
 
+use Sm\Communication\Request\NamedRequest;
 use Sm\Communication\Request\Request;
 use Sm\Communication\Request\RequestDescriptor;
 use Sm\Core\Context\Exception\InvalidContextException;
@@ -87,6 +88,8 @@ class HttpRequestDescriptor extends RequestDescriptor {
     }
     public function getArguments(Request $request = null) {
         if (empty($this->argument_names)) return [];
+        
+        if ($request instanceof NamedRequest) return $request->getParameters();
         if (!($request instanceof HttpRequest)) throw new InvalidArgumentException("Expected an HttpRequest");
         
         return $this->getArgumentsFromUrlPathString($request->getUrlPath());
@@ -128,7 +131,7 @@ class HttpRequestDescriptor extends RequestDescriptor {
                 
                 # Add the parameter name to the list of parameters so we can get the matches in order
                 $this->argument_names[] = $parameter_name;
-    
+                
                 # We only want the regex, default to alpha or underscore followed by anything (because these might be methods?)
                 $url_pattern_segment = !empty($match_container_arr[2]) ? $match_container_arr[2] : '[a-zA-Z_]+[a-zA-Z_\d]*';
                 
@@ -217,7 +220,7 @@ class HttpRequestDescriptor extends RequestDescriptor {
      *
      * @throws \Sm\Core\Exception\InvalidArgumentException
      */
-    protected function checkHttpRequestArguments($arguments) {
+    protected function gcheckHttpRequestArguments($arguments) {
         if (!is_array($arguments)) throw new InvalidArgumentException("Can only accept associative arrays");
         foreach ($this->argument_names as $argument_name) {
             if (!isset($arguments[ $argument_name ])) throw new InvalidArgumentException("Missing {$argument_name} from request");
