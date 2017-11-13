@@ -65,7 +65,7 @@ cd "${site_path}" && composer install
 smJS_site_path="${site_path}/app/resources/js/lib/SmJS"
 
 if [ ! -d "${smJS_site_path}" ]; then
-  git clone "https://github.com/spwashi/SmJS" "${site_path}/app/resources/js/lib/SmJS"
+  git clone "https://github.com/spwashi/SmJS.git" "${site_path}/app/resources/js/lib/SmJS"
 fi
 
 

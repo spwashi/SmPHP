@@ -184,8 +184,8 @@ class CommunicationLayer extends StandardLayer {
         } else if (is_string($request)) {
             $request = NamedRequest::init($request);
         }
-        
-        if ($request instanceof NamedRequest) $request->setParameters($parameters);
+    
+        if ($request instanceof NamedRequest && isset($parameters)) $request->setParameters($parameters);
         
         return $this->getRoutingModule()->route($request);
     }

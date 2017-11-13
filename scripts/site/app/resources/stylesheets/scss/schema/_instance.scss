@@ -1,0 +1,10 @@
+.schema--instance {
+  &::before {
+    @extend %schema-decorator;
+    content : '{';
+  }
+  &::after {
+    @extend %schema-decorator;
+    content : '}';
+  }
+}

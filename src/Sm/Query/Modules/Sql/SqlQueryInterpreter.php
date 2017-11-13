@@ -7,7 +7,6 @@
 
 namespace Sm\Query\Modules\Sql;
 
-use Sm\Authentication\AbstractAuthentication;
 use Sm\Authentication\Authentication;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Query\Interpretation\QueryInterpreter;
@@ -75,7 +74,7 @@ abstract class SqlQueryInterpreter extends QueryInterpreter {
      *
      * @return string
      */
-    protected function format($query_or_statement, SqlFormattingContext $formattingContext = null): string {
+    function format($query_or_statement, SqlFormattingContext $formattingContext = null): string {
         # If this is a string already, assume that it is already SQL
         if (is_string($query_or_statement)) return $query_or_statement;
         

@@ -1,0 +1,28 @@
+@import "helper";
+
+.schema--anchor {
+
+  > .schema--anchor--label--container {
+    border  : thin solid #2e6da4;
+    display : inline-block;
+    margin  : 25px auto;
+
+    &::before {
+      @extend %schema-decorator;
+      content : '&';
+    }
+
+    > input, > .schema--anchor--label {
+      @extend %schema-label;
+    }
+  }
+}
+
+.schema--anchor--ampersand {
+  @extend %_identified;
+  display : inline-block;
+  &::before {
+    @extend %schema-decorator;
+    content : '&';
+  }
+}

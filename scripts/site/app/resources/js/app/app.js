@@ -1,3 +1,4 @@
+const mkdirp            = require('mkdirp');
 const path              = require('path');
 const fs                = require('fs');
 const stripJsonComments = require('strip-json-comments');
@@ -19,6 +20,11 @@ function initApp(dirName, Sm) {
             return Promise.resolve(name);
         }
         
+        configure_namespace(namespace) {
+            this.owner._namespace = namespace;
+            return Promise.resolve(namespace);
+        }
+        
         configure_paths(paths) {
             if (typeof paths !== "object") {
                 return Promise.reject("Cannot configure non-object paths");
@@ -28,34 +34,72 @@ function initApp(dirName, Sm) {
             
             for (let pathIndex in paths) {
                 if (!paths.hasOwnProperty(pathIndex)) continue;
-                this.owner.paths[pathIndex] = paths[pathIndex].replace('CONFIG_PATH', this.owner.paths.config.replace(LEADING_TRAILING_SLASH_REGEX, ''))
-                                                              .replace('APP_PATH', this.owner.paths.app.replace(LEADING_TRAILING_SLASH_REGEX, ''))
-                                                              .replace(LEADING_TRAILING_SLASH_REGEX, '') + '/';
+                this.owner.paths[pathIndex] =
+                    paths[pathIndex].replace('CONFIG_PATH', this.owner.paths.config.replace(LEADING_TRAILING_SLASH_REGEX, ''))
+                                    .replace('APP_PATH', this.owner.paths.app.replace(LEADING_TRAILING_SLASH_REGEX, ''))
+                                    .replace(LEADING_TRAILING_SLASH_REGEX, '') + '/';
             }
             
             return Promise.resolve(paths);
         }
         
         configure_appPath(appPath) {
-            this.owner.paths.app = appPath.replace(LEADING_TRAILING_SLASH_REGEX, '') + '/';
+            this.owner.paths.app =
+                appPath.replace(LEADING_TRAILING_SLASH_REGEX, '') + '/';
             return Promise.resolve(appPath);
         }
         
         configure_configPath(configPath) {
-            this.owner.paths.config = configPath.replace(LEADING_TRAILING_SLASH_REGEX, '') + '/';
+            this.owner.paths.config =
+                configPath.replace(LEADING_TRAILING_SLASH_REGEX, '') + '/';
             return Promise.resolve(configPath);
         }
+        
+        configure_controller(controllerObj) {
+            controllerObj           =
+                typeof controllerObj === "object" && controllerObj
+                    ? controllerObj
+                    : {};
+            controllerObj.namespace =
+                controllerObj.namespace || "Controller";
+            this.owner._controller  = controllerObj;
+            return Promise.resolve(controllerObj);
+        }
     }
+    
+    let createFileAndDirectory = function (text, dirname, endFileName) {
+        const createFile = (filename) => {
+            fs.writeFile(filename,
+                         text,
+                         {flag: 'w'},
+                         error => {
+                             console.log(error);
+                         });
+        };
+        
+        mkdirp(dirname,
+               function (err) {
+                   if (err) {
+                       console.error(err);
+                       return;
+                   }
+                   createFile(endFileName);
+               });
+    };
     
     class Application extends Sm.entities.ConfiguredEntity {
         static Configuration = AppConfiguration;
                _name;
-               paths: {
-                   app: string,
-                   config: string,
-                   models: string,
-                   routes: string
-               }             = {};
+               _controller: { namespace: string };
+        
+        paths: {
+            app: string,
+            config: string,
+            models: string,
+            routes: string
+        } = {};
+        
+        _namespace;
         
         configure(config: Sm.entities.ConfiguredEntity._config) {
             if (typeof config !== 'string') {
@@ -79,6 +123,12 @@ function initApp(dirName, Sm) {
             }
         }
         
+        get namespace() {return ((this._namespace + '\\') || '\\');}
+        
+        get jsonFields() {
+            return new Set(['name', 'namespace', 'controller'])
+        }
+        
         createConfigRequireFile() {
             const configPath      = this.paths.config;
             const requireFileName = configPath + 'index.js';
@@ -92,7 +142,10 @@ function initApp(dirName, Sm) {
             
             directories_to_check.forEach(index => {
                 let resolve, reject;
-                let P = new Promise((res, rej) => {[resolve, reject] = [res, rej];});
+                let P = new Promise((res, rej) => {
+                    [resolve, reject] =
+                        [res, rej];
+                });
                 resolvedPaths.push(P);
                 
                 const path     = this.paths[index];
@@ -113,7 +166,10 @@ function initApp(dirName, Sm) {
                           .then(i => {
                               let resolve, reject;
                 
-                              const P = new Promise((res, rej) => {[resolve, reject] = [res, rej]});
+                              const P = new Promise((res, rej) => {
+                                  [resolve, reject] =
+                                      [res, rej]
+                              });
                 
                               fs.writeFile(requireFileName, lines.join('\n'), error => {
                                   if (error) {
@@ -127,13 +183,37 @@ function initApp(dirName, Sm) {
                               return P;
                           });
         }
+        
+        storeEntityConfig(configuration) {
+            const dir_name    = this.paths.config + '_generated';
+            const file        = 'data.json';
+            const endFileName = `${dir_name}/${file}`;
+            
+            createFileAndDirectory(JSON.stringify(configuration),
+                                   dir_name,
+                                   endFileName);
+        }
+        
+        toJSON__controller() {
+            return Object.assign({}, this._controller, {namespace: this.namespace + this._controller.namespace + '\\'});
+        }
+        
+        saveConfig() {
+            const dir_name    = this.paths.config + '_generated';
+            const file        = '_config.json';
+            const endFileName = `${dir_name}/${file}`;
+            
+            createFileAndDirectory(JSON.stringify(this),
+                                   dir_name,
+                                   endFileName);
+        }
     }
     
     const app = new Application;
     
     const configProcesses = [
         app.configure(config_1),
-        app.configure(config_1.configPath + '/config.json')
+        app.configure(config_1.configPath + '/base.json')
     ];
     
     return Promise.all(configProcesses).then(i => app);

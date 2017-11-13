@@ -16,6 +16,10 @@
         "resolution": "#Home::item"
     },
     {
+        "pattern":    "wanghorn/one",
+        "resolution": "#Temp::react_1"
+    },
+    {
         "pattern":    "wanghorn/dev/models",
         "resolution": "#Dev::modelsToTables"
     }

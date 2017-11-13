@@ -20,12 +20,12 @@ class MySqlQueryInterpreterTest extends \PHPUnit_Framework_TestCase {
     }
     public function testCanSelect() {
         $interpreter = new MySqlQueryInterpreter($this->getAuthentication(),
-                                                 new SqlQueryFormatterFactory(new SqlFormattingProxyFactory,
-                                                                              new SqlFormattingAliasContainer));
+                                                 new  SqlQueryFormatterFactory(new SqlFormattingProxyFactory,
+                                                                               new SqlFormattingAliasContainer));
         
         $result = $interpreter->interpret("SELECT 'hello' as test;");
         $this->assertInternalType('array', $result);
         $this->assertEquals('hello',
-                            $result['test']??null);
+                            $result['test'] ?? null);
     }
 }

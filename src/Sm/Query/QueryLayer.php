@@ -38,8 +38,8 @@ class QueryLayer extends StandardLayer {
      * @throws \Sm\Core\Query\Module\Exception\UnfoundQueryModuleException
      */
     public function interpret($query, string $interpreter = null) {
-        /** @var QueryModule $queryModule */
-        $queryModule = $this->queryModuleFactory->build($interpreter, $query);
+        $queryModule = $this->getQueryModule($query, $interpreter);
+    
         #@todo resolve queryModule based on index
         if (!$queryModule) throw new UnfoundQueryModuleException("No QueryModule enabled to handle this kind of query.");
         return $queryModule->interpret($this, $query);
@@ -47,10 +47,10 @@ class QueryLayer extends StandardLayer {
     /**
      * Register a QueryModule on this layer.
      *
-     * @param \Sm\Query\Module\QueryModule $queryModule
-     * @param null                         $factoryMethod Following typical factories, this is a method that will belong to the queryModuleFactory
+     * @param QueryModule $queryModule
+     * @param null        $factoryMethod                  Following typical factories, this is a method that will belong to the queryModuleFactory
      *                                                    to resolve the QueryModule that would best execute this query
-     * @param bool                         $do_name       Should we add the method to the factory with a name? If we do, the method will only be
+     * @param bool        $do_name                        Should we add the method to the factory with a name? If we do, the method will only be
      *                                                    accessible by name. If not, the method will only be accessible without a name.
      */
     public function registerQueryModule(QueryModule $queryModule, $factoryMethod = null, $do_name = true) {
@@ -68,5 +68,10 @@ class QueryLayer extends StandardLayer {
             
             $this->queryModuleFactory->register(...$args);
         }
+    }
+    protected function getQueryModule($query, string $interpreter = null): QueryModule {
+        /** @var QueryModule $queryModule */
+        $queryModule = $this->queryModuleFactory->build($interpreter, $query);
+        return $queryModule;
     }
 }

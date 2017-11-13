@@ -34,23 +34,25 @@ class MySqlQueryModuleTest extends \PHPUnit_Framework_TestCase {
         $layer->registerQueryModule($module, function () use ($module) { return $module; }, 0);
         $this->layer = $layer;
     }
+    
     public function testCanInterpretSelect() {
         $result = $this->layer->interpret(String_QueryProxy::init('SELECT "hello"'));
         $this->assertInternalType('array', $result);
-        $this->assertEquals($result['hello']??0, 'hello');
+        $this->assertEquals($result['hello'] ?? 0, 'hello');
         $result = $this->layer->interpret(SelectStatement::init()->select(StringResolvable::init('hello')));
         $this->assertInternalType('array', $result);
-        $this->assertEquals($result['hello']??0, 'hello');
+        $this->assertEquals($result['hello'] ?? 0, 'hello');
     }
     public function testCan() {
+        $id           = IntegerColumnSchema::init('id')->setLength(11)->setNullability(0);
         $id           = IntegerColumnSchema::init('id')->setLength(11)->setNullability(0);
         $create_table = CreateTableStatement::init('std')
                                             ->withColumns($id)
                                             ->withConstraints(PrimaryKeyConstraintSchema::init()
                                                                                         ->addColumn($id));
-        
-        $query  = String_QueryProxy::init("SHOW TABLES");
-        $result = $this->layer->interpret($create_table);
-//        echo json_encode($result, JSON_PRETTY_PRINT);
+    
+        $query = String_QueryProxy::init("SHOW TABLES");
+//        $result = $this->layer->interpret($create_table);
+        echo json_encode($create_table, JSON_PRETTY_PRINT);
     }
 }

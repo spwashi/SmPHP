@@ -10,12 +10,18 @@ require_once EXAMPLE_APP__CONFIG_PATH . 'autoload/autoload.php';
 ####################################################################################
 const EXAMPLE_APP__URL            = 'http://localhost/wanghorn';
 const EXAMPLE_APP__URL_PUBLIC     = EXAMPLE_APP__URL . '/public';
-const EXAMPLE_APP__VIEW_TWIG_PATH = EXAMPLE_APP__PATH . 'view/twig/';
+const EXAMPLE_APP__VIEW_TWIG_PATH = EXAMPLE_APP__PATH . 'app/view/twig/';
 
 
 /** @var \Sm\Application\Application $app */
 if (!isset($app)) {
     die("Cannot configure without an app");
+}
+
+$config_json = EXAMPLE_APP__CONFIG_PATH . '_generated/_config.json';
+
+if (file_exists($config_json)) {
+    $has_been_configured = $config_json;
 }
 
 
@@ -24,6 +30,18 @@ if (!isset($app)) {
 #-----------------------------------------------------------------------------------
 
 $app->controller->addControllerNamespace('\\EXAMPLE_APP_NAMESPACE\\Controller\\');
+
+#-----------------------------------------------------------------------------------
+#   Data Layer
+#-----------------------------------------------------------------------------------
+
+$data_json_path = EXAMPLE_APP__CONFIG_PATH . '_generated/data.json';
+
+if (file_exists($config_json)) {
+    $dataJson    = file_get_contents($data_json_path);
+    $data_config = json_decode($dataJson, 1);
+    $app->data->configure($data_config);
+}
 
 
 #-----------------------------------------------------------------------------------

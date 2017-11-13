@@ -1,5 +1,5 @@
-import Sm from "./lib/SmJS/src/index"
-import {app_loader} from "./app/app";
+import Sm from "./lib/SmJS/src"
+import {app_loader} from "./_application";
 import * as config from "../../config";
 
 app_loader.setBase(__dirname, Sm)
@@ -11,17 +11,20 @@ app_loader.setBase(__dirname, Sm)
                                  ? config.models(Sm)
                                          .then(models => {
                                              const _sm__config = Sm._config;
-                                             console.log(_sm__config);
                                              return _sm__config.initialize(models,
                                                                            Sm.entities.Model);
                                          })
                                  : null;
                              return Promise.resolve(configModels)
-                                           .then(modelPromises => Promise.all(modelPromises))
+                                           .then(modelPromises => {
+                                               console.log(modelPromises);
+                                               return Promise.all(modelPromises)
+                                           })
                                            .catch(error => console.log(error));
                          })
                          .then(result => {
-                             console.log(JSON.stringify(result, ' ', 3));
+                             application.storeEntityConfig(result);
+                             application.saveConfig();
                          })
                          .catch(i => {
                              console.error(i);

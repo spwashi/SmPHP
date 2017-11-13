@@ -55,7 +55,7 @@ abstract class SmEntityDataManager implements SmEntityManager {
     #
     ##  Configuration/
     public function instantiate($schematic = null) {
-        if (!($schematic instanceof Schematic)) throw new InvalidArgumentException("Can only use Schematics to initialize DataManagers");
+        if ($schematic && !($schematic instanceof Schematic)) throw new InvalidArgumentException("Can only use Schematics to initialize DataManagers");
         
         $item = $this->smEntityFactory->resolve(null, $schematic);
         

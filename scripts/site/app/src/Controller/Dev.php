@@ -60,6 +60,12 @@ class Dev extends BaseApplicationController {
                                      ->setLength($propertySchema->getLength());
         return $column;
     }
+    protected function _initDatetimeColumn(PropertySchematic $propertySchema): ColumnSchema {
+        $column = DateTimeColumn::init()
+                                ->setName($propertySchema->getName())
+                                ->setLength($propertySchema->getLength());
+        return $column;
+    }
     
     protected function _initStringColumn(PropertySchematic $propertySchema): ColumnSchema {
         $column = VarcharColumnSchema::init()
@@ -72,7 +78,53 @@ class Dev extends BaseApplicationController {
         $app = $this->app;
         
         $models = $app->data->models->getConfiguredModels();
+    
+        list($all, $queries) = $this->formatModels($models);
+    
+        var_dump($models);
+    
+        $do_interpret = 1;
+    
+        if ($do_interpret == true) {
+            foreach ($queries as $query) {
+            
+                echo "<pre>";
+                echo MySqlQueryModule::init()->initialize()->getQueryFormatter()->format($query);
+                echo "</pre><br>";
+            
+                $app->query->interpret($query);
+            }
+        }
+    
+    
+        $joined = join('<br>', $all);
+        echo "<pre>{$joined}</pre>";
+    }
+    
+    public function eg() {
+        $application         = $this->app;
+        $representationLayer = $application->representation;
+        $dataLayer           = $application->data;
         
+        $model_manager = $dataLayer->getDataManager(Model::class);
+        
+        # -- rendering
+        
+        $vars     = [ 'path_to_site' => $this->app->path, ];
+        $rendered = $representationLayer->render('hello.twig', $vars);
+        
+        #
+        
+        return $rendered;
+    }
+    
+    /**
+     * @param  Model[] $models
+     *
+     * @return array
+     * @throws \Error
+     */
+    protected function formatModels($models): array {
         $all                       = [];
         $queries                   = [];
         $_allColumns__propertySmID = [];
@@ -98,11 +150,11 @@ class Dev extends BaseApplicationController {
             
             /** @var CreateTableStatement $createTable */
             $createTable = CreateTableStatement::init($model->getName())
-                                               ->withColumns(...$columns);
+                ->withColumns(...$columns);
             
             if (count($primaries)) {
                 $createTable->withConstraints(PrimaryKeyConstraintSchema::init()
-                                                                        ->addColumn(...$primaries));
+                                                  ->addColumn(...$primaries));
             }
             
             # figure out unique keys
@@ -123,40 +175,6 @@ class Dev extends BaseApplicationController {
             $queries[] = $createTable;
             $all[]     = MySqlQueryModule::init()->initialize()->getQueryFormatter()->format($createTable);
         }
-        
-        
-        $do_interpret = 1;
-        
-        if ($do_interpret == true) {
-            foreach ($queries as $query) {
-                
-                echo "<pre>";
-                echo MySqlQueryModule::init()->initialize()->getQueryFormatter()->format($query);
-                echo "</pre><br>";
-                
-                $app->query->interpret($query);
-            }
-        }
-        
-        
-        $joined = join('<br>', $all);
-        echo "<pre>{$joined}</pre>";
-    }
-    
-    public function eg() {
-        $application         = $this->app;
-        $representationLayer = $application->representation;
-        $dataLayer           = $application->data;
-        
-        $model_manager = $dataLayer->getDataManager(Model::class);
-        
-        # -- rendering
-        
-        $vars     = [ 'path_to_site' => $this->app->path, ];
-        $rendered = $representationLayer->render('hello.twig', $vars);
-        
-        #
-        
-        return $rendered;
+        return [ $all, $queries ];
     }
 }

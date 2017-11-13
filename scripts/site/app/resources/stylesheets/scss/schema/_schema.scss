@@ -1,0 +1,22 @@
+@import "helper";
+@import "perspective";
+@import "integration-scheme";
+@import "instance";
+@import "anchor";
+
+.schema--schema, .schema--attribute {
+  @extend %_identified;
+  position : relative;
+
+  .schema--anchor {
+    display : inline-block;
+  }
+}
+
+.schema--schema {
+  min-width : 200px;
+  display   : block;
+}
+
+.schema--attribute {
+}

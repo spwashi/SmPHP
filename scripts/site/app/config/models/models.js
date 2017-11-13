@@ -9,7 +9,11 @@ export default Sm => {
     const models       = {
         _:            {
             properties: {
-                id:             {primary: !0},
+                id:             {
+                    primary:   !0,
+                    datatypes: 'int',
+                    length:    11,
+                },
                 delete_dt:      {
                     datatypes: 'datetime',
                 },
@@ -24,10 +28,8 @@ export default Sm => {
         },
         universities: {
             inherits: '_',
-            
-            properties: {
-                id: {primary: !0},
-            }
+    
+            properties: {}
         },
         courses:      {
             inherits:   '_',

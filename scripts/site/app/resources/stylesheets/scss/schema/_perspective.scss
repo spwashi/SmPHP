@@ -1,0 +1,11 @@
+@import "helper";
+
+.schema--attribute-perspective {
+  display : inline-block;
+  @extend %active-labeled-schema-attribute;
+
+  > .schema--attribute--label::before {
+    @extend %schema-decorator;
+    content : '@';
+  }
+}

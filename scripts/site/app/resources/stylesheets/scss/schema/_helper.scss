@@ -1,0 +1,49 @@
+$light : #cfd1d2;
+$gold : #aea728;
+
+%schema-label {
+  min-width    : 25px;
+  min-height   : 25px;
+  text-align   : center;
+  padding      : 5px;
+  border       : thin solid $light;
+  display      : inline;
+  overflow     : hidden;
+  margin-right : 10px;
+}
+
+%schema-decorator {
+  @extend %schema-label;
+  min-height  : 25px;
+  color       : $light;
+  font-size   : 110%;
+  font-weight : bold;
+}
+
+%schema-decorator--active {
+  @extend %schema-decorator;
+  color : $gold;
+}
+
+%_identified {
+  border     : 2px solid $light;
+  padding    : 10px;
+  margin     : 10px;
+  min-height : 25px;
+}
+
+%active-labeled-schema-attribute {
+  &.active {
+    display : block;
+    > .schema--attribute--label {
+      @extend %schema-decorator--active
+    }
+  }
+
+  .schema--attribute--label {
+    @extend %schema-decorator;
+    content : '#';
+    clear   : both;
+    display : block;
+  }
+}

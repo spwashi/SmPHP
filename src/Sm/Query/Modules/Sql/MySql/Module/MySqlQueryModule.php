@@ -53,6 +53,7 @@ class MySqlQueryModule extends QueryModule {
                                                       $this->getQueryFormatter($layer));
         return $queryInterpreter->interpret($query);
     }
+    
     /**
      * @param \Sm\Core\Context\Layer\Layer|null $context
      *
