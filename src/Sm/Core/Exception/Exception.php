@@ -16,6 +16,13 @@ class Exception extends \Exception {
         $this->relevant_monitors[ $name ] = $monitor;
         return $this;
     }
+    public function addMonitors(array $monitors) {
+        foreach ($monitors as $key => $monitor) {
+            $this->addMonitor($key, $monitor);
+        }
+        return $this;
+    }
+    
     public function getRelevantMonitors(): array {
         return $this->relevant_monitors;
     }
