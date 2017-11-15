@@ -10,6 +10,7 @@ namespace Sm\Communication\Routing;
 
 use Sm\Communication\Request\NamedRequest;
 use Sm\Communication\Request\Request;
+use Sm\Communication\Routing\Event\AddRoute;
 use Sm\Communication\Routing\Event\AttemptMatchRoute;
 use Sm\Communication\Routing\Exception\RouteNotFoundException;
 use Sm\Core\Abstraction\Registry;
@@ -27,6 +28,7 @@ use Sm\Core\Resolvable\Resolvable;
  */
 class Router implements Registry {
     const MONITOR__ROUTE_ATTEMPT_MATCH = 'ROUTE__ATTEMPT_MATCH';
+    const MONITOR__ROUTE_ADD           = 'ROUTE__ATTEMPT_ADD';
     /** @var Route[] $routes */
     protected $routes = [];
     use HasMonitorTrait;
@@ -63,7 +65,14 @@ class Router implements Registry {
      * @throws \Sm\Core\Exception\InvalidArgumentException
      */
     public function register($name = null, $registrand = null) {
-        if (!isset($registrand)) throw new InvalidArgumentException("Cannot register null routes");
+        $original = [ $name, $registrand ];
+        $addition = AddRoute::init($original);
+    
+        $this->getMonitor(static::MONITOR__ROUTE_ADD)->append($addition);
+    
+        if (!isset($registrand)) {
+            throw new InvalidArgumentException("Cannot register null routes");
+        }
         
         # If we are registering a route from an array
         if (!($registrand instanceof Route)) {
@@ -88,6 +97,8 @@ class Router implements Registry {
         } else {
             $this->routes[] = $route;
         }
+    
+        $addition->setSuccess(true)->setRoute($route);
         return $this;
     }
     /**
@@ -127,7 +138,7 @@ class Router implements Registry {
             return $matching_route;
         }
     
-        $monitor                = $this->getMonitorContainer()->resolve(static::MONITOR__ROUTE_ATTEMPT_MATCH);
+        $monitor                = $this->getMonitor(static::MONITOR__ROUTE_ATTEMPT_MATCH);
         $json_request           = json_encode($request);
         $routeNotFoundException = new RouteNotFoundException("No matching routes for {$json_request}");
         $routeNotFoundException->addAttemptedRouteMonitor($monitor);

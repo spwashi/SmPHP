@@ -12,7 +12,15 @@ use Sm\Core\Event\GenericEvent;
 trait HasMonitorTrait {
     /** @var  \Sm\Core\Internal\Monitor\MonitorContainer $monitorContainer Keep track of things that happen */
     protected $monitorContainer;
-    
+    /** Set the Monitor that will keep track of this class' inner workings
+     *
+     * @param string $type
+     *
+     * @return \Sm\Core\Internal\Monitor\Monitor
+     */
+    public function getMonitor($type) {
+        return $this->getMonitorContainer()->resolve($type);
+    }
     protected function __info_monitor__log($name, $details) {
         $monitorContainer = $this->getMonitorContainer();
         

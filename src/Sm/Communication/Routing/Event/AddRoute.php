@@ -4,24 +4,25 @@
 namespace Sm\Communication\Routing\Event;
 
 
+use Sm\Communication\Routing\Route;
 use Sm\Core\Event\Event;
 
-class AttemptMatchRoute extends Event {
-    private $request;
+class AddRoute extends Event {
+    private $config;
     private $route;
     /** @var bool */
     private $success;
     
     
-    public function __construct($request, $route, $success = false) {
+    public function __construct($config, Route $route = null, $success = false) {
         parent::__construct();
-        $this->request = $request;
+        $this->config  = $config;
         $this->route   = $route;
         $this->success = $success;
     }
     
-    public static function init($request, $route, $success = false): AttemptMatchRoute {
-        return new static($request, $route, $success);
+    public static function init($config, Route $route = null, $success = false) {
+        return new static($config, $route, $success);
     }
     
     function jsonSerialize() {
@@ -30,8 +31,12 @@ class AttemptMatchRoute extends Event {
             'route'   => $this->route,
         ]);
     }
-    public function setSuccess(bool $success): AttemptMatchRoute {
+    public function setSuccess(bool $success): AddRoute {
         $this->success = $success;
+        return $this;
+    }
+    public function setRoute(Route $route) {
+        $this->route = $route;
         return $this;
     }
 }
