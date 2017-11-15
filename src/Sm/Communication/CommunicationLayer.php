@@ -13,13 +13,13 @@ use Sm\Communication\Request\NamedRequest;
 use Sm\Communication\Request\RequestFactory;
 use Sm\Communication\Response\ResponseDispatcher;
 use Sm\Communication\Response\ResponseFactory;
+use Sm\Communication\Routing\Event\AddRoute;
 use Sm\Communication\Routing\Module\RoutingModule;
 use Sm\Communication\Routing\Route;
 use Sm\Controller\ControllerLayer;
 use Sm\Core\Context\Layer\Exception\InaccessibleLayerException;
 use Sm\Core\Context\Layer\Module\Exception\MissingModuleException;
 use Sm\Core\Context\Layer\StandardLayer;
-use Sm\Core\Event\GenericEvent;
 use Sm\Core\Exception\Exception;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
@@ -41,6 +41,7 @@ class CommunicationLayer extends StandardLayer {
     
     # -- routing --
     const ROUTE_RESOLVE_REQUEST = 'ROUTE_RESOLVE_REQUEST';
+    const MONITOR__ADD_ROUTE    = 'MONIOTOR__ADD_ROUTE';
     
     # -- name of the 'routing' module
     const MODULE_ROUTING = 'routing';
@@ -119,22 +120,8 @@ class CommunicationLayer extends StandardLayer {
         foreach ($routes as $pattern => &$resolution) {
             $this->normalizeResolution($resolution);
         }
-        $this->getMonitorContainer()->info->append(GenericEvent::init('add-routes', $routes));
+        $this->getMonitor(static::MONITOR__ADD_ROUTE)->append(AddRoute::init('add-routes', $routes));
         return $this->getRoutingModule()->registerRoutes($routes);
-    }
-    /**
-     * Register routes in an array, but instead of being indexed by route pattern,
-     * they are indexed by route name
-     *
-     * @param $routes
-     *
-     * @return mixed
-     */
-    public function registerNamedRoutes($routes) {
-        foreach ($routes as $route_name => &$resolution) {
-            $this->normalizeResolution($resolution);
-        }
-        return $this->getRoutingModule()->registerNamedRoutes($routes);
     }
     
     /**

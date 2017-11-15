@@ -223,4 +223,14 @@ class Application implements LayerRoot {
         $this->name = $name;
         return $this;
     }
+    
+    public function __debugInfo() {
+        return [
+            'settings' => $this->settings,
+            'layers'   => $this->layerContainer,
+        ];
+    }
+    public function jsonSerialize() {
+        return $this->__debugInfo();
+    }
 }

@@ -106,7 +106,12 @@ class RoutingModuleTest extends \PHPUnit_Framework_TestCase {
     }
     
     public function testCanResolveNamedRoutes() {
-        $this->communicationLayer->registerNamedRoutes([ 'test' => Route::init(StringResolvable::init('123')) ]);
+        $this->communicationLayer->registerRoutes([
+                                                      [
+                                                          'name'       => 'test',
+                                                          'resolution' => Route::init(StringResolvable::init('123')),
+                                                      ],
+                                                  ]);
         $route = $this->communicationLayer->getRoute('test');
         $resp  = $route->resolve();
         $this->assertEquals('123', $resp);
@@ -121,7 +126,12 @@ class RoutingModuleTest extends \PHPUnit_Framework_TestCase {
         $this->communicationLayer->setRoot($layerRoot);
     
         # Uses HelloController based on @
-        $this->communicationLayer->registerNamedRoutes([ 'test' => 'Hello@test' ]);
+        $this->communicationLayer->registerRoutes([
+                                                      [
+                                                          'name'       => 'test',
+                                                          'resolution' => 'Hello@test',
+                                                      ],
+                                                  ]);
         $route = $this->communicationLayer->getRoute('test');
         $resp  = $route->resolve();
         $this->assertEquals('here.test123', $resp);

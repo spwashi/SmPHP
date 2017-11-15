@@ -25,9 +25,7 @@ use Sm\Core\Module\ModuleContainer;
  *
  * @package Sm\Core\Context\Layer
  */
-abstract class StandardLayer extends StandardContext implements Layer {
-    const COMMUNICATION = 'Communication';
-    
+abstract class StandardLayer extends StandardContext implements Layer, \JsonSerializable {
     /** @var ModuleContainer $moduleContainer */
     protected $moduleContainer;
     /** @var array An array of the Layer Roots we checked applicability for */
@@ -109,5 +107,13 @@ abstract class StandardLayer extends StandardContext implements Layer {
     public function setModuleContainer(ModuleContainer $moduleContainer): StandardLayer {
         $this->moduleContainer = $moduleContainer;
         return $this;
+    }
+    public function __debugInfo() {
+        return [
+            'monitors' => $this->getMonitorContainer(),
+        ];
+    }
+    public function jsonSerialize() {
+        return $this->__debugInfo();
     }
 }
