@@ -10,10 +10,12 @@ namespace Sm\Communication\Routing;
 
 use Sm\Communication\Request\NamedRequest;
 use Sm\Communication\Request\Request;
+use Sm\Communication\Routing\Event\AttemptMatchRoute;
 use Sm\Communication\Routing\Exception\RouteNotFoundException;
 use Sm\Core\Abstraction\Registry;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
+use Sm\Core\Internal\Monitor\HasMonitorTrait;
 use Sm\Core\Resolvable\Resolvable;
 
 /**
@@ -24,10 +26,10 @@ use Sm\Core\Resolvable\Resolvable;
  * @package Sm\Communication\Routing\
  */
 class Router implements Registry {
+    const MONITOR__ROUTE_ATTEMPT_MATCH = 'ROUTE__ATTEMPT_MATCH';
     /** @var Route[] $routes */
     protected $routes = [];
-    /** @var array $resolutionNamespaces The namespaces that we will route controllers with */
-    protected $resolutionNamespaces = [];
+    use HasMonitorTrait;
     
     public static function init() {
         return new static;
@@ -115,7 +117,8 @@ class Router implements Registry {
         
         /** @var \Sm\Communication\Routing\Route $matching_route */
         if ($request instanceof NamedRequest) {
-            $matching_route = $this->getNamed($request->getName());
+            $name           = $request->getName();
+            $matching_route = $this->getNamed($name);
         } else {
             $matching_route = $this->_getRouteFromRequest($request);
         }
@@ -123,19 +126,27 @@ class Router implements Registry {
         if (isset($matching_route)) {
             return $matching_route;
         }
-        
-        $json_request = json_encode($request);
+    
+        $json_request = json_encode($this->getMonitorContainer()->resolve(static::MONITOR__ROUTE_ATTEMPT_MATCH));
         throw new RouteNotFoundException("No matching routes for {$json_request}");
     }
     
     protected function _getRouteFromRequest(Request $request):?Route {
         $matching_route = null;
         foreach ($this->routes as $index => $route) {
-            $__does_match = $route->matches($request);
+            $__does_match      = $route->matches($request);
+            $attemptMatchRoute = AttemptMatchRoute::init($request, $route);
+    
+            $this->getMonitorContainer()
+                 ->resolve(static::MONITOR__ROUTE_ATTEMPT_MATCH)
+                 ->append($attemptMatchRoute);
+            
             if ($__does_match) {
                 $matching_route = $route;
+                $attemptMatchRoute->setSuccess(true);
                 break;
             }
+            $attemptMatchRoute->setSuccess(false);
         }
         return $matching_route;
     }
