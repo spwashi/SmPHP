@@ -27,6 +27,8 @@ abstract class AbstractResolvable implements Resolvable, \JsonSerializable {
     /** @var  mixed $subject The thing that this Resolvable is wrapping */
     protected $subject;
     
+    /** @var  mixed ONLY HERE FOR DEBUG */
+    protected $original_subject;
     ##########################################################################
     /**
      * Resolvable constructor.
@@ -34,6 +36,7 @@ abstract class AbstractResolvable implements Resolvable, \JsonSerializable {
      * @param mixed $subject
      */
     public function __construct($subject = null) {
+        $this->original_subject = $subject;
         $this->setSubject($subject);
         $this->createSelfID();
     }
@@ -77,8 +80,9 @@ abstract class AbstractResolvable implements Resolvable, \JsonSerializable {
     }
     public function __debugInfo() {
         return [
-            'id'      => $this->getObjectId(),
-            'subject' => $this->subject,
+            'id'               => $this->getObjectId(),
+            'subject'          => $this->subject,
+            'original_subject' => $this->original_subject,
         ];
     }
     public function jsonSerialize() {
@@ -102,7 +106,8 @@ abstract class AbstractResolvable implements Resolvable, \JsonSerializable {
      * @return $this
      */
     public function setSubject($subject) {
-        $this->subject = $subject;
+        $this->original_subject = $this->original_subject || $subject;
+        $this->subject          = $subject;
         return $this;
     }
     
