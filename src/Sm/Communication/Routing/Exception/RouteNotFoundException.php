@@ -8,8 +8,11 @@
 namespace Sm\Communication\Routing\Exception;
 
 
+use Sm\Core\Internal\Monitor\Monitor;
 use Sm\Core\Resolvable\Error\UnresolvableException;
 
 class RouteNotFoundException extends UnresolvableException {
-    
+    public function addAttemptedRouteMonitor(Monitor $monitor) {
+        return $this->addMonitor('attempted_routes', $monitor);
+    }
 }

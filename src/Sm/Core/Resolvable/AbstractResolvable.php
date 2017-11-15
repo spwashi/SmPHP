@@ -21,7 +21,7 @@ use Sm\Core\Util;
  *
  * @package Sm\Core\Resolvable
  */
-abstract class AbstractResolvable implements Resolvable {
+abstract class AbstractResolvable implements Resolvable, \JsonSerializable {
     use HasFactoryContainerTrait;
     use HasObjectIdentityTrait;
     /** @var  mixed $subject The thing that this Resolvable is wrapping */
@@ -81,7 +81,9 @@ abstract class AbstractResolvable implements Resolvable {
             'subject' => $this->subject,
         ];
     }
-    
+    public function jsonSerialize() {
+        return $this->__debugInfo();
+    }
     #########################################################################
     
     /**

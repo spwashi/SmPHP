@@ -20,14 +20,14 @@ use Sm\Core\Resolvable\Error\UnresolvableException;
 use Sm\Core\Resolvable\FunctionResolvable;
 use Sm\Core\Resolvable\Resolvable;
 use Sm\Core\Resolvable\ResolvableFactory;
+use Sm\Core\Util;
 
-class Route extends FunctionResolvable {
+class Route extends FunctionResolvable implements \JsonSerializable {
     protected $primedRequest;
     /** @var  AbstractResolvable $backupResolvable */
     protected $backupResolvable;
     /** @var  AbstractResolvable $subject */
     protected $subject;
-    protected $pattern;
     /** @var  RequestDescriptor $requestDescriptor */
     protected $requestDescriptor;
     /** @var array An array pf */
@@ -195,5 +195,16 @@ class Route extends FunctionResolvable {
     public function setParameters(array $parameters): Route {
         $this->parameters = $parameters;
         return $this;
+    }
+    
+    
+    function jsonSerialize() {
+        return array_merge(parent::jsonSerialize(),
+                           [
+                               'subject_type'      => Util::getShape($this->subject),
+                               'subject'           => $this->subject,
+                               'requestDescriptor' => $this->requestDescriptor,
+                               'parameters'        => $this->parameters,
+                           ]);
     }
 }

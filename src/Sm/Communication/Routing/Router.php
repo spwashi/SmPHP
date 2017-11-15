@@ -127,8 +127,11 @@ class Router implements Registry {
             return $matching_route;
         }
     
-        $json_request = json_encode($this->getMonitorContainer()->resolve(static::MONITOR__ROUTE_ATTEMPT_MATCH));
-        throw new RouteNotFoundException("No matching routes for {$json_request}");
+        $monitor                = $this->getMonitorContainer()->resolve(static::MONITOR__ROUTE_ATTEMPT_MATCH);
+        $json_request           = json_encode($request);
+        $routeNotFoundException = new RouteNotFoundException("No matching routes for {$json_request}");
+        $routeNotFoundException->addAttemptedRouteMonitor($monitor);
+        throw $routeNotFoundException;
     }
     
     protected function _getRouteFromRequest(Request $request):?Route {
