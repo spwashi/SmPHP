@@ -22,6 +22,7 @@ class Example {
 }
 
 class RouterTest extends \PHPUnit_Framework_TestCase {
+    
     public function testCanCreate() {
         $Router = new Router();
         $this->assertInstanceOf(Router::class, $Router);
@@ -52,7 +53,6 @@ class RouterTest extends \PHPUnit_Framework_TestCase {
         $Router->registerBatch($route_config);
         $this->assertTrue(Route::init(NullResolvable::init(), 'hello/1')->matches(HttpRequest::init('hello/1')));
         
-        
         $this->assertEquals('hello',
                             $Router->resolve(HttpRequest::init()->setUrl('hello/1')));
         $this->assertEquals('eleven',
@@ -60,6 +60,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals('API example',
                             $Router->resolve(HttpRequest::init()->setUrl('api/sections')));
     }
+    
+    
     /**
      * @depends testCanCreate
      *
@@ -69,7 +71,6 @@ class RouterTest extends \PHPUnit_Framework_TestCase {
         $Router->register('test', Route::init(StringResolvable::init('TEST')));
         $request    = NamedRequest::init()->setName('test');
         $resolution = $Router->resolve($request);
-        
         
         $this->assertEquals($resolution, 'TEST');
     }

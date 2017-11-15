@@ -12,6 +12,8 @@ use Sm\Communication\Network\Http\Http;
 use Sm\Communication\Network\Http\Request\HttpRequest;
 use Sm\Communication\Network\Http\Request\HttpRequestFromEnvironment;
 use Sm\Communication\Network\Http\Response\HttpResponse;
+use Sm\Communication\Request\Request;
+use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Resolvable\StringResolvable;
 
 /**
@@ -40,6 +42,9 @@ class HttpCommunicationModule extends CommunicationModule {
         return [
             Http::class =>
                 function ($result) {
+                    if ($result instanceof Request) {
+                        throw new UnimplementedError("Can't do this kind of request yet!");
+                    }
                     if (!($result instanceof HttpResponse)) {
                         $result = HttpResponse::init()->setBody(StringResolvable::init($result));
                     }
