@@ -10,6 +10,7 @@ namespace Sm\Communication\Routing\Module;
 
 use Sm\Communication\Request\Request;
 use Sm\Communication\Request\RequestDescriptor;
+use Sm\Communication\Routing\Route;
 use Sm\Core\Module\ModuleProxy;
 
 /**
@@ -30,8 +31,8 @@ class RoutingModuleProxy extends ModuleProxy implements RoutingModule {
     public function registerNamedRoutes($routes) {
         return $this->subject->registerNamedRoutes($routes, $this->getContext());
     }
-    public function route(Request $request) {
-        return $this->subject->route($request, $this->context);
+    public function getRoute(Request $request): Route {
+        return $this->subject->getRoute($request, $this->getContext());
     }
     /**
      * Describe a Route

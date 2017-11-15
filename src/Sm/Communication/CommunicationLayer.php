@@ -14,11 +14,13 @@ use Sm\Communication\Request\RequestFactory;
 use Sm\Communication\Response\ResponseDispatcher;
 use Sm\Communication\Response\ResponseFactory;
 use Sm\Communication\Routing\Module\RoutingModule;
+use Sm\Communication\Routing\Route;
 use Sm\Controller\ControllerLayer;
 use Sm\Core\Context\Layer\Exception\InaccessibleLayerException;
 use Sm\Core\Context\Layer\Module\Exception\MissingModuleException;
 use Sm\Core\Context\Layer\StandardLayer;
 use Sm\Core\Event\GenericEvent;
+use Sm\Core\Exception\Exception;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Module\Error\InvalidModuleException;
@@ -51,7 +53,7 @@ class CommunicationLayer extends StandardLayer {
     /** @var \Sm\Communication\Response\ResponseFactory Factory used to resolve Responses */
     private $responseFactory;
     /** @var \Sm\Communication\Response\ResponseDispatcher  The thing we use to dispatch Responses */
-    private $responseDispatcher;
+    private $dispatcher;
     /**
      * CommunicationLayer constructor.
      *
@@ -64,9 +66,9 @@ class CommunicationLayer extends StandardLayer {
                                 ResponseFactory $responseFactory = null,
                                 ResponseDispatcher $responseDispatcher = null) {
         parent::__construct();
-        $this->requestFactory     = $requestFactory ?? new RequestFactory;
-        $this->responseFactory    = $responseFactory ?? new ResponseFactory;
-        $this->responseDispatcher = $responseDispatcher ?? new ResponseDispatcher;
+        $this->requestFactory  = $requestFactory ?? new RequestFactory;
+        $this->responseFactory = $responseFactory ?? new ResponseFactory;
+        $this->dispatcher      = $responseDispatcher ?? new ResponseDispatcher;
     }
     
     
@@ -157,7 +159,7 @@ class CommunicationLayer extends StandardLayer {
      * @param $registry
      */
     public function registerResponseDispatchers($registry) {
-        $this->responseDispatcher->register($registry);
+        $this->dispatcher->register($registry);
     }
     
     ####################################################
@@ -177,28 +179,35 @@ class CommunicationLayer extends StandardLayer {
      *
      * @return mixed
      */
-    public function route($request, array $parameters = null) {
+    public function getRoute($request, array $parameters = null): Route {
         # If we want to resolve the Request from the Environment, do that here
         if ($request === static::ROUTE_RESOLVE_REQUEST) {
             $request = $this->resolveRequest();
         } else if (is_string($request)) {
             $request = NamedRequest::init($request);
         }
-    
+        
         if ($request instanceof NamedRequest && isset($parameters)) $request->setParameters($parameters);
         
-        return $this->getRoutingModule()->route($request);
+        return $this->getRoutingModule()->getRoute($request)->prime($request);
     }
     /**
      * Given a response, send it to where it needs to go.
      *
      * @param string     $type The type of response to return:
-     * @param mixed|null $response
+     * @param mixed|null $response_or_request
      *
      * @return mixed|null
      */
-    public function dispatch($type, $response) {
-        return $this->responseDispatcher->resolve($type, $response);
+    public function dispatch($type, ...$response_or_request) {
+        if ($response_or_request instanceof NamedRequest) {
+            try {
+                $response_or_request = $this->describe($response_or_request->getName());
+            } catch (Exception $e) {
+            
+            }
+        }
+        return $this->dispatcher->resolve($type, ...$response_or_request);
     }
     public function describe(string $name) {
         return $this->getRoutingModule()->describe($name);

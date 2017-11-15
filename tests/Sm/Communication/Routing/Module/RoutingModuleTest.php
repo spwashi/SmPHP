@@ -10,7 +10,6 @@ use Sm\Communication\CommunicationLayer;
 use Sm\Communication\Network\Http\Request\HttpRequest;
 use Sm\Communication\Routing\Exception\RouteNotFoundException;
 use Sm\Communication\Routing\Module\StandardRoutingModule;
-use Sm\Communication\Routing\RequestContext;
 use Sm\Communication\Routing\Route;
 use Sm\Controller\ControllerLayer;
 use Sm\Core\Context\Layer\LayerContainer;
@@ -24,8 +23,7 @@ class HelloController {
     public function trial() {
         return 'test_trial';
     }
-    public function test(RequestContext $r) {
-        $thing = $r->getRequest();
+    public function test() {
         return 'here.test123';
     }
 }
@@ -81,10 +79,10 @@ class RoutingModuleTest extends \PHPUnit_Framework_TestCase {
         $this->communicationLayer->registerRoutes([
                                                       [ 'test' => StringResolvable::init(123) ],
                                                   ]);
-        $resp = $this->communicationLayer->route(HttpRequest::init('test'));
+        $resp = $this->communicationLayer->getRoute(HttpRequest::init('test'))->resolve();
         $this->assertEquals('123', $resp);
         $this->expectException(RouteNotFoundException::class);
-        $this->communicationLayer->route(HttpRequest::init('test3'));
+        $this->communicationLayer->getRoute(HttpRequest::init('test3'));
         
     }
     
@@ -96,18 +94,21 @@ class RoutingModuleTest extends \PHPUnit_Framework_TestCase {
                   ->register(ControllerLayer::LAYER_NAME, $controller);
         
         $this->communicationLayer->setRoot($layerRoot);
-        
         $this->communicationLayer->registerRoutes(JSON_CONFIG);
-        $resp = $this->communicationLayer->route(HttpRequest::init('trial'));
+    
+        $request = HttpRequest::init('trial');
+        $route   = $this->communicationLayer->getRoute($request);
+        $resp    = $route->resolve();
         $this->assertEquals('test_trial', $resp);
         $this->expectException(RouteNotFoundException::class);
-        $this->communicationLayer->route(HttpRequest::init('test3'));
+        $this->communicationLayer->getRoute(HttpRequest::init('test3'));
         
     }
     
     public function testCanResolveNamedRoutes() {
         $this->communicationLayer->registerNamedRoutes([ 'test' => Route::init(StringResolvable::init('123')) ]);
-        $resp = $this->communicationLayer->route('test');
+        $route = $this->communicationLayer->getRoute('test');
+        $resp  = $route->resolve();
         $this->assertEquals('123', $resp);
     }
     
@@ -115,14 +116,14 @@ class RoutingModuleTest extends \PHPUnit_Framework_TestCase {
         $controller = new ControllerLayer;
         $layerRoot  = new StdLayerRoot();
         $controller->addControllerNamespace(__NAMESPACE__);
-        $layerRoot->getLayers()
-                  ->register(ControllerLayer::LAYER_NAME, $controller);
+        $layerRoot->getLayers()->register(ControllerLayer::LAYER_NAME, $controller);
         
         $this->communicationLayer->setRoot($layerRoot);
     
         # Uses HelloController based on @
         $this->communicationLayer->registerNamedRoutes([ 'test' => 'Hello@test' ]);
-        $resp = $this->communicationLayer->route('test');
+        $route = $this->communicationLayer->getRoute('test');
+        $resp  = $route->resolve();
         $this->assertEquals('here.test123', $resp);
     }
 }

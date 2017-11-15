@@ -23,14 +23,14 @@ try {
     $app = $app->boot();
 
 #   - Create and dispatch the response
-    $response = $app->communication->route(CommunicationLayer::ROUTE_RESOLVE_REQUEST);
+    $response = $app->communication->getRoute(CommunicationLayer::ROUTE_RESOLVE_REQUEST);
     $result   = $app->communication->dispatch(Http::class, $response) ?? null; # meaningless if dispatch only prints
 } catch (RouteNotFoundException $exception) {
 #   - Create the error response
     $parentRequest  = $app->communication->resolveRequest();
     $request        = NamedRequest::init('rt_404')
                                   ->setParentRequest($parentRequest);
-    $error_response = $app->communication->route($request, [ 'error' => 403 ]);
+    $error_response = $app->communication->getRoute($request, [ 'error' => 403 ]);
     $result         = $app->communication->dispatch(Http::class, $error_response) ?? null; # meaningless if dispatch only prints
 } catch (Exception $exception) {
     echo '<pre>';

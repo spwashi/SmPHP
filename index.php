@@ -26,5 +26,5 @@ require_once __DIR__ . '/src/SmPHP/Sm.php';
 /** @var \Sm\Communication\CommunicationLayer $CommunicationLayer */
 $CommunicationLayer = Sm::$instance->getLayers()->resolve(StandardLayer::COMMUNICATION);
 $Request            = $CommunicationLayer->resolveRequest();
-$raw_response       = $CommunicationLayer->route($Request);
+$raw_response       = $CommunicationLayer->getRoute($Request);
 $CommunicationLayer->dispatch(Http::class, $raw_response);

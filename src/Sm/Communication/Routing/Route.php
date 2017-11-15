@@ -14,7 +14,6 @@ use Sm\Communication\Request\Request;
 use Sm\Communication\Request\RequestDescriptor;
 use Sm\Core\Exception\Exception;
 use Sm\Core\Exception\InvalidArgumentException;
-use Sm\Core\Exception\TypeMismatchException;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Resolvable\AbstractResolvable;
 use Sm\Core\Resolvable\Error\UnresolvableException;
@@ -23,6 +22,7 @@ use Sm\Core\Resolvable\Resolvable;
 use Sm\Core\Resolvable\ResolvableFactory;
 
 class Route extends FunctionResolvable {
+    protected $primedRequest;
     /** @var  AbstractResolvable $backupResolvable */
     protected $backupResolvable;
     /** @var  AbstractResolvable $subject */
@@ -46,8 +46,6 @@ class Route extends FunctionResolvable {
             throw new UnimplementedError("Cannot accept RequestDescriptors that aren't RequestDescriptors ");
         }
         
-        if ($backup instanceof Resolvable) $this->setBackup($backup);
-    
         /** @var Resolvable $resolution */
         $resolution = $this->standardizeResolution($resolution);
         parent::__construct($resolution);
@@ -56,6 +54,7 @@ class Route extends FunctionResolvable {
         if (!isset($resolution)) {
             throw new InvalidArgumentException("Cannot initialize route without a resolution");
         }
+    
         if ($resolution instanceof Route) return $resolution;
     
         $Route = new static($resolution, $pattern, $default);
@@ -91,41 +90,37 @@ class Route extends FunctionResolvable {
     /**
      * Resolve the Route.
      *
-     * @param \Sm\Communication\Routing\RequestContext      $request ,..
-     *
-     * @param \Sm\Communication\Routing\RequestContext|null $routeResolutionContext
+     * @param \Sm\Communication\Routing\RequestContext $request ,..
      *
      * @return mixed
      * @throws \Sm\Core\Exception\InvalidArgumentException
      * @throws \Sm\Core\Exception\TypeMismatchException
      * @throws \Sm\Core\Resolvable\Error\UnresolvableException
      */
-    public function resolve($request = null, RequestContext $routeResolutionContext = null) {
-        if (!($request instanceof Request)) throw new InvalidArgumentException('Can only route requests');
+    public function resolve($_ = null) {
         if (!($this->subject instanceof Resolvable)) throw new UnresolvableException("No way to resolve request.");
         
-        $routeResolutionContext = $routeResolutionContext ?? RequestContext::init($request);
+        #TODO FIND WAY TO CONNECT TO REQUEST CONTEXT
         
-        try {
-            if ($this->matches($request)) {
-                $arguments = $this->requestDescriptor ? $this->requestDescriptor->getArguments($request) : [];
-                $arguments = array_merge([ $routeResolutionContext ], $arguments);
-                return $this->subject->resolve(...array_values($arguments));
-            }
-    
-            throw new UnresolvableException("Cannot match route with this request");
-    
-        } catch (UnresolvableException|InvalidArgumentException $e) {
-            if (isset($this->backupResolvable)) return $this->backupResolvable->resolve($routeResolutionContext);
-            throw $e;
-        } catch (TypeMismatchException $e) {
-            if (isset($this->backupResolvable)) return $this->backupResolvable->resolve($request);
-            throw $e;
+        $primedRequest = $this->primedRequest;
+        if ($this->matches($primedRequest)) {
+            $arguments = $this->requestDescriptor ? $this->requestDescriptor->getArguments($primedRequest) : [];
+            return $this->subject->resolve(...array_values($arguments), ...func_get_args());
         }
+        
+        throw new UnresolvableException("Cannot match route with this request");
     }
     ####################################################
     #   Setters/Getters
     ####################################################
+    public function prime($request) {
+        $this->primedRequest = $request;
+        if (!($request instanceof Request)) throw new InvalidArgumentException('Can only route requests');
+        return $this;
+    }
+    public function hasPrimedRequest() {
+        return isset($this->primedRequest);
+    }
     /**
      * Set the Resolvable that is to be used in case this function conks out
      *

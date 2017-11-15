@@ -55,7 +55,7 @@ class StandardRoutingModule extends LayerModule implements RoutingModule {
         # Maybe we should check to see if this route is in this router? probably not...
         return $route->getRequestDescriptor();
     }
-    public function route(Request $request, Layer $layerProxy = null) {
+    public function getRoute(Request $request, Layer $layerProxy = null): Route {
         /** @var Router $router */
         $router = $this->getRouter($layerProxy);
         return $router->resolve($request);

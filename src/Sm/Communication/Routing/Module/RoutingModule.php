@@ -9,6 +9,7 @@ namespace Sm\Communication\Routing\Module;
 
 use Sm\Communication\Request\Request;
 use Sm\Communication\Request\RequestDescriptor;
+use Sm\Communication\Routing\Route;
 
 
 /**
@@ -40,7 +41,7 @@ interface RoutingModule {
      *
      * @return mixed
      */
-    public function route(Request $request);
+    public function getRoute(Request $request): Route;
     /**
      * Describe a Route
      *

@@ -9,7 +9,6 @@ namespace Sm\Communication\Routing;
 
 
 use Sm\Communication\Network\Http\Request\HttpRequest;
-use Sm\Communication\Request\NamedRequest;
 use Sm\Core\Resolvable\PassiveResolvable;
 use Sm\Core\Resolvable\StringResolvable;
 
@@ -59,12 +58,13 @@ class RouteTest extends \PHPUnit_Framework_TestCase {
     }
     
     public function testCanResolve() {
-        $Route = new Route(null, 'api/{test}:[a-zA-Z_\d]*/test/{id}:[\d]*');
-        $Route->setSubject(PassiveResolvable::init());
-        $Request = HttpRequest::init('http://spwashi.com/api/pages/test/10');
+        $route = new Route(null, 'api/{test}:[a-zA-Z_\d]*/test/{id}:[\d]*');
+        $route->setSubject(PassiveResolvable::init());
+        $request = HttpRequest::init('http://spwashi.com/api/pages/test/10');
     
-        $Route    = Route::init(StringResolvable::init('hello'), '11');
-        $response = $Route->resolve(HttpRequest::init('11'));
+        $route    = Route::init(StringResolvable::init('hello'), '11');
+        $request  = HttpRequest::init('11');
+        $response = $route->prime($request)->resolve();
         $this->assertEquals('hello', $response);
     }
 }

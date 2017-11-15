@@ -28,6 +28,7 @@ class Router implements Registry {
     protected $routes = [];
     /** @var array $resolutionNamespaces The namespaces that we will route controllers with */
     protected $resolutionNamespaces = [];
+    
     public static function init() {
         return new static;
     }
@@ -97,17 +98,6 @@ class Router implements Registry {
     public function getNamed($name): ?Route {
         return $this->routes[ $name ] ?? null;
     }
-    protected function _getRouteFromRequest(Request $request):?Route {
-        $matching_route = null;
-        foreach ($this->routes as $index => $route) {
-            $__does_match = $route->matches($request);
-            if ($__does_match) {
-                $matching_route = $route;
-                break;
-            }
-        }
-        return $matching_route;
-    }
     /**
      * Resolve a Route based on the name of the route
      *
@@ -118,7 +108,7 @@ class Router implements Registry {
     public function resolveName(string $name) {
         return $this->resolve(NamedRequest::init()->setName($name));
     }
-    public function resolve(Request $request = null) {
+    public function resolve(Request $request = null): Route {
         if (!$request) {
             throw new UnimplementedError("Can only deal with requests");
         }
@@ -131,13 +121,23 @@ class Router implements Registry {
         }
         
         if (isset($matching_route)) {
-            $routeResolutionContext = RequestContext::init($request);
-            return $matching_route->resolve($request, $routeResolutionContext);
+            return $matching_route;
         }
-        
         
         $json_request = json_encode($request);
         throw new RouteNotFoundException("No matching routes for {$json_request}");
+    }
+    
+    protected function _getRouteFromRequest(Request $request):?Route {
+        $matching_route = null;
+        foreach ($this->routes as $index => $route) {
+            $__does_match = $route->matches($request);
+            if ($__does_match) {
+                $matching_route = $route;
+                break;
+            }
+        }
+        return $matching_route;
     }
     /**
      * @param $registrand

@@ -39,9 +39,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase {
     /**
      * @depends testCanCreate
      *
-     * @param \Sm\Communication\Routing\Router $Router
+     * @param \Sm\Communication\Routing\Router $router
      */
-    public function testCanRegister(Router $Router) {
+    public function testCanRegister(Router $router) {
         $route_config = [
             Route::init(StringResolvable::init('hello'), 'hello/1'),
             [ 'api/(?:sections|dimensions|collections)' => StringResolvable::init('API example'), ],
@@ -50,28 +50,37 @@ class RouterTest extends \PHPUnit_Framework_TestCase {
             ],
             [ '11' => FunctionResolvable::init('\\' . Example::class . '::returnEleven'), ],
         ];
-        $Router->registerBatch($route_config);
+        $router->registerBatch($route_config);
         $this->assertTrue(Route::init(NullResolvable::init(), 'hello/1')->matches(HttpRequest::init('hello/1')));
         
+        $hello_1__request      = HttpRequest::init('hello/1');
+        $eleven__request       = HttpRequest::init('11');
+        $api_sections__request = HttpRequest::init('api/sections');
+        
         $this->assertEquals('hello',
-                            $Router->resolve(HttpRequest::init()->setUrl('hello/1')));
-        $this->assertEquals('eleven',
-                            $Router->resolve(HttpRequest::init()->setUrl('11')));
-        $this->assertEquals('API example',
-                            $Router->resolve(HttpRequest::init()->setUrl('api/sections')));
+                            $router->resolve($hello_1__request)
+                                   ->prime($hello_1__request)
+                                   ->resolve());
+        $this->assertEquals('eleven', $router->resolve($eleven__request)
+                                             ->prime($eleven__request)
+                                             ->resolve());
+        $this->assertEquals('API example', $router->resolve($api_sections__request)
+                                                  ->prime($api_sections__request)
+                                                  ->resolve());
     }
     
     
     /**
      * @depends testCanCreate
      *
-     * @param \Sm\Communication\Routing\Router $Router
+     * @param \Sm\Communication\Routing\Router $router
      */
-    public function testCanResolveNamedRrequests(Router $Router) {
-        $Router->register('test', Route::init(StringResolvable::init('TEST')));
+    public function testCanResolveNamedRrequests(Router $router) {
+        $router->register('test', Route::init(StringResolvable::init('TEST')));
         $request    = NamedRequest::init()->setName('test');
-        $resolution = $Router->resolve($request);
-        
+        $resolution = $router->resolve($request)
+                             ->prime($request)
+                             ->resolve();
         $this->assertEquals($resolution, 'TEST');
     }
 }
