@@ -20,6 +20,7 @@ use Sm\Controller\ControllerLayer;
 use Sm\Core\Context\Layer\Exception\InaccessibleLayerException;
 use Sm\Core\Context\Layer\Module\Exception\MissingModuleException;
 use Sm\Core\Context\Layer\StandardLayer;
+use Sm\Core\Event\GenericEvent;
 use Sm\Core\Exception\Exception;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
@@ -111,16 +112,26 @@ class CommunicationLayer extends StandardLayer {
      * @throws \Sm\Core\Exception\InvalidArgumentException
      */
     public function registerRoutes($routes) {
+        $this->getMonitor('info')->append(GenericEvent::init('add-routes-batch',
+                                                             $routes));
         if (is_string($routes)) {
             $routes = json_decode($routes, 1);
+            if (json_last_error() !== JSON_ERROR_NONE) throw new InvalidArgumentException("Invalid JSON cannot be parsed");
         } else if (!is_array($routes)) {
             throw new InvalidArgumentException("Can only register JSON or arrays");
         }
-        
+    
+        $monitor = $this->getMonitor(static::MONITOR__ADD_ROUTE);
         foreach ($routes as $pattern => &$resolution) {
+            $route_config = [
+                'pattern'    => $pattern,
+                'resolution' => $resolution,
+            ];
             $this->normalizeResolution($resolution);
+            $route_config['normalized_resoltion'] = $resolution;
+    
+            $monitor->append(AddRoute::init($route_config, null));
         }
-        $this->getMonitor(static::MONITOR__ADD_ROUTE)->append(AddRoute::init('add-routes', $routes));
         return $this->getRoutingModule()->registerRoutes($routes);
     }
     

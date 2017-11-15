@@ -226,8 +226,8 @@ class Application implements \JsonSerializable, LayerRoot {
     
     public function __debugInfo() {
         return [
-            'settings' => $this->settings,
-            'layers'   => $this->layerContainer,
+            'settings' => $this->settings->getAll(),
+            'layers'   => $this->layerContainer->getAll(),
         ];
     }
     public function jsonSerialize() {
