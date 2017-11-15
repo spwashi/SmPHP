@@ -31,7 +31,7 @@ use Sm\Representation\RepresentationLayer;
  * @property-read RepresentationLayer $representation
  * @property-read string              $path
  */
-class Application implements LayerRoot {
+class Application implements \JsonSerializable, LayerRoot {
     use HasObjectIdentityTrait;
     
     # -- the application name

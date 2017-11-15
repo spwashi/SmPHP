@@ -11,7 +11,7 @@ use Sm\Core\Container\Mini\MiniContainer;
  *
  * @property \Sm\Core\Internal\Monitor\Monitor info
  */
-class MonitorContainer extends MiniContainer {
+class MonitorContainer extends MiniContainer implements \JsonSerializable {
     
     public function resolve($name = null): Monitor {
         $item = parent::resolve($name);
@@ -26,5 +26,9 @@ class MonitorContainer extends MiniContainer {
     public function getContents($name) {
         $item = $this->resolve($name);
         return $item->dump();
+    }
+    
+    public function jsonSerialize() {
+        return [ 'items' => $this->getAll() ];
     }
 }
