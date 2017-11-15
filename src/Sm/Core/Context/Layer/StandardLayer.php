@@ -110,7 +110,7 @@ abstract class StandardLayer extends StandardContext implements Layer, \JsonSeri
     }
     public function __debugInfo() {
         return [
-            'monitors' => $this->getMonitorContainer(),
+            'monitors' => $this->getMonitorContainer()->getAll(),
         ];
     }
     public function jsonSerialize() {

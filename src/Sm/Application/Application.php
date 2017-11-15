@@ -10,9 +10,10 @@ use Sm\Communication\Routing\Module\StandardRoutingModule;
 use Sm\Controller\ControllerLayer;
 use Sm\Core\Context\Layer\LayerContainer;
 use Sm\Core\Context\Layer\LayerRoot;
+use Sm\Core\Event\GenericEvent;
 use Sm\Core\Exception\InvalidArgumentException;
-use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
+use Sm\Core\Internal\Monitor\HasMonitorTrait;
 use Sm\Core\Paths\Exception\PathNotFoundException;
 use Sm\Core\Util;
 use Sm\Data\DataLayer;
@@ -33,12 +34,13 @@ use Sm\Representation\RepresentationLayer;
  */
 class Application implements \JsonSerializable, LayerRoot {
     use HasObjectIdentityTrait;
+    use HasMonitorTrait;
     
     # -- the application name
     protected $name;
     
     # -- paths
-    protected $config_path = 'config/';
+    protected $config_path;
     /** @var string $root_path Where is this application located? */
     protected $root_path;
     
@@ -54,13 +56,15 @@ class Application implements \JsonSerializable, LayerRoot {
     /**
      * Application constructor.
      *
-     * @param string $name      The name of the application
-     * @param string $root_path Where the application is located
+     * @param string $name        The name of the application
+     * @param string $root_path   Where the application is located
+     * @param null   $config_path Where all of the config info is
      */
-    protected function __construct($name, $root_path) {
+    protected function __construct($name, $root_path, $config_path = null) {
         $this->initSettings()
              ->setName($name)
              ->setRootPath($root_path);
+        $this->config_path = $config_path ?? ($this->root_path . 'config/');
         $this->initLayers();
     }
     /**
@@ -94,20 +98,16 @@ class Application implements \JsonSerializable, LayerRoot {
      * @throws \Sm\Core\Paths\Exception\PathNotFoundException
      */
     protected function _configure() {
-        $_config_php = $this->root_path . $this->config_path . 'config.php';
+        $_config_php = $this->config_path . 'config.php';
         
         if (file_exists($_config_php)) {
             $app = $this; # defined for the include
             require_once $_config_php;
+            $configEvent = GenericEvent::init("Configured application with path " . $_config_php);
+        } else {
+            $configEvent = GenericEvent::init("Could not configure application with path " . $_config_php);
         }
-    
-        $_routes_config_json_path = $this->root_path . $this->config_path . 'routes/routes.json';
-        $_routes_config_php_path  = $this->root_path . $this->config_path . 'routes/routes.php';
-        $this->registerRoutes($_routes_config_php_path);
-        $this->registerRoutes($_routes_config_json_path);
-    
-    
-        #$this->data->configure($configuration);
+        $this->getMonitor('info')->append($configEvent);
     }
     
     
@@ -183,28 +183,6 @@ class Application implements \JsonSerializable, LayerRoot {
     public function getLayers(): LayerContainer {
         return $this->layerContainer;
     }
-    /**
-     * @param $routes_path
-     *
-     * @throws \Sm\Core\Exception\UnimplementedError
-     */
-    protected function registerRoutes($routes_path): void {
-        if (file_exists($routes_path)) {
-            $extension = pathinfo($routes_path, PATHINFO_EXTENSION);
-            switch ($extension) {
-                case 'php':
-                    $routes = include $routes_path;
-                    break;
-                case 'json':
-                    $routes = file_get_contents($routes_path);
-                    break;
-                default:
-                    throw new UnimplementedError("Can only configure routes that are JSON or PHP");
-                
-            }
-            $this->communication->registerRoutes($routes);
-        }
-    }
     
     /**
      * Initialize the Settings of this Application
@@ -226,6 +204,7 @@ class Application implements \JsonSerializable, LayerRoot {
     
     public function __debugInfo() {
         return [
+            'monitors' => $this->getMonitorContainer(),
             'settings' => $this->settings->getAll(),
             'layers'   => $this->layerContainer->getAll(),
         ];
