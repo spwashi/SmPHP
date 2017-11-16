@@ -50,6 +50,7 @@ class CommunicationLayer extends StandardLayer {
     
     
     # -- class properties
+    const MONITOR__DISPATCH = 'dispatch';
     /** @var \Sm\Communication\Request\RequestFactory Factory used to resolve Requests */
     protected $requestFactory;
     /** @var \Sm\Communication\Response\ResponseFactory Factory used to resolve Responses */
@@ -116,22 +117,16 @@ class CommunicationLayer extends StandardLayer {
                                                              $routes));
         if (is_string($routes)) {
             $routes = json_decode($routes, 1);
-            if (json_last_error() !== JSON_ERROR_NONE) throw new InvalidArgumentException("Invalid JSON cannot be parsed");
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new InvalidArgumentException("Invalid JSON cannot be parsed");
+            }
         } else if (!is_array($routes)) {
             throw new InvalidArgumentException("Can only register JSON or arrays");
         }
     
-        $monitor = $this->getMonitor(static::MONITOR__ADD_ROUTE);
-        foreach ($routes as $pattern => &$resolution) {
-            $route_config = [
-                'pattern'    => $pattern,
-                'resolution' => $resolution,
-            ];
-            $this->normalizeResolution($resolution);
-            $route_config['normalized_resoltion'] = $resolution;
     
-            $monitor->append(AddRoute::init($route_config, null));
-        }
+        $routes = $this->normalizeRouteArray($routes);
+        
         return $this->getRoutingModule()->registerRoutes($routes);
     }
     
@@ -205,6 +200,8 @@ class CommunicationLayer extends StandardLayer {
             
             }
         }
+        $this->getMonitor(static::MONITOR__DISPATCH)->append(GenericEvent::init('dispatch route -- ', func_get_args()));
+        
         return $this->dispatcher->resolve($type, ...$response_or_request);
     }
     public function describe(string $name) {
@@ -248,17 +245,12 @@ class CommunicationLayer extends StandardLayer {
      *
      * @throws \Sm\Core\Context\Layer\Exception\InaccessibleLayerException
      */
-    private function normalizeResolution(&$resolution): void {
+    private function normalizeResolution(&$resolution, array $group_modification_rules = []): void {
         if (!is_string($resolution)) {
-            if (is_array($resolution) && is_string($resolution['resolution'] ?? null)) {
-                $this->normalizeResolution($resolution['resolution']);
-                return;
-            } else {
-                return;
-            }
+            return;
         }
         $layerRoot = $this->layerRoot;
-    
+        
         if (!isset($layerRoot)) return;
         
         # if there aren't any method-indicating functions, there's nothing to do with the controller
@@ -272,5 +264,58 @@ class CommunicationLayer extends StandardLayer {
         if (!isset($controllerLayer)) throw new InaccessibleLayerException("No controller available to resolve resolution " . json_encode($resolution));
         
         $resolution = $controllerLayer->createControllerResolvable($resolution);
+    }
+    /**
+     *
+     * @param array $routes
+     * @param array $group_rule An array of rules to apply to the group
+     *
+     * @return mixed
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     */
+    protected function normalizeRouteArray(array $routes, array $group_rule = []) {
+        $monitor = $this->getMonitor(static::MONITOR__ADD_ROUTE);
+        
+        if (isset($routes['routes'])) {
+            $group_rule = $routes;
+            $routes     = $group_rule['routes'];
+            unset($group_rule['routes']);
+            
+            return $this->normalizeRouteArray($routes, $group_rule);
+        }
+        
+        
+        foreach ($routes as &$resolution) {
+            $route_config = [ 'resolution' => $resolution, ];
+            if (is_array($resolution) && isset($resolution['resolution'])) {
+                $resolution = $this->_normalizeArrayLikeRoute($resolution, $group_rule);
+            }
+            $route_config['normalized_resoltion'] = $resolution;
+            $addRoute                             = AddRoute::init($route_config, null);
+            
+            $monitor->append($addRoute);
+        }
+        return $routes;
+    }
+    /**
+     * Normalize a route when it is registered like an array
+     *
+     * @param       $resolution
+     *
+     * @param array $group_rule
+     *
+     * @return array
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     */
+    protected function _normalizeArrayLikeRoute($resolution, array $group_rule): array {
+        if (isset($group_rule['pattern_prefix']) && isset($resolution['pattern']) && is_string($resolution['pattern'])) {
+            $pattern_prefix = $group_rule['pattern_prefix'];
+            if (!is_string($pattern_prefix)) {
+                throw new InvalidArgumentException("Pattern Prefix is not valid");
+            }
+            $resolution['pattern'] = $pattern_prefix . $resolution['pattern'];
+        }
+        $this->normalizeResolution($resolution['resolution'], $group_rule);
+        return $resolution;
     }
 }

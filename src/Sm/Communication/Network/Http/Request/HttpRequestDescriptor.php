@@ -220,10 +220,12 @@ class HttpRequestDescriptor extends RequestDescriptor {
      *
      * @throws \Sm\Core\Exception\InvalidArgumentException
      */
-    protected function checkHttpRequestArguments($arguments) {
+    protected function checkHttpRequestArguments($arguments = null) {
+        $arguments = $arguments ?? [];
+        
         if (!is_array($arguments)) throw new InvalidArgumentException("Can only accept associative arrays");
         foreach ($this->argument_names as $argument_name) {
-            if (!isset($arguments[ $argument_name ])) throw new InvalidArgumentException("Missing {$argument_name} from request");
+            if (!isset($arguments[ $argument_name ])) throw new InvalidArgumentException("The '{$argument_name}' argument is missing'");
         }
     }
     /**

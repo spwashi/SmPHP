@@ -24,6 +24,7 @@ use Sm\Core\Util;
 
 class Route extends FunctionResolvable implements \JsonSerializable {
     protected $primedRequest;
+    protected $primedArguments = [];
     /** @var  AbstractResolvable $backupResolvable */
     protected $backupResolvable;
     /** @var  AbstractResolvable $subject */
@@ -59,6 +60,9 @@ class Route extends FunctionResolvable implements \JsonSerializable {
     
         $Route = new static($resolution, $pattern, $default);
         return $Route;
+    }
+    public function __toString() {
+        return '';
     }
     function __debugInfo() {
         return parent::__debugInfo() + [
@@ -105,7 +109,10 @@ class Route extends FunctionResolvable implements \JsonSerializable {
         $primedRequest = $this->primedRequest;
         if ($this->matches($primedRequest)) {
             $arguments = $this->requestDescriptor ? $this->requestDescriptor->getArguments($primedRequest) : [];
-            return $this->subject->resolve(...array_values($arguments), ...func_get_args());
+    
+            $merged_arguments_1 = array_merge($arguments, $this->primedArguments);
+            $merged_arguments_2 = array_merge(array_values($merged_arguments_1), func_get_args());
+            return $this->subject->resolve(...$merged_arguments_2);
         }
         
         throw new UnresolvableException("Cannot match route with this request");
@@ -113,11 +120,13 @@ class Route extends FunctionResolvable implements \JsonSerializable {
     ####################################################
     #   Setters/Getters
     ####################################################
-    public function prime($request) {
-        $this->primedRequest = $request;
-        if (!($request instanceof Request)) throw new InvalidArgumentException('Can only route requests');
+    public function prime($request, array $arguments = null) {
+        $this->primedRequest   = $request ?? $this->primedRequest;
+        $this->primedArguments = array_merge($this->primedArguments, $arguments ?? []);
+        
         return $this;
     }
+    
     public function hasPrimedRequest() {
         return isset($this->primedRequest);
     }
@@ -187,15 +196,6 @@ class Route extends FunctionResolvable implements \JsonSerializable {
             throw new UnresolvableException("Method '{$method_name}' not found on '{$class_name}'");
         }
     }
-    /**
-     * @param array $parameters
-     *
-     * @return Route
-     */
-    public function setParameters(array $parameters): Route {
-        $this->parameters = $parameters;
-        return $this;
-    }
     
     
     function jsonSerialize() {
@@ -206,5 +206,8 @@ class Route extends FunctionResolvable implements \JsonSerializable {
                                'requestDescriptor' => $this->requestDescriptor,
                                'parameters'        => $this->parameters,
                            ]);
+    }
+    public function getPrimedArguments(): array {
+        return $this->primedArguments;
     }
 }

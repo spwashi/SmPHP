@@ -9,6 +9,8 @@ namespace Sm\Communication\Network\Http;
 
 
 class Http {
+    const REDIRECT = 'HTTP--REDIRECT';
+    
     public static $all_http_codes = [];
     public static function ___init() {
         if (file_exists(__DIR__ . '/http_codes.json')) {
