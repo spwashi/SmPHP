@@ -36,8 +36,8 @@ class Monitor implements \JsonSerializable, Identifiable {
      * @internal param null|\Sm\Core\Internal\Identification\Identifiable $source
      *
      */
-    public function append(Event $event) {
-        $this->events[] = $event;
+    public function append(Event ...$event) {
+        $this->events = array_merge($this->events, $event);
         return $this;
     }
     /**
