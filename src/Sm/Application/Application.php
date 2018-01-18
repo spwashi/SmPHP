@@ -72,10 +72,11 @@ class Application implements \JsonSerializable, LayerRoot {
      *
      * @param $name
      * @param $root_path
+     * @param null $config_path
      *
-     * @return \Sm\Application\Application
+     * @return Application
      */
-    public static function init($name, $root_path) {
+    public static function init($name, $root_path,  $config_path = null) {
         return new static(...func_get_args());
     }
     public function boot(): Application {
