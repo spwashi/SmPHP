@@ -1,9 +1,9 @@
 <?php
 
 use Sm\Data\Property\PropertySchematic;
-use Sm\Query\Modules\Sql\Data\Column\ColumnSchema;
-use Sm\Query\Modules\Sql\Data\Column\IntegerColumnSchema;
-use Sm\Query\Modules\Sql\Data\Column\VarcharColumnSchema;
+use Sm\Modules\Sql\Data\Column\ColumnSchema;
+use Sm\Modules\Sql\Data\Column\IntegerColumnSchema;
+use Sm\Modules\Sql\Data\Column\VarcharColumnSchema;
 
 function propererty_to_column(PropertySchematic $propertySchema) {
     $datatypes = $propertySchema->getRawDataTypes();

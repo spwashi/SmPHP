@@ -5,30 +5,31 @@
  * Time: 7:39 PM
  */
 
-namespace Sm\Query\Modules\Sql\Formatting;
+namespace Sm\Modules\Sql\Formatting;
 
-const DO_ECHO_RESULTS = 0;
+const DO_ECHO_RESULTS = 1;
 
 use Sm\Data\Evaluation\Comparison\EqualToCondition;
 use Sm\Data\Source\Constructs\JoinedSourceSchematic;
 use Sm\Data\Source\Database\DatabaseSource;
 use Sm\Data\Source\Database\Table\TableSource;
 use Sm\Data\Source\Database\Table\TableSourceSchematic;
-use Sm\Query\Modules\Sql\Constraints\ForeignKeyConstraintSchema;
-use Sm\Query\Modules\Sql\Constraints\PrimaryKeyConstraintSchema;
-use Sm\Query\Modules\Sql\Constraints\UniqueKeyConstraintSchema;
-use Sm\Query\Modules\Sql\Data\Column\IntegerColumnSchema;
-use Sm\Query\Modules\Sql\Data\Column\VarcharColumnSchema;
-use Sm\Query\Modules\Sql\MySql\Module\MySqlQueryModule;
-use Sm\Query\Modules\Sql\SqlExecutionContext;
-use Sm\Query\Modules\Sql\Statements\AlterTableStatement;
-use Sm\Query\Modules\Sql\Statements\CreateTableStatement;
+use Sm\Modules\Sql\Constraints\ForeignKeyConstraintSchema;
+use Sm\Modules\Sql\Constraints\PrimaryKeyConstraintSchema;
+use Sm\Modules\Sql\Constraints\UniqueKeyConstraintSchema;
+use Sm\Modules\Sql\Data\Column\DateTimeColumnSchema;
+use Sm\Modules\Sql\Data\Column\IntegerColumnSchema;
+use Sm\Modules\Sql\Data\Column\VarcharColumnSchema;
+use Sm\Modules\Sql\MySql\Module\MySqlQueryModule;
+use Sm\Modules\Sql\SqlExecutionContext;
+use Sm\Modules\Sql\Statements\AlterTableStatement;
+use Sm\Modules\Sql\Statements\CreateTableStatement;
 use Sm\Query\Statements\InsertStatement;
 use Sm\Query\Statements\SelectStatement;
 use Sm\Query\Statements\UpdateStatement;
 
 class SqlQueryFormatterTest extends \PHPUnit_Framework_TestCase {
-    /** @var  \Sm\Query\Modules\Sql\Formatting\SqlQueryFormatterFactory $queryFormatter */
+    /** @var  \Sm\Modules\Sql\Formatting\SqlQueryFormatterFactory $queryFormatter */
     public $queryFormatter;
     public function setUp() {
         $module               = MySqlQueryModule::init()->initialize();
@@ -84,6 +85,11 @@ class SqlQueryFormatterTest extends \PHPUnit_Framework_TestCase {
                                         ->setName('this_thing');
         $vcColumn3 = VarcharColumnSchema::init('boon_man')
                                         ->setLength(255);
+        $datetime  = DateTimeColumnSchema::init('another_one_thing')
+                                         ->setOnUpdate(DateTimeColumnSchema::CURRENT_TIMESTAMP)
+                                         ->setDefault(0)
+                                         ->setTableSchema(TableSourceSchematic::init('other_tablename'));
+        
         
         $primaryKey = PrimaryKeyConstraintSchema::init()
                                                 ->addColumn($vcColumn1)
@@ -94,6 +100,7 @@ class SqlQueryFormatterTest extends \PHPUnit_Framework_TestCase {
         /** @var CreateTableStatement $stmt */
         $stmt = CreateTableStatement::init('TableName')->withColumns($vcColumn1,
                                                                      $iColumn1,
+                                                                     $datetime,
                                                                      $vcColumn2,
                                                                      $vcColumn3);
         $stmt->index($iColumn1)->withConstraints($primaryKey, $uniqueKey);
@@ -109,7 +116,8 @@ class SqlQueryFormatterTest extends \PHPUnit_Framework_TestCase {
         $otherr   = IntegerColumnSchema::init('another_one_thing')
                                        ->setLength(10)
                                        ->setTableSchema(TableSourceSchematic::init('other_tablename'));
-        
+    
+    
         $stmt   = AlterTableStatement::init('TableName')
                                      ->withConstraints(ForeignKeyConstraintSchema::init()
                                                                                  ->setConstraintName('table_table_id')

@@ -17,8 +17,8 @@ use Sm\Core\Internal\Monitor\HasMonitorTrait;
 use Sm\Core\Paths\Exception\PathNotFoundException;
 use Sm\Core\Util;
 use Sm\Data\DataLayer;
-use Sm\Query\Modules\Sql\MySql\Authentication\MySqlAuthentication;
-use Sm\Query\Modules\Sql\MySql\Module\MySqlQueryModule;
+use Sm\Modules\Sql\MySql\Authentication\MySqlAuthentication;
+use Sm\Modules\Sql\MySql\Module\MySqlQueryModule;
 use Sm\Query\QueryLayer;
 use Sm\Representation\RepresentationLayer;
 

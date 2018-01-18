@@ -7,13 +7,13 @@ use Sm\Application\Controller\BaseApplicationController;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Data\Model\Model;
 use Sm\Data\Property\PropertySchematic;
-use Sm\Query\Modules\Sql\Constraints\PrimaryKeyConstraintSchema;
-use Sm\Query\Modules\Sql\Constraints\UniqueKeyConstraintSchema;
-use Sm\Query\Modules\Sql\Data\Column\ColumnSchema;
-use Sm\Query\Modules\Sql\Data\Column\IntegerColumnSchema;
-use Sm\Query\Modules\Sql\Data\Column\VarcharColumnSchema;
-use Sm\Query\Modules\Sql\MySql\Module\MySqlQueryModule;
-use Sm\Query\Modules\Sql\Statements\CreateTableStatement;
+use Sm\Modules\Sql\Constraints\PrimaryKeyConstraintSchema;
+use Sm\Modules\Sql\Constraints\UniqueKeyConstraintSchema;
+use Sm\Modules\Sql\Data\Column\ColumnSchema;
+use Sm\Modules\Sql\Data\Column\IntegerColumnSchema;
+use Sm\Modules\Sql\Data\Column\VarcharColumnSchema;
+use Sm\Modules\Sql\MySql\Module\MySqlQueryModule;
+use Sm\Modules\Sql\Statements\CreateTableStatement;
 
 /**
  * Class Home

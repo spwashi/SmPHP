@@ -9,8 +9,8 @@ namespace Sm\Query;
 
 use PHPUnit\Framework\TestCase;
 use Sm\Core\Module\ModuleContainer;
+use Sm\Modules\Sql\MySql\Module\MySqlQueryModule;
 use Sm\Query\Module\QueryModuleFactory;
-use Sm\Query\Modules\Sql\MySql\Module\MySqlQueryModule;
 
 /**
  * Class QueryLayerTest

@@ -1,9 +1,9 @@
 <?php
 
-use Sm\Query\Modules\Sql\Constraints\PrimaryKeyConstraintSchema;
-use Sm\Query\Modules\Sql\Constraints\UniqueKeyConstraintSchema;
-use Sm\Query\Modules\Sql\MySql\Module\MySqlQueryModule;
-use Sm\Query\Modules\Sql\Statements\CreateTableStatement;
+use Sm\Modules\Sql\Constraints\PrimaryKeyConstraintSchema;
+use Sm\Modules\Sql\Constraints\UniqueKeyConstraintSchema;
+use Sm\Modules\Sql\MySql\Module\MySqlQueryModule;
+use Sm\Modules\Sql\Statements\CreateTableStatement;
 
 require_once '_property_to_column.php';
 

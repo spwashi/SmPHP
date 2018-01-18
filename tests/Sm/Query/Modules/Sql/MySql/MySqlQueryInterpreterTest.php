@@ -5,13 +5,13 @@
  * Time: 8:37 PM
  */
 
-namespace Sm\Query\Modules\Sql\MySql;
+namespace Sm\Modules\Sql\MySql;
 
 
-use Sm\Query\Modules\Sql\Formatting\Aliasing\SqlFormattingAliasContainer;
-use Sm\Query\Modules\Sql\Formatting\SqlFormattingProxyFactory;
-use Sm\Query\Modules\Sql\Formatting\SqlQueryFormatterFactory;
-use Sm\Query\Modules\Sql\MySql\Authentication\MySqlAuthentication;
+use Sm\Modules\Sql\Formatting\Aliasing\SqlFormattingAliasContainer;
+use Sm\Modules\Sql\Formatting\SqlFormattingProxyFactory;
+use Sm\Modules\Sql\Formatting\SqlQueryFormatterFactory;
+use Sm\Modules\Sql\MySql\Authentication\MySqlAuthentication;
 
 class MySqlQueryInterpreterTest extends \PHPUnit_Framework_TestCase {
     public function getAuthentication(): MySqlAuthentication {

@@ -8,7 +8,7 @@
 namespace Sm\Storage\Modules\Sql\MySql;
 
 
-use Sm\Query\Modules\Sql\MySql\Authentication\MySqlAuthentication;
+use Sm\Modules\Sql\MySql\Authentication\MySqlAuthentication;
 
 class MySqlAuthenticationTest extends \PHPUnit_Framework_TestCase {
     /** @var  MySqlAuthentication $MySqlAuthentication */

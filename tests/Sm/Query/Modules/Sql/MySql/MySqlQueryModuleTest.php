@@ -5,16 +5,16 @@
  * Time: 10:00 PM
  */
 
-namespace Sm\Query\Modules\Sql\MySql;
+namespace Sm\Modules\Sql\MySql;
 
 
 use Sm\Core\Module\ModuleContainer;
 use Sm\Core\Resolvable\StringResolvable;
-use Sm\Query\Modules\Sql\Constraints\PrimaryKeyConstraintSchema;
-use Sm\Query\Modules\Sql\Data\Column\IntegerColumnSchema;
-use Sm\Query\Modules\Sql\MySql\Authentication\MySqlAuthentication;
-use Sm\Query\Modules\Sql\MySql\Module\MySqlQueryModule;
-use Sm\Query\Modules\Sql\Statements\CreateTableStatement;
+use Sm\Modules\Sql\Constraints\PrimaryKeyConstraintSchema;
+use Sm\Modules\Sql\Data\Column\IntegerColumnSchema;
+use Sm\Modules\Sql\MySql\Authentication\MySqlAuthentication;
+use Sm\Modules\Sql\MySql\Module\MySqlQueryModule;
+use Sm\Modules\Sql\Statements\CreateTableStatement;
 use Sm\Query\Proxy\String_QueryProxy;
 use Sm\Query\QueryLayer;
 use Sm\Query\Statements\SelectStatement;
@@ -22,6 +22,8 @@ use Sm\Query\Statements\SelectStatement;
 class MySqlQueryModuleTest extends \PHPUnit_Framework_TestCase {
     /** @var  QueryLayer $layer */
     protected $layer;
+    /** @var  MySqlQueryModule $module */
+    protected $module;
     public function setUp() {
         $layer  = new QueryLayer(new ModuleContainer);
         $module = new MySqlQueryModule;
@@ -32,7 +34,8 @@ class MySqlQueryModuleTest extends \PHPUnit_Framework_TestCase {
                                                                             'sm_test'));
         
         $layer->registerQueryModule($module, function () use ($module) { return $module; }, 0);
-        $this->layer = $layer;
+        $this->layer  = $layer;
+        $this->module = $module;
     }
     
     public function testCanInterpretSelect() {
@@ -45,13 +48,11 @@ class MySqlQueryModuleTest extends \PHPUnit_Framework_TestCase {
     }
     public function testCan() {
         $id           = IntegerColumnSchema::init('id')->setLength(11)->setNullability(0);
-        $id           = IntegerColumnSchema::init('id')->setLength(11)->setNullability(0);
         $create_table = CreateTableStatement::init('std')
                                             ->withColumns($id)
                                             ->withConstraints(PrimaryKeyConstraintSchema::init()
                                                                                         ->addColumn($id));
-    
-        $query = String_QueryProxy::init("SHOW TABLES");
+        $query        = String_QueryProxy::init("SHOW TABLES");
 //        $result = $this->layer->interpret($create_table);
         echo json_encode($create_table, JSON_PRETTY_PRINT);
     }

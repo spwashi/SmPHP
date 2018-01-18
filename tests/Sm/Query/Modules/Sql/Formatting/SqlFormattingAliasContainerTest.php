@@ -5,10 +5,10 @@
  * Time: 5:44 PM
  */
 
-namespace Sm\Query\Modules\Sql\Formatting;
+namespace Sm\Modules\Sql\Formatting;
 
 
-use Sm\Query\Modules\Sql\Formatting\Aliasing\SqlFormattingAliasContainer;
+use Sm\Modules\Sql\Formatting\Aliasing\SqlFormattingAliasContainer;
 
 class SqlFormattingAliasContainerTest extends \PHPUnit_Framework_TestCase {
     public function testCanGetFinalAlias() {

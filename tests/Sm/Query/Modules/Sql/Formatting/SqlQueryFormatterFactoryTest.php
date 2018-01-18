@@ -1,6 +1,6 @@
 <?php
 
-namespace Sm\Query\Modules\Sql\Formatting;
+namespace Sm\Modules\Sql\Formatting;
 
 
 class SqlQueryFormatterFactoryTest extends \PHPUnit_Framework_TestCase {
