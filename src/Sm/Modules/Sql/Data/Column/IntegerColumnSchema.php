@@ -12,7 +12,7 @@ namespace Sm\Modules\Sql\Data\Column;
  *
  * @package Sm\Modules\Sql\Data\Column
  */
-class IntegerColumnSchema extends ColumnSchema {
+class IntegerColumnSchema extends ColumnSchema implements NumericColumnSchema {
     protected $type           = 'INT';
     protected $auto_increment = false;
     public function isAutoIncrement() {
@@ -20,6 +20,7 @@ class IntegerColumnSchema extends ColumnSchema {
     }
     public function setAutoIncrement($do_it = true) {
         $this->auto_increment = $do_it;
+        $this->setNullability(false);
         return $this;
     }
     public function setLength(int $length) {

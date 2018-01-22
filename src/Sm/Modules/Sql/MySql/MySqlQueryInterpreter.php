@@ -15,6 +15,7 @@ use Sm\Core\Exception\TypeMismatchException;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Util;
 use Sm\Modules\Sql\MySql\Authentication\MySqlAuthentication;
+use Sm\Modules\Sql\SqlExecutionContext;
 use Sm\Modules\Sql\SqlQueryInterpreter;
 
 /**
@@ -40,14 +41,18 @@ class MySqlQueryInterpreter extends SqlQueryInterpreter {
      * @throws \Sm\Core\Exception\TypeMismatchException
      */
     public function checkAuthenticationValidity(Authentication $authentication) {
+        # This should actually probably be a part of the execution context...
         if (!($authentication instanceof MySqlAuthentication)) throw new TypeMismatchException("Can only connect with a MySqlAuthentication");
         $authentication->connect();
         if (!$authentication->isValid()) throw new InvalidAuthenticationException("The Authentication for this");
     }
-    protected function execute(string $formatted_query) {
-        $connection = $this->authentication->getConnection();
-        $sth        = $connection->prepare("$formatted_query");
-        $result     = $sth->execute();
+    protected function execute($query_or_statement) {
+        $formattingContext = new SqlExecutionContext;
+        $formatted_query   = $this->format($query_or_statement, $formattingContext);
+        $connection        = $this->authentication->getConnection();
+        $variables         = $this->getVariables($formattingContext);
+        $sth               = $connection->prepare("$formatted_query");
+        $result            = $sth->execute($variables);
         return [ $sth, $result ];
     }
     /**
@@ -75,5 +80,27 @@ class MySqlQueryInterpreter extends SqlQueryInterpreter {
         }
         
         throw new UnimplementedError("No other return types are supported yet");
+    }
+    protected function getVariables(SqlExecutionContext $formattingContext): array {
+        $variables = $formattingContext->getVariables();
+        if (!is_array($variables)) return [];
+        
+        $is_associative = null;
+        
+        $returned_variables = [];
+        
+        foreach ($variables as $index => $val) {
+            $is_numeric = is_numeric($index);
+            if ($is_associative === true && $is_numeric) throw new InvalidArgumentException("Cannot mix named and unnamed placeholders ");
+            if ($is_associative === false && !$is_numeric) throw new InvalidArgumentException("Cannot mix named and unnamed placeholders ");
+            $is_associative = !$is_numeric;
+            
+            if ($is_numeric) $returned_variables[] = $val;
+            else $returned_variables[":$index"] = $val;
+            
+            
+        }
+        
+        return $returned_variables;
     }
 }

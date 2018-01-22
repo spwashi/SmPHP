@@ -29,11 +29,11 @@ use Sm\Query\Statements\SelectStatement;
 use Sm\Query\Statements\UpdateStatement;
 
 class SqlQueryFormatterTest extends \PHPUnit_Framework_TestCase {
-    /** @var  \Sm\Modules\Sql\Formatting\SqlQueryFormatterFactory $queryFormatter */
-    public $queryFormatter;
+    /** @var  \Sm\Modules\Sql\Formatting\SqlQueryFormatterManager $formatterManager */
+    public $formatterManager;
     public function setUp() {
-        $module               = MySqlQueryModule::init()->initialize();
-        $this->queryFormatter = $module->getQueryFormatter();
+        $module                 = MySqlQueryModule::init()->initialize();
+        $this->formatterManager = $module->getQueryFormatter();
     }
     
     
@@ -52,17 +52,15 @@ class SqlQueryFormatterTest extends \PHPUnit_Framework_TestCase {
                                                                              ->setJoinConditions(EqualToCondition::init(1, 2))
                                                                              ->setJoinedSources($tableSource_2))
                                         ->where(EqualToCondition::init(1, $bran_slam));
-        $result        = $this->queryFormatter->format($stmt, new SqlExecutionContext);
+        $result        = $this->formatterManager->format($stmt, new SqlExecutionContext);
         if (DO_ECHO_RESULTS) echo __FILE__ . "\n--\n$result\n\n";
     }
     public function testUpdate() {
-        $tableSource = new TableSource('tablename_is_here', new DatabaseSource('Database'));
-        $boonman     = VarcharColumnSchema::init('boonman')
-                                          ->setLength(25)
-                                          ->setTableSchema($tableSource);
-        $stmt        = UpdateStatement::init([ 'test1' => $boonman, 'test4' => 'test5', 'test7' => 13.5 ])
-                                      ->inSources('testHELP');
-        $result      = $this->queryFormatter->format($stmt, new SqlExecutionContext);
+        $tableSource          = new TableSource('tablename_is_here', new DatabaseSource('Database'));
+        $stmt                 = UpdateStatement::init([ 'test1' => "WOW", 'test4' => 'test5', 'test7' => 13.5 ])
+                                               ->inSources('testHELP');
+        $sqlFormattingContext = new SqlExecutionContext;
+        $result               = $this->formatterManager->format($stmt, $sqlFormattingContext);
         if (DO_ECHO_RESULTS) echo __FILE__ . "\n--\n$result\n\n";
     }
     public function testInsert() {
@@ -70,7 +68,7 @@ class SqlQueryFormatterTest extends \PHPUnit_Framework_TestCase {
                                  ->set([ 'title' => 'hello', 'first_name' => 'last_name' ],
                                        [ 'title' => 'hey there', 'first_name' => 'another' ])
                                  ->inSources('tbl');
-        $result = $this->queryFormatter->format($stmt, new SqlExecutionContext);
+        $result = $this->formatterManager->format($stmt, new SqlExecutionContext);
         if (DO_ECHO_RESULTS) echo __FILE__ . "\n--\n$result\n\n";
     }
     public function testCreateTable() {
@@ -104,8 +102,8 @@ class SqlQueryFormatterTest extends \PHPUnit_Framework_TestCase {
                                                                      $vcColumn2,
                                                                      $vcColumn3);
         $stmt->index($iColumn1)->withConstraints($primaryKey, $uniqueKey);
-        
-        $result = $this->queryFormatter->format($stmt, new SqlExecutionContext);
+    
+        $result = $this->formatterManager->format($stmt, new SqlExecutionContext);
         
         if (DO_ECHO_RESULTS) echo __FILE__ . "\n--\n$result\n\n";
     }
@@ -123,7 +121,7 @@ class SqlQueryFormatterTest extends \PHPUnit_Framework_TestCase {
                                                                                  ->setConstraintName('table_table_id')
                                                                                  ->addColumn($iColumn1)
                                                                                  ->addRefeferencedColumns($otherr));
-        $result = $this->queryFormatter->format($stmt, new SqlExecutionContext);
+        $result = $this->formatterManager->format($stmt, new SqlExecutionContext);
         if (DO_ECHO_RESULTS) echo __FILE__ . "\n--\n$result\n\n";
     }
 }

@@ -27,9 +27,11 @@ class CreateTableStatement extends QueryComponent implements \JsonSerializable {
         $this->name = $name;
         $this->withColumns(...$columns);
     }
-    public static function init($name = null, ...$columns) {
+    public static function init($name = null, ...$columns): CreateTableStatement {
         if (!isset($name)) throw new \InvalidArgumentException("Must have a name");
-        return parent::init(...func_get_args());
+        /** @var CreateTableStatement $stmt */
+        $stmt = parent::init(...func_get_args());
+        return $stmt;
     }
     
     public function withName(string $name) {

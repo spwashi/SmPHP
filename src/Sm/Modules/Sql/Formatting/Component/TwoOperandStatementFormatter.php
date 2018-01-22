@@ -21,7 +21,7 @@ class TwoOperandStatementFormatter extends SqlQueryFormatter {
         $operator = $stmt->getOperator();
         $right    = $stmt->getRightSide();
     
-        if (!($right instanceof ColumnSchema)) $right = $this->queryFormatter->placeholder($right);
+        if (!($right instanceof ColumnSchema)) $right = $this->formatterManager->placeholder($right);
         
         # Format each side like we're talking about columns
         if ($right instanceof ColumnSchema) $right = $this->proxy($right, ColumnIdentifierFormattingProxy::class);

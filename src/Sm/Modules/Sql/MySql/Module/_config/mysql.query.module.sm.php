@@ -37,7 +37,7 @@ use Sm\Modules\Sql\Formatting\Proxy\Source\Table\TableIdentifierFormattingProxy;
 use Sm\Modules\Sql\Formatting\Proxy\Source\Table\TableSourceSchema_TableIdentifierFormattingProxy;
 use Sm\Modules\Sql\Formatting\Source\JoinedSourceSchemaFormatter;
 use Sm\Modules\Sql\Formatting\SqlFormattingProxyFactory;
-use Sm\Modules\Sql\Formatting\SqlQueryFormatterFactory;
+use Sm\Modules\Sql\Formatting\SqlQueryFormatterManager;
 use Sm\Modules\Sql\Formatting\Statements\InsertStatementFormatter;
 use Sm\Modules\Sql\Formatting\Statements\SelectStatementFormatter;
 use Sm\Modules\Sql\Formatting\Statements\Table\AlterTableStatementFormatter;
@@ -101,7 +101,8 @@ function register_proxy_handlers(SqlFormattingProxyFactory $formattingProxyFacto
                                       ]);
 }
 
-function register_formatting_handlers(SqlQueryFormatterFactory $formatterFactory) {
+function register_formatting_handlers(SqlQueryFormatterManager $formatterManager) {
+    $formatterFactory = $formatterManager->formatterFactory;
     $formatterFactory->register(
         [
             new StdSqlFormatter,
@@ -111,25 +112,26 @@ function register_formatting_handlers(SqlQueryFormatterFactory $formatterFactory
             StringResolvable::class                       => $formatterFactory->createFormatter(function (StringResolvable $stringResolvable) {
                 return '"' . $stringResolvable . '"';
             }),
-            SelectStatement::class                        => new SelectStatementFormatter($formatterFactory),
-            UpdateStatement::class                        => new UpdateStatementFormatter($formatterFactory),
-            CreateTableStatement::class                   => new CreateTableStatementFormatter($formatterFactory),
-            AlterTableStatement::class                    => new AlterTableStatementFormatter($formatterFactory),
-            InsertStatement::class                        => new InsertStatementFormatter($formatterFactory),
-            ConditionalClause::class                      => new ConditionalClauseFormatter($formatterFactory),
-            ColumnSchema::class                           => new ColumnSchemaFormatter($formatterFactory),
-            IntegerColumnSchema::class                    => new IntegerColumnSchemaFormatter($formatterFactory),
-            DateTimeColumnSchema::class                   => new DateTimeColumnSchemaFormatter($formatterFactory),
-            ColumnIdentifierFormattingProxy::class        => new ColumnIdentifierFormattingProxyFormatter($formatterFactory),
-            String_ColumnIdentifierFormattingProxy::class => new String_ColumnIdentifierFormattingProxyFormatter($formatterFactory),
-            TwoOperandStatement::class                    => new TwoOperandStatementFormatter($formatterFactory),
+            SelectStatement::class                        => new SelectStatementFormatter($formatterManager),
+            UpdateStatement::class                        => new UpdateStatementFormatter($formatterManager),
+            CreateTableStatement::class                   => new CreateTableStatementFormatter($formatterManager),
+            AlterTableStatement::class                    => new AlterTableStatementFormatter($formatterManager),
+            InsertStatement::class                        => new InsertStatementFormatter($formatterManager),
+            ConditionalClause::class                      => new ConditionalClauseFormatter($formatterManager),
+            ColumnSchema::class                           => new ColumnSchemaFormatter($formatterManager),
+            IntegerColumnSchema::class                    => new IntegerColumnSchemaFormatter($formatterManager),
+            DateTimeColumnSchema::class                   => new DateTimeColumnSchemaFormatter($formatterManager),
+            ColumnIdentifierFormattingProxy::class        => new ColumnIdentifierFormattingProxyFormatter($formatterManager),
+            String_ColumnIdentifierFormattingProxy::class => new String_ColumnIdentifierFormattingProxyFormatter($formatterManager),
+            TwoOperandStatement::class                    => new TwoOperandStatementFormatter($formatterManager),
             PlaceholderFormattingProxy::class             =>
                 $formatterFactory->createFormatter(function (PlaceholderFormattingProxy $columnSchema) use ($formatterFactory) {
-                    return ":{$columnSchema->getPlaceholderName()}";
+                    $placeholderName = $columnSchema->getPlaceholderName();
+                    return $placeholderName ? ":{$placeholderName}" : '?';
                 }),
     
-            JoinedSourceSchematic::class           => new JoinedSourceSchemaFormatter($formatterFactory),
-            SelectExpressionFormattingProxy::class => new SelectExpressionFormattingProxyFormatter($formatterFactory),
+            JoinedSourceSchematic::class           => new JoinedSourceSchemaFormatter($formatterManager),
+            SelectExpressionFormattingProxy::class => new SelectExpressionFormattingProxyFormatter($formatterManager),
             PrimaryKeyConstraintSchema::class      =>
                 $formatterFactory->createFormatter(function (PrimaryKeyConstraintSchema $primaryKeyConstraintSchema) use ($formatterFactory) {
                     $columns      = $primaryKeyConstraintSchema->getColumns();

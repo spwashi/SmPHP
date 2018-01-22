@@ -14,7 +14,7 @@ use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Module\ModuleProxy;
 use Sm\Modules\Sql\Formatting\Aliasing\SqlFormattingAliasContainer;
 use Sm\Modules\Sql\Formatting\SqlFormattingProxyFactory;
-use Sm\Modules\Sql\Formatting\SqlQueryFormatterFactory;
+use Sm\Modules\Sql\Formatting\SqlQueryFormatterManager;
 use Sm\Modules\Sql\MySql\Authentication\MySqlAuthentication;
 use Sm\Modules\Sql\MySql\MySqlQueryInterpreter;
 use Sm\Query\Module\QueryModule;
@@ -33,7 +33,7 @@ class MySqlQueryModule extends QueryModule {
     protected $queryType = 'mysql';
     /** @var string $config_path The path from which we will load the Module configuration */
     protected $config_path = '_config/mysql.query.module.sm.php';
-    /** @var  SqlQueryFormatterFactory $queryFormatter */
+    /** @var  SqlQueryFormatterManager $queryFormatter */
     protected $queryFormatter;
     private   $authentication;
     /**
@@ -45,7 +45,7 @@ class MySqlQueryModule extends QueryModule {
         $this->authentication = $mySqlAuthentication;
         return $this;
     }
-    public function interpret(Layer $layer, $query, MySqlAuthentication $authentication = null) {
+    public function interpret(Layer $layer = null, $query, MySqlAuthentication $authentication = null) {
         if (!($query instanceof QueryComponent) && !($query instanceof QueryProxy)) {
             throw new InvalidArgumentException("Can only query on components or proxies");
         }
@@ -57,21 +57,21 @@ class MySqlQueryModule extends QueryModule {
     /**
      * @param \Sm\Core\Context\Layer\Layer|null $context
      *
-     * @return null|\Sm\Modules\Sql\Formatting\SqlQueryFormatterFactory
+     * @return null|\Sm\Modules\Sql\Formatting\SqlQueryFormatterManager
      */
-    public function getQueryFormatter(Layer $context = null): ? SqlQueryFormatterFactory {
+    public function getQueryFormatter(Layer $context = null): ? SqlQueryFormatterManager {
         if (isset($context)) return $this->getContextRegistry($context)->resolve('queryFormatter');
         return $this->queryFormatter;
     }
     /**
      * Set the SqlQueryFormatterFactory that will be responsible for formatting Queries on this Module
      *
-     * @param SqlQueryFormatterFactory     $queryFormatter The SqlQueryFormatterFactory that is going to be responsible for formatting the queries on this layer.
+     * @param SqlQueryFormatterManager     $queryFormatter The SqlQueryFormatterFactory that is going to be responsible for formatting the queries on this layer.
      * @param \Sm\Core\Context\Layer\Layer $context        The Layer on which we are registering it. If not specified, just registered on the class.
      *
      * @return \Sm\Modules\Sql\MySql\MySqlQueryModule
      */
-    public function setQueryFormatter(SqlQueryFormatterFactory $queryFormatter, Layer $context = null): MySqlQueryModule {
+    public function setQueryFormatter(SqlQueryFormatterManager $queryFormatter, Layer $context = null): MySqlQueryModule {
         if (!isset($context)) {
             $this->queryFormatter = $queryFormatter;
         } else {
@@ -102,7 +102,7 @@ class MySqlQueryModule extends QueryModule {
         
         # So we know how to format queries
         # todo dependency injection?
-        $queryFormatter = SqlQueryFormatterFactory::init($formattingProxyFactory, SqlFormattingAliasContainer::init());
+        $queryFormatter = new SqlQueryFormatterManager(null, $formattingProxyFactory, SqlFormattingAliasContainer::init());
         if (function_exists('register_formatting_handlers')) {
             register_formatting_handlers($queryFormatter);
         }

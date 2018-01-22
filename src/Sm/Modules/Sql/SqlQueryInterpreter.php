@@ -11,7 +11,7 @@ use Sm\Authentication\Authentication;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Modules\Sql\Formatting\SqlFormattingContext;
 use Sm\Modules\Sql\Formatting\SqlQueryFormatter;
-use Sm\Modules\Sql\Formatting\SqlQueryFormatterFactory;
+use Sm\Modules\Sql\Formatting\SqlQueryFormatterManager;
 use Sm\Query\Interpretation\QueryInterpreter;
 
 /**
@@ -24,22 +24,21 @@ use Sm\Query\Interpretation\QueryInterpreter;
 abstract class SqlQueryInterpreter extends QueryInterpreter {
     /** @var  \Sm\Modules\Sql\Authentication\SqlAuthentication $authentication The thing that gives us credentials to use to connect to the database */
     protected $authentication;
-    /** @var  Formatting\SqlQueryFormatterFactory $queryFormatter The thing that does the formatting */
-    protected $queryFormatter;
+    /** @var  Formatting\SqlQueryFormatterManager $formatterManager The thing that does the formatting */
+    protected $formatterManager;
     /**
      * SqlQueryInterpreter constructor.
      *
      * @param Authentication    $authentication The thing that will allow us to execute this Query
      * @param SqlQueryFormatter $queryFormatter The thing that will tell us how to format everything in the Query
      */
-    public function __construct(Authentication $authentication, SqlQueryFormatterFactory $queryFormatter) {
+    public function __construct(Authentication $authentication, SqlQueryFormatterManager $queryFormatter) {
         $this->setAuthentication($authentication);
-        $this->queryFormatter = $queryFormatter;
+        $this->formatterManager = $queryFormatter;
     }
     
-    public function interpret($query_or_statement, $return_type = 'auto', SqlFormattingContext $context = null) {
-        $formatted_query = $this->format($query_or_statement, $context ?? new SqlExecutionContext);
-        list($sth, $success) = $this->execute($formatted_query);
+    public function interpret($query_or_statement, $return_type = 'auto') {
+        list($sth, $success) = $this->execute($query_or_statement);
         if (!$success) throw new UnimplementedError("Better error name, also this was not successfully ");
         return $this->interpretResult($query_or_statement, $sth, $return_type);
     }
@@ -70,17 +69,18 @@ abstract class SqlQueryInterpreter extends QueryInterpreter {
      *
      * @param string|\Sm\Query\Statements\QueryComponent|mixed     $query_or_statement
      *
-     * @param \Sm\Modules\Sql\Formatting\SqlFormattingContext|null $formattingContext The context in which we are formatting the query
+     * @param \Sm\Modules\Sql\Formatting\SqlFormattingContext|null $sqlFormattingContext The context in which we are formatting the query
      *
      * @return string
+     *
      */
-    function format($query_or_statement, SqlFormattingContext $formattingContext = null): string {
+    function format($query_or_statement, SqlFormattingContext $sqlFormattingContext = null): string {
         # If this is a string already, assume that it is already SQL
         if (is_string($query_or_statement)) return $query_or_statement;
         
-        return $this->queryFormatter->format($query_or_statement, $formattingContext);
+        return $this->formatterManager->format($query_or_statement, $sqlFormattingContext);
     }
-    abstract protected function execute(string $formatted_query);
+    abstract protected function execute($formatted_query);
     /**
      * @param mixed  $query_or_statement The thing that we just executed
      * @param mixed  $sth                Connection to the database after executing the query

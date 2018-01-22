@@ -18,7 +18,9 @@ use Sm\Query\Statements\InsertStatement;
 
 class InsertStatementFormatter extends SqlQueryFormatter {
     public function format($item): string {
-        if (!($item instanceof InsertStatement)) throw new InvalidArgumentException("Can only format InsertStatements");
+        if (!($item instanceof InsertStatement)) {
+            throw new InvalidArgumentException("Can only format InsertStatements");
+        }
         
         list($column_string, $insertExpressionList) = $this->formatInsertExpressionList($item->getInsertedItems());
         
@@ -31,7 +33,7 @@ class InsertStatementFormatter extends SqlQueryFormatter {
     }
     protected function formatSourceList($source_array): string {
         $sources = [];
-        if (!isset($this->queryFormatter)) throw new IncompleteFormatterException("No formatter Factory");
+        if (!isset($this->formatterManager)) throw new IncompleteFormatterException("No formatter Factory");
         foreach ($source_array as $index => $source) {
             if (count($sources)) throw new UnimplementedError("Inserting into multiple sources");
             $sourceProxy = $this->proxy($source, NamedDataSourceFormattingProxy::class);
@@ -40,34 +42,52 @@ class InsertStatementFormatter extends SqlQueryFormatter {
         return join(', ', $sources);
     }
     protected function formatInsertExpressionList(array $inserted_items): array {
-        $columns           = [];
-        $formatted_columns = [];
-        foreach ($inserted_items as $number => $insert_collection) {
-            if (!is_array($insert_collection)) throw new InvalidArgumentException("Trying to insert a non-array (index {$number})");
-            foreach ($insert_collection as $column_name => $value) {
-                if (is_numeric($column_name)) throw new InvalidArgumentException("Trying to insert a non-associative array (index {$column_name} in {$number})");
-                $columns[ $column_name ] = null;
-                # Assume it's a column - otherwise, we'd use a different object
-                $formatted_columns[] = $this->formatComponent($this->proxy($column_name,
-                                                                           ColumnIdentifierFormattingProxy::class));
-            }
-        }
+        list($column_names, $formatted_columns) = $this->organizeInsertColumns($inserted_items);
+        
         # todo Sets in PHP?
-        $columns      = array_keys($columns);
         $insert_array = [];
         foreach ($inserted_items as $index => $inserted_item) {
             $_insert_arr = [];
-            foreach ($columns as $column) {
+            foreach ($column_names as $column) {
                 if (array_key_exists($column, $inserted_item)) {
-                    $_insert_arr[ $column ] = $this->formatComponent($inserted_item[ $column ]);
+                    $raw_value       = $inserted_item[ $column ];
+                    $formatted_value = $this->formatComponent($this->formatterManager->placeholder($raw_value, false));
                 } else {
-                    $_insert_arr[ $column ] = 'DEFAULT';
+                    $formatted_value = 'DEFAULT';
                 }
+                $_insert_arr[ $column ] = $formatted_value;
             }
             $insert_array[] = '(' . join(', ', $_insert_arr) . ')';
         }
     
         # column string (what we insert into) and the insert array (what we're inserting)
         return [ join(', ', array_unique($formatted_columns)), join(",\n\t\t", $insert_array) ];
+    }
+    /**
+     * @param array $inserted_items
+     *
+     * @return array
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     */
+    private function organizeInsertColumns(array $inserted_items): array {
+        $column_names      = [];
+        $formatted_columns = [];
+        foreach ($inserted_items as $number => $insertBatch) {
+            if (!is_array($insertBatch)) {
+                throw new InvalidArgumentException("Can only insert using arrays");
+            }
+            foreach ($insertBatch as $column_name => $value) {
+                if (is_numeric($column_name)) {
+                    throw new InvalidArgumentException("The insert array should only be associative - (index {$column_name} in entry {$number} is a number)");
+                }
+                $column_names[ $column_name ] = null;
+                
+                # Assume it's a column - otherwise, we'd use a different object
+                $formatted_columns[] = $this->formatComponent($this->proxy($column_name,
+                                                                           ColumnIdentifierFormattingProxy::class));
+            }
+        }
+        $column_names = array_keys($column_names);
+        return [ $column_names, $formatted_columns ];
     }
 }

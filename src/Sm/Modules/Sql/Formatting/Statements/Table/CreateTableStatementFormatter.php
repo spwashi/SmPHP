@@ -12,6 +12,7 @@ use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Modules\Sql\Constraints\KeyConstraintSchema;
 use Sm\Modules\Sql\Data\Column\ColumnSchema;
+use Sm\Modules\Sql\Data\Column\NumericColumnSchema;
 use Sm\Modules\Sql\Formatting\SqlQueryFormatter;
 use Sm\Modules\Sql\Statements\CreateTableStatement;
 
@@ -46,7 +47,7 @@ class CreateTableStatementFormatter extends SqlQueryFormatter {
             if (!($indexed_column instanceof ColumnSchema)) throw new InvalidArgumentException("Can only create tables with column schemas");
             $length                           = $indexed_column->getLength();
             $name                             = $indexed_column->getName();
-            $formattedColumnsAndConstraints[] = "INDEX({$name}({$length}))";
+            $formattedColumnsAndConstraints[] = "INDEX({$name}" . ($indexed_column instanceof NumericColumnSchema ? '' : "({$length})") . ')';
         }
         
         foreach ($constraints as $constraint) {

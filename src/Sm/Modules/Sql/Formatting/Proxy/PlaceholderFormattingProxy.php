@@ -35,7 +35,7 @@ class PlaceholderFormattingProxy extends SqlFormattingProxy {
     public function getPlaceholderName() {
         if (isset($this->placeholder_name)) return $this->placeholder_name;
         $placeholder_name = $this->subject[0];
-        if (!is_string($placeholder_name)) throw new InvalidArgumentException("Can only use strings as placeholde names");
+        if ($placeholder_name !== false && !is_string($placeholder_name)) throw new InvalidArgumentException("Can only use strings as placeholde names");
         return $this->placeholder_name = $placeholder_name;
     }
     public function getPlaceholderValue() {

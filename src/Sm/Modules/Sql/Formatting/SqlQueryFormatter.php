@@ -8,11 +8,7 @@
 namespace Sm\Modules\Sql\Formatting;
 
 
-use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Formatting\Formatter\Formatter;
-use Sm\Core\Internal\Identification\Identifiable;
-use Sm\Core\Util;
-use Sm\Modules\Sql\Formatting\Aliasing\Exception\InvalidAliasedItem;
 use Sm\Modules\Sql\Formatting\Aliasing\SqlFormattingAliasContainer;
 use Sm\Modules\Sql\Formatting\Proxy\Aliasing\AliasedFormattingProxy;
 
@@ -25,23 +21,21 @@ use Sm\Modules\Sql\Formatting\Proxy\Aliasing\AliasedFormattingProxy;
  * @package Sm\Modules\Sql
  */
 class SqlQueryFormatter implements Formatter {
-    /** @var  \Sm\Modules\Sql\Formatting\SqlQueryFormatterFactory $queryFormatter */
-    protected $queryFormatter;
+    /** @var  \Sm\Modules\Sql\Formatting\SqlQueryFormatterManager $formatterManager */
+    protected $formatterManager;
     /** @var  SqlFormattingAliasContainer $aliasContainer */
     protected $aliasContainer;
     /**
      * SqlQueryFormatter constructor.
      *
-     * @param \Sm\Modules\Sql\Formatting\SqlQueryFormatterFactory $formatterFactory The Factory that tells us how things get formatted
-     * @param  Aliasing\SqlFormattingAliasContainer               $aliasContainer   A Container that will tell us how we should change something
+     * @param \Sm\Modules\Sql\Formatting\SqlQueryFormatterManager $formatterManager
      */
-    public function __construct(SqlQueryFormatterFactory $formatterFactory, SqlFormattingAliasContainer $aliasContainer = null) {
-        $this->queryFormatter = $formatterFactory;
-        $this->aliasContainer = $aliasContainer ?? new SqlFormattingAliasContainer;
+    public function __construct(SqlQueryFormatterManager $formatterManager) {
+        $this->formatterManager = $formatterManager;
     }
-    public static function init(SqlQueryFormatterFactory $formatterFactory = null, SqlFormattingAliasContainer $aliasContainer = null) {
-        if (!isset($formatterFactory)) $formatterFactory = SqlQueryFormatterFactory::init();
-        return new static($formatterFactory, $aliasContainer);
+    public static function init(SqlQueryFormatterManager $formatterManager = null) {
+        if (!isset($formatterManager)) $formatterManager = new SqlQueryFormatterManager;
+        return new static($formatterManager);
     }
     /**
      * Return the item Formatted in the specific way
@@ -72,32 +66,17 @@ class SqlQueryFormatter implements Formatter {
      * @return mixed|null
      */
     public function proxy($item, $as) {
-        if ($proxy = $this->aliasContainer->resolveProxy($item, $as)) return $proxy;
-        
-        $proxy = $this->queryFormatter->proxy($item, $as);
-    
-        try {
-            $this->aliasContainer->registerProxy($item, $as, $proxy);
-        } catch (InvalidAliasedItem $e) {
-        } finally {
-            return $proxy;
-        }
-    }
-    /**
-     * @return Aliasing\SqlFormattingAliasContainer
-     */
-    protected function getAliasContainer(): SqlFormattingAliasContainer {
-        return $this->aliasContainer;
+        return $this->formatterManager->proxy($item, $as);
     }
     /**
      * Set the AliasContainer that will be used by this Formatter
      *
-     * @param \Sm\Modules\Sql\Formatting\Aliasing\SqlFormattingAliasContainer $aliasContainer
+     * @param \Sm\Modules\Sql\Formatting\SqlQueryFormatterManager $formatterManager
      *
      * @return $this
      */
-    protected function setAliasContainer(SqlFormattingAliasContainer $aliasContainer) {
-        $this->aliasContainer = $aliasContainer;
+    public function setFormatterManager(SqlQueryFormatterManager $formatterManager) {
+        $this->formatterManager = $formatterManager;
         return $this;
     }
     
@@ -112,27 +91,10 @@ class SqlQueryFormatter implements Formatter {
      * @throws \Sm\Core\Exception\InvalidArgumentException
      */
     protected function alias($item, string $alias_classname, $alias_name = null) {
-        if (!is_a($alias_classname, AliasedFormattingProxy::class, 1)) {
-            throw new InvalidArgumentException("can only use AliasedFormattingProxies as aliases");
-        }
-    
-        /** @var \Sm\Modules\Sql\Formatting\Proxy\Aliasing\AliasedFormattingProxy $aliasProxy */
-        $aliasProxy = $this->proxy($item, $alias_classname);
-        if (!is_null($aliasProxy->getAlias())) {
-            return $aliasProxy;
-        }
-        # Creat an alias randomly if one was not specified
-        if (!$alias_name) $alias_name = Util::generateRandomString(5, Util::ALPHA);
-        $aliasProxy->setAlias($alias_name);
-    
-        $name = ($item instanceof Identifiable ? $item->getObjectId() : '') . '|' . $alias_classname;
-        
-        
-        $this->aliasContainer->register($item, $aliasProxy);
-        return $aliasProxy;
+        return $this->formatterManager->alias($item, $alias_classname, $alias_name);
     }
     protected function getFinalAlias($item) {
-        return $this->aliasContainer->getFinalAlias($item);
+        return $this->formatterManager->getFinalAlias($item);
     }
     /**
      * Format something used by
@@ -153,13 +115,11 @@ class SqlQueryFormatter implements Formatter {
     /**
      * @param $component
      *
-     * @return \Sm\Core\Formatting\Formatter\Formatter
+     * @return Formatter
      */
-    protected function buildComponentFormatter($component): \Sm\Core\Formatting\Formatter\Formatter {
-        $formatter = $this->queryFormatter->build($component);
-        if ($formatter instanceof SqlQueryFormatter) {
-            $formatter->setAliasContainer($this->getAliasContainer());
-        }
+    protected function buildComponentFormatter($component): Formatter {
+        $formatter = $this->formatterManager->build($component);
+        
         return $formatter;
     }
 }

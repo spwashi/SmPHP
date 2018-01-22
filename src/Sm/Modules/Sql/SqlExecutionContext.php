@@ -12,7 +12,7 @@ use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
 use Sm\Modules\Sql\Formatting\SqlFormattingContext;
 
 class SqlExecutionContext implements SqlFormattingContext {
-    protected $variables;
+    protected $variables = [];
     use HasObjectIdentityTrait;
     
     
@@ -28,5 +28,11 @@ class SqlExecutionContext implements SqlFormattingContext {
     public function addVariables(array $variables) {
         $this->variables = array_merge($this->variables ?? [], $variables);
         return $this;
+    }
+    /**
+     * @return mixed
+     */
+    public function getVariables() {
+        return $this->variables;
     }
 }

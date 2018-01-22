@@ -55,15 +55,16 @@ class UpdateStatementFormatter extends SqlQueryFormatter {
     protected function formatUpdateExpressionList(array $updates) {
         $expression_list = [];
         foreach ($updates as $item) {
-            if (is_array($item)) {
-                foreach ($item as $key => $value) {
-                    $columnIdentifierProxy = $this->proxy($key, ColumnIdentifierFormattingProxy::class);
-                    $key                   = $this->formatComponent($columnIdentifierProxy);
-                    $value                 = $this->queryFormatter->placeholder($value);
-                    $value                 = $this->formatComponent($value);
-                    $expression_list[]     = "{$key} = {$value}";
-                }
-            } else throw new UnimplementedError("+ Anything but associative in the expression list");
+            if (!is_array($item)) {
+                throw new UnimplementedError("+ Anything but associative in the expression list");
+            }
+    
+            foreach ($item as $column_identifier => $new_value) {
+                $columnIdentifierProxy = $this->proxy($column_identifier, ColumnIdentifierFormattingProxy::class);
+                $column_identifier     = $this->formatComponent($columnIdentifierProxy);
+                $new_value             = $this->formatComponent($this->formatterManager->placeholder($new_value));
+                $expression_list[]     = "{$column_identifier} = {$new_value}";
+            }
         }
         return join(",\n\t", $expression_list);
     }

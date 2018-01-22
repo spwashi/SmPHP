@@ -21,7 +21,7 @@ class IntegerColumnSchemaFormatter extends ColumnSchemaFormatter {
         $can_be_null    = $item->canBeNull() ? 'NULL' : 'NOT NULL';
         $unique         = $item->isUnique() ? 'UNIQUE' : '';
         $length         = $item->getLength();
-        $auto_increment = $item->isAutoIncrement() ? 'AUTO INCREMENT' : '';
+        $auto_increment = $item->isAutoIncrement() ? 'AUTO_INCREMENT' : '';
         $length         = $length ? "($length)" : '';
         return "{$column_name} {$type}{$length} {$can_be_null} {$auto_increment} {$unique}";
     }
