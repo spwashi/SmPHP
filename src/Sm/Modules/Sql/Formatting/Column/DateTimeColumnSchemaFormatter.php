@@ -15,10 +15,13 @@ class DateTimeColumnSchemaFormatter extends ColumnSchemaFormatter {
         $column_name = $item->getName();
         $type        = $item->getType();
         $can_be_null = $item->canBeNull() ? 'NULL' : 'NOT NULL';
-        
-        $default       = $item->getDefault() !== null ? 'DEFAULT ' . $item->getDefault() : '';
-        $get_on_update = $item->getOnUpdate() !== null ? 'ON UPDATE ' . $item->getOnUpdate() : '';
-        
-        return "{$column_name} {$type} {$can_be_null} {$default} {$get_on_update}";
+    
+        $default_val = strtolower($item->getDefault() ?? '');
+        $update_val  = strtolower($item->getOnUpdate() ?? '');
+    
+        $default   = $default_val === 'now' || $default_val === 'current_timestamp' ? 'DEFAULT CURRENT_TIMESTAMP' : '';
+        $on_update = $update_val === 'now' || $update_val === 'current_timestamp' ? 'ON UPDATE CURRENT_TIMESTAMP' : '';
+    
+        return "{$column_name} {$type} {$can_be_null} {$default} {$on_update}";
     }
 }

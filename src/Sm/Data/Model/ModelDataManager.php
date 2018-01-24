@@ -20,8 +20,13 @@ use Sm\Data\SmEntity\SmEntityDataManager;
  * Handles the loading/configuration of
  */
 
+/**
+ * @property  ModelPersistenceManager $persistenceManager
+ */
 class ModelDataManager extends SmEntityDataManager {
     protected $configuredModels = [];
+    /** @var  ModelPersistenceManager $persistenceManager */
+    protected $persistenceManager;
     /** @var \Sm\Data\Property\PropertyDataManager */
     private $propertyDataManager;
     /**
@@ -37,15 +42,25 @@ class ModelDataManager extends SmEntityDataManager {
         parent::__construct($dataLayer, $smEntityFactory);
         $this->propertyDataManager = $datatypeFactory ?? PropertyDataManager::init();
     }
+    public function __get($name) {
+        switch ($name) {
+            case 'persistenceManager':
+                return $this->persistenceManager;
+        }
+    }
     
     public function instantiate($schematic = null): Model {
         if (is_string($schematic)) {
-            if (isset($this->configuredModels[ $schematic ])) {
-                $schematic = $this->configuredModels[ $schematic ];
-            } else {
+            if (!isset($this->configuredModels[ $schematic ])) {
+                if (strpos($schematic, '[Model]') !== 0) {
+                    return $this->instantiate('[Model]' . $schematic);
+                }
                 throw new InvalidArgumentException("Cannot find Model to match '{$schematic}'");
             }
+    
+            $schematic = $this->configuredModels[ $schematic ];
         }
+    
         return parent::instantiate($schematic);
     }
     
@@ -68,5 +83,9 @@ class ModelDataManager extends SmEntityDataManager {
      */
     public function getConfiguredModels(): array {
         return $this->configuredModels;
+    }
+    public function setPersistenceManager(ModelPersistenceManager $persistenceManager) {
+        $this->persistenceManager = $persistenceManager;
+        return $this;
     }
 }

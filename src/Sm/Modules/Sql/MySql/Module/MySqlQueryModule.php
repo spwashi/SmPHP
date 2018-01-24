@@ -11,6 +11,7 @@ namespace Sm\Modules\Sql\MySql\Module;
 use Sm\Core\Context\Context;
 use Sm\Core\Context\Layer\Layer;
 use Sm\Core\Exception\InvalidArgumentException;
+use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Module\ModuleProxy;
 use Sm\Modules\Sql\Formatting\Aliasing\SqlFormattingAliasContainer;
 use Sm\Modules\Sql\Formatting\SqlFormattingProxyFactory;
@@ -41,15 +42,17 @@ class MySqlQueryModule extends QueryModule {
      */
     public static function init() { return new static(...func_get_args()); }
     
-    public function registerAuthentication(MySqlAuthentication $mySqlAuthentication) {
+    public function registerAuthentication(MySqlAuthentication $mySqlAuthentication, string $name = null) {
+        if (isset($name)) throw new UnimplementedError("Cannot name Authentications yet");
         $this->authentication = $mySqlAuthentication;
         return $this;
     }
-    public function interpret(Layer $layer = null, $query, MySqlAuthentication $authentication = null) {
+    public function interpret($query, Layer $layer = null, $authentication = null) {
+        $this->initialize($layer);
         if (!($query instanceof QueryComponent) && !($query instanceof QueryProxy)) {
             throw new InvalidArgumentException("Can only query on components or proxies");
         }
-        $queryInterpreter = new MySqlQueryInterpreter($authentication ?? $this->authentication,
+        $queryInterpreter = new MySqlQueryInterpreter($this->getAuthentication($authentication),
                                                       $this->getQueryFormatter($layer));
         return $queryInterpreter->interpret($query);
     }
@@ -109,5 +112,8 @@ class MySqlQueryModule extends QueryModule {
         
         #
         $this->setQueryFormatter($queryFormatter, $context);
+    }
+    protected function getAuthentication($authentication): MySqlAuthentication {
+        return $authentication ?? $this->authentication;
     }
 }

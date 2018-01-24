@@ -40,6 +40,9 @@ class Monitor implements \JsonSerializable, Identifiable {
         $this->events = array_merge($this->events, $event);
         return $this;
     }
+    public function count() {
+        return count($this->events);
+    }
     /**
      * Clear the event information that we've been holding at a specified index or in general
      *

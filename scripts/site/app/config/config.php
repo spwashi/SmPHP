@@ -1,5 +1,7 @@
 <?php
 
+use Sm\Modules\Sql\MySql\Authentication\MySqlAuthentication;
+use Sm\Modules\Sql\MySql\Module\MySqlQueryModule;
 use Sm\Representation\Module\Twig\TwigViewModule;
 
 require_once EXAMPLE_APP__CONFIG_PATH . 'autoload/autoload.php';
@@ -55,3 +57,8 @@ $twig__Environment->addGlobal('app_path__public', EXAMPLE_APP__URL_PUBLIC);
 
 $twigViewModule = new TwigViewModule($twig__Environment);
 $app->representation->registerModule($twigViewModule);
+$app->registerDefaultQueryModule((new MySqlQueryModule)->registerAuthentication(MySqlAuthentication::init()
+                                                                                                   ->setCredentials("codozsqq",
+                                                                                                                    "^bzXfxDc!Dl6",
+                                                                                                                    "localhost",
+                                                                                                                    'sm_test')));

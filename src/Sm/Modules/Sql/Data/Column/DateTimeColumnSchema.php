@@ -18,20 +18,7 @@ class DateTimeColumnSchema extends ColumnSchema {
     
     protected $type           = 'DATETIME';
     protected $auto_increment = false;
-    protected $default;
     protected $on_update;
-    
-    /**
-     * Set the default value of this row
-     *
-     * @param $default
-     *
-     * @return $this
-     */
-    public function setDefault($default) {
-        $this->default = $default;
-        return $this;
-    }
     
     /**
      * Set what the value of this DateTimeColumn should be
@@ -44,11 +31,7 @@ class DateTimeColumnSchema extends ColumnSchema {
         $this->on_update = $on_update;
         return $this;
     }
-    
     public function getOnUpdate() {
         return $this->on_update;
-    }
-    public function getDefault() {
-        return $this->default;
     }
 }

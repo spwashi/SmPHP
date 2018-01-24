@@ -9,6 +9,7 @@ namespace Sm\Data\Model;
 
 
 use Sm\Core\Exception\InvalidArgumentException;
+use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Schema\Schematicized;
 use Sm\Core\SmEntity\SmEntity;
 use Sm\Core\SmEntity\StdSchematicizedSmEntity;
@@ -39,7 +40,7 @@ class Model implements ModelSchema,
     use StdSchematicizedSmEntity {
         fromSchematic as protected _fromSchematic_std;
     }
-    
+    /** @var  PropertyContainer */
     protected $properties;
     
     #
@@ -52,6 +53,43 @@ class Model implements ModelSchema,
                 return null;
         }
     }
+    /**
+     * When we save or create or delete, we might want to reset the value history so we can see if the Property has changed
+     */
+    public function resetPropertHistory() {
+        $properties = $this->properties;
+        /** @var \Sm\Data\Property\Property $property */
+        foreach ($properties as $property) {
+            $property->resetValueHistory();
+        }
+    }
+    public function set($name, $value = null) {
+        if (is_array($name) && isset($value)) {
+            throw new UnimplementedError("Not sure what to do with a name and value");
+        }
+        
+        if (is_array($name)) {
+            foreach ($name as $key => $val) {
+                $this->set($key, $val);
+            }
+        } else {
+            $this->properties->$name = $value;
+        }
+        return $this;
+    }
+    public function getChanged() {
+        $changed_properties = [];
+        
+        /** @var \Sm\Data\Property\Property $property */
+        foreach ($this->properties->getAll() as $propertyName => $property) {
+            if ($property->valueHistory->count()) {
+                $changed_properties[ $propertyName ] = $property;
+            }
+        }
+        
+        return $changed_properties;
+    }
+    
     public function getProperties(): PropertyContainer {
         return $this->properties = $this->properties ?? PropertyContainer::init();
     }

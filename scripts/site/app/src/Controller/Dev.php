@@ -46,7 +46,6 @@ class Dev extends BaseApplicationController {
         
         if (isset($column)) {
             $is_null = in_array('[Datatype]null', $datatypes);
-            var_dump($column);
             $column->setNullability($is_null);
         }
         
@@ -81,7 +80,6 @@ class Dev extends BaseApplicationController {
     
         list($all, $queries) = $this->formatModels($models);
     
-        var_dump($models);
     
         $do_interpret = 1;
     

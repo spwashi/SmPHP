@@ -20,7 +20,7 @@ use Sm\Query\QueryLayer;
  *
  * @package Sm\Query\Module
  */
-abstract class QueryModule extends LayerModule {
+abstract class QueryModule extends LayerModule implements QueryInterpreter {
     /** @var  string */
     protected $queryType;
     /** @var  QueryInterpreter */
@@ -32,12 +32,12 @@ abstract class QueryModule extends LayerModule {
     /**
      * Provided some components of a Query, interpret what the result would yield
      *
-     * @param \Sm\Core\Context\Layer\Layer $layer
      * @param                              $query
+     * @param \Sm\Core\Context\Layer\Layer $layer
      *
      * @return mixed
      */
-    abstract public function interpret(Layer $layer, $query);
+    abstract public function interpret($query, Layer $layer = null);
     /**
      * @param QueryLayer|Layer $context
      *

@@ -11,6 +11,8 @@ namespace Sm\Modules\Sql\Formatting\Statements;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Formatting\Formatter\Exception\IncompleteFormatterException;
+use Sm\Core\Util;
+use Sm\Data\Property\Property;
 use Sm\Modules\Sql\Formatting\Proxy\Column\ColumnIdentifierFormattingProxy;
 use Sm\Modules\Sql\Formatting\Proxy\Source\NamedDataSourceFormattingProxy;
 use Sm\Modules\Sql\Formatting\SqlQueryFormatter;
@@ -43,7 +45,6 @@ class InsertStatementFormatter extends SqlQueryFormatter {
     }
     protected function formatInsertExpressionList(array $inserted_items): array {
         list($column_names, $formatted_columns) = $this->organizeInsertColumns($inserted_items);
-        
         # todo Sets in PHP?
         $insert_array = [];
         foreach ($inserted_items as $index => $inserted_item) {
@@ -73,8 +74,12 @@ class InsertStatementFormatter extends SqlQueryFormatter {
         $column_names      = [];
         $formatted_columns = [];
         foreach ($inserted_items as $number => $insertBatch) {
-            if (!is_array($insertBatch)) {
-                throw new InvalidArgumentException("Can only insert using arrays");
+            if ($insertBatch instanceof Property) {
+                $insertBatch = [
+                    $insertBatch->getName() => $insertBatch->value,
+                ];
+            } else if (!is_array($insertBatch)) {
+                throw new InvalidArgumentException("Can only insert using arrays (attempting ' " . Util::getShape($insertBatch) . "')");
             }
             foreach ($insertBatch as $column_name => $value) {
                 if (is_numeric($column_name)) {

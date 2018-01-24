@@ -9,6 +9,7 @@ use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Resolvable\StringResolvable;
 use Sm\Core\Util;
 use Sm\Data\Evaluation\TwoOperandStatement;
+use Sm\Data\Property\PropertySchema;
 use Sm\Data\Source\Constructs\JoinedSourceSchematic;
 use Sm\Data\Source\Database\Table\TableSource;
 use Sm\Data\Source\Schema\NamedDataSourceSchema;
@@ -62,7 +63,7 @@ use Sm\Query\Statements\UpdateStatement;
 function register_proxy_handlers(SqlFormattingProxyFactory $formattingProxyFactory) {
     $formattingProxyFactory->register([
                                           ColumnIdentifierFormattingProxy::class                  => function ($item, SqlFormattingProxyFactory $formattingProxyFactory) {
-                                              if ($item instanceof ColumnSchema) {
+                                              if ($item instanceof ColumnSchema || $item instanceof PropertySchema) {
                                                   return $formattingProxyFactory->build(ColumnSchema_ColumnIdentifierFormattingProxy::class, $item);
                                               }
     
@@ -129,7 +130,7 @@ function register_formatting_handlers(SqlQueryFormatterManager $formatterManager
                     $placeholderName = $columnSchema->getPlaceholderName();
                     return $placeholderName ? ":{$placeholderName}" : '?';
                 }),
-    
+
             JoinedSourceSchematic::class           => new JoinedSourceSchemaFormatter($formatterManager),
             SelectExpressionFormattingProxy::class => new SelectExpressionFormattingProxyFormatter($formatterManager),
             PrimaryKeyConstraintSchema::class      =>

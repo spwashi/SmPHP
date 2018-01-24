@@ -20,7 +20,6 @@ class Home extends BaseApplicationController {
         $dataLayer           = $application->data;
         
         $model_manager = $dataLayer->getDataManager(Model::class);
-        var_dump($model_manager);
         
         # -- rendering
         

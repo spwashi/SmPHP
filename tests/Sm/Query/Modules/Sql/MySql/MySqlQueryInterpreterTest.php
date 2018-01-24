@@ -70,7 +70,7 @@ class _Queries {
         $this->formatterManager = $formatterManager;
         $databaseSource         = new DatabaseSource('Database');
         #
-        $this->table__user = new TableSource('user', $databaseSource);
+        $this->table__user = new TableSource('users', $databaseSource);
         #
         ##  COLUMNS (USER)
         #
@@ -186,7 +186,7 @@ class _Queries {
         return $insertStatement;
     }
     public function createTables() {
-        $result = [ static::createTable_user(), static::createTable_clients() ];
+        $result = [ static::createTable_users(), static::createTable_clients() ];
         
         if (DO_ECHO_RESULTS) {
             echo __FILE__;
@@ -214,7 +214,7 @@ class _Queries {
         $result              = $this->formatterManager->format($alterTableStatement, new SqlExecutionContext);
         if (DO_ECHO_RESULTS) echo __FILE__ . "\n--\n$result\n\n";
     }
-    public function createTable_user(): string {
+    public function createTable_users(): string {
         # todo
         #        ->setTableSchema(TableSourceSchematic::init('other_tablename'));
         

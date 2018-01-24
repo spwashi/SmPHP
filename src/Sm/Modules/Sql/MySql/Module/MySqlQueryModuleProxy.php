@@ -17,8 +17,8 @@ class MySqlQueryModuleProxy extends ModuleProxy {
     public function getQueryFormatter() {
         return $this->subject->getQueryFormatter($this->context);
     }
-    public function interpret($query, MySqlAuthentication $authentication = null) {
-        return $this->subject->interpret($this->context, $query, $authentication);
+    public function interpret($query, $authentication = null) {
+        return $this->subject->interpret($query, $this->context, $authentication);
     }
     public function registerAuthentication(MySqlAuthentication $mySqlAuthentication) {
         $this->subject->registerAuthentication($mySqlAuthentication);

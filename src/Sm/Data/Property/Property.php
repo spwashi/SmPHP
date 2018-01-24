@@ -12,6 +12,7 @@ use Sm\Core\Abstraction\Readonly_able;
 use Sm\Core\Abstraction\ReadonlyTrait;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Internal\Monitor\Monitor;
+use Sm\Core\Resolvable\NativeResolvable;
 use Sm\Core\Schema\Schematicized;
 use Sm\Core\SmEntity\SmEntity;
 use Sm\Core\SmEntity\StdSchematicizedSmEntity;
@@ -77,8 +78,13 @@ class Property extends Variable_ implements Readonly_able,
         $previous_value = $this->subject;
         parent::setSubject($subject);
     
-        if ($this->getSubject() !== $previous_value) {
-            $this->valueHistory->append(PropertyValueChange::init($this, $subject, $previous_value));
+        $new_value = $this->getSubject();
+    
+        $previous = $previous_value instanceof NativeResolvable ? $previous_value->resolve() : $previous_value;
+        $new      = $new_value instanceof NativeResolvable ? $new_value->resolve() : $new_value;
+    
+        if ($new !== $previous) {
+            $this->valueHistory->append(PropertyValueChange::init($this, $new, $previous));
         }
         return $this;
     }
@@ -89,6 +95,10 @@ class Property extends Variable_ implements Readonly_able,
      */
     public function getValueHistory(): Monitor {
         return $this->valueHistory;
+    }
+    public function resetValueHistory() {
+        $this->valueHistory->clear();
+        return $this;
     }
     
     #

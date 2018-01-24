@@ -29,6 +29,7 @@ abstract class ColumnSchema implements Schema, DiscretelySourced, \JsonSerializa
     protected $length;
     /** @var  TableSourceSchema $table_schema */
     protected $table_schema = null;
+    protected $default;
     
     public function __construct(string $name = null) {
         if ($name) $this->setName($name);
@@ -47,6 +48,20 @@ abstract class ColumnSchema implements Schema, DiscretelySourced, \JsonSerializa
     public function setName($name) {
         $this->name = $name;
         return $this;
+    }
+    /**
+     * Set the default value of this row
+     *
+     * @param $default
+     *
+     * @return $this
+     */
+    public function setDefault($default) {
+        $this->default = $default;
+        return $this;
+    }
+    public function getDefault() {
+        return $this->default;
     }
     public function getType():?string {
         return $this->type;

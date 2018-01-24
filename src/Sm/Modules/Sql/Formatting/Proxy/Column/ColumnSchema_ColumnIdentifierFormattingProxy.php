@@ -10,6 +10,7 @@ namespace Sm\Modules\Sql\Formatting\Proxy\Column;
 
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Util;
+use Sm\Data\Property\PropertySchema;
 use Sm\Data\Source\Schema\DataSourceSchema;
 use Sm\Modules\Sql\Data\Column\ColumnSchema;
 use Sm\Modules\Sql\Formatting\SqlFormattingProxyFactory;
@@ -22,7 +23,7 @@ class ColumnSchema_ColumnIdentifierFormattingProxy extends ColumnIdentifierForma
     /** @var  \Sm\Modules\Sql\Formatting\Proxy\Source\NamedDataSourceFormattingProxy $table */
     protected $table;
     protected $column_name;
-    /** @var  \Sm\Modules\Sql\Data\Column\ColumnSchema $subject */
+    /** @var  \Sm\Modules\Sql\Data\Column\ColumnSchema|\Sm\Data\Property\PropertySchema $subject */
     protected $subject;
     /**
      * ColumnSchema_ColumnIdentifierFormattingProxy constructor.
@@ -33,13 +34,14 @@ class ColumnSchema_ColumnIdentifierFormattingProxy extends ColumnIdentifierForma
      * @throws \Sm\Core\Exception\InvalidArgumentException
      */
     public function __construct($subject, SqlFormattingProxyFactory $formattingProxyFactory = null) {
-        if (!($subject instanceof ColumnSchema)) {
+        if (!($subject instanceof ColumnSchema || $subject instanceof PropertySchema)) {
             throw new InvalidArgumentException("Wrong Formatting Proxy for type [" . Util::getShape($subject) . ']');
         }
         parent::__construct($subject, $formattingProxyFactory);
     }
     public function getSource(): ?DataSourceSchema {
         if (isset($this->table)) return $this->table;
+        if (!($this->subject instanceof ColumnSchema)) return null;
         $tableSchema = $this->subject->getTableSchema();
         if (!$tableSchema) return null;
         return $this->table = $tableSchema;

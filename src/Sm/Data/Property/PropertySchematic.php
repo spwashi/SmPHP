@@ -14,9 +14,13 @@ use Sm\Data\Type\DatatypeFactory;
  * Represents the structure of a Property
  */
 class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSerializable {
-    protected $protoSmID = '[Property]';
+    protected $protoSmID   = '[Property]';
     protected $datatypeFactory;
     protected $length;
+    protected $onModelUpdateValue;
+    protected $defaultValue;
+    protected $isGenerated = false;
+    
     use PropertyTrait;
     use StdSmEntitySchematicTrait {
         load as protected _load_std;
@@ -35,6 +39,9 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
         $this->_load_std($configuration);
         $this->_configArraySet__datatypes($configuration);
         $this->_configArraySet__length($configuration);
+        $this->_configArraySet__updateValue($configuration);
+        $this->_configArraySet__defaultValue($configuration);
+        $this->_configArraySet__isGenerated($configuration);
         
         return $this;
     }
@@ -46,20 +53,51 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
         $length = $configuration['length'] ?? null;
         if (isset($length)) $this->setLength($length);
     }
-    
+    protected function _configArraySet__updateValue(array $configuration) {
+        if (isset($configuration['updateValue'])) {
+            $this->setOnModelUpdateValue($configuration['updateValue']);
+        }
+    }
+    protected function _configArraySet__defaultValue(array $configuration) {
+        if (isset($configuration['defaultValue'])) {
+            $this->setDefaultValue($configuration['defaultValue']);
+        }
+    }
+    protected function _configArraySet__isGenerated(array $configuration) {
+        if (isset($configuration['isGenerated'])) {
+            $this->setIsGenerated($configuration['isGenerated']);
+        }
+    }
     #
     ##  Getters and Setters
-    /**
-     * @return mixed
-     */
+    public function setOnModelUpdateValue($onModelUpdateValue) {
+        $this->onModelUpdateValue = $onModelUpdateValue;
+        return $this;
+    }
+    public function getOnModelUpdateValue() {
+        return $this->onModelUpdateValue;
+    }
     public function getLength() {
         return $this->length;
     }
-    protected function setLength($length) {
+    public function setLength($length) {
         $this->length = intval($length);
         return $this;
     }
-    
+    public function setDefaultValue($defaultValue) {
+        $this->defaultValue = $defaultValue;
+        return $this;
+    }
+    public function setIsGenerated(bool $isGenerated): PropertySchematic {
+        $this->isGenerated = $isGenerated;
+        return $this;
+    }
+    public function isGenerated(): bool {
+        return $this->isGenerated;
+    }
+    public function getDefaultValue() {
+        return $this->defaultValue;
+    }
     #
     ##  Serialization
     public function jsonSerialize() {

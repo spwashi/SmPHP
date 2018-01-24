@@ -42,7 +42,7 @@ class QueryLayer extends StandardLayer {
     
         #@todo resolve queryModule based on index
         if (!$queryModule) throw new UnfoundQueryModuleException("No QueryModule enabled to handle this kind of query.");
-        return $queryModule->interpret($this, $query);
+        return $queryModule->interpret($query, $this);
     }
     /**
      * Register a QueryModule on this layer.
@@ -54,6 +54,7 @@ class QueryLayer extends StandardLayer {
      *                                                    accessible by name. If not, the method will only be accessible without a name.
      */
     public function registerQueryModule(QueryModule $queryModule, $factoryMethod = null, $do_name = true) {
+        $queryModule = $queryModule->initialize($this);
         $this->registerModule($queryModule, $queryModule->getQueryType());
         if (isset($factoryMethod)) {
             # arguments like [query_type, factoryMethod]
@@ -69,7 +70,10 @@ class QueryLayer extends StandardLayer {
             $this->queryModuleFactory->register(...$args);
         }
     }
-    protected function getQueryModule($query, string $interpreter = null): QueryModule {
+    public function registerDefaultQueryModule(QueryModule $queryModule) {
+        return $this->registerQueryModule($queryModule, function () use ($queryModule) { return $queryModule; }, false);
+    }
+    public function getQueryModule($query, string $interpreter = null): QueryModule {
         /** @var QueryModule $queryModule */
         $queryModule = $this->queryModuleFactory->build($interpreter, $query);
         return $queryModule;

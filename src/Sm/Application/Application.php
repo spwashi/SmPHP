@@ -11,14 +11,14 @@ use Sm\Controller\ControllerLayer;
 use Sm\Core\Context\Layer\LayerContainer;
 use Sm\Core\Context\Layer\LayerRoot;
 use Sm\Core\Event\GenericEvent;
+use Sm\Core\Exception\Exception;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
 use Sm\Core\Internal\Monitor\HasMonitorTrait;
 use Sm\Core\Paths\Exception\PathNotFoundException;
 use Sm\Core\Util;
 use Sm\Data\DataLayer;
-use Sm\Modules\Sql\MySql\Authentication\MySqlAuthentication;
-use Sm\Modules\Sql\MySql\Module\MySqlQueryModule;
+use Sm\Query\Module\QueryModule;
 use Sm\Query\QueryLayer;
 use Sm\Representation\RepresentationLayer;
 
@@ -70,13 +70,13 @@ class Application implements \JsonSerializable, LayerRoot {
     /**
      * @see \Sm\Application\Application::__construct
      *
-     * @param $name
-     * @param $root_path
+     * @param      $name
+     * @param      $root_path
      * @param null $config_path
      *
      * @return Application
      */
-    public static function init($name, $root_path,  $config_path = null) {
+    public static function init($name, $root_path, $config_path = null) {
         return new static(...func_get_args());
     }
     public function boot(): Application {
@@ -147,17 +147,14 @@ class Application implements \JsonSerializable, LayerRoot {
     }
     protected function _registerQueryLayer(): QueryLayer {
         $queryLayer = (new QueryLayer)->setRoot($this);
-        $this->_registerDefaultQueryModule($queryLayer);
         $this->layerContainer->register(QueryLayer::LAYER_NAME, $queryLayer);
         return $queryLayer;
     }
-    protected function _registerDefaultQueryModule(QueryLayer $queryLayer) {
-        $module = new MySqlQueryModule;
-        $module->registerAuthentication(MySqlAuthentication::init()->setCredentials("codozsqq",
-                                                                                    "^bzXfxDc!Dl6",
-                                                                                    "localhost",
-                                                                                    'sm_test'));
-        $queryLayer->registerQueryModule($module, function () use ($module) { return $module; }, false);
+    public function registerDefaultQueryModule(QueryModule $queryModule) {
+        /** @var QueryLayer $queryLayer */
+        $queryLayer = $this->layerContainer->resolve(QueryLayer::LAYER_NAME);
+        if (!isset($queryLayer)) throw new Exception("Can't register QueryModule without a QueryLayer");
+        $queryLayer->registerDefaultQueryModule($queryModule);
     }
     
     ##########################################################################

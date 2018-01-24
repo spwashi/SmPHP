@@ -11,6 +11,7 @@ namespace Sm\Data\Property;
 use Sm\Core\Abstraction\ReadonlyTrait;
 use Sm\Core\Container\Container;
 use Sm\Core\Exception\InvalidArgumentException;
+use Sm\Core\Resolvable\NativeResolvable;
 use Sm\Core\Resolvable\Resolvable;
 use Sm\Data\Property\Exception\ReadonlyPropertyException;
 
@@ -33,7 +34,8 @@ class PropertySchemaContainer extends Container {
     }
     public function current(): PropertySchema {
         $item = $this->{$this->getRegistryName()}[ $this->key() ];
-        return $item instanceof Resolvable ? $item->resolve() : $item;
+        if ($item instanceof NativeResolvable) return $item->resolve();
+        return $item;
     }
     public function resolve($name = null): ?PropertySchema {
         return parent::resolve($name);

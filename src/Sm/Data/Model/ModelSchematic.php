@@ -13,6 +13,8 @@ use Sm\Data\Property\PropertySchemaContainer;
  * Class ModelSchematic
  *
  * Represents the structure of a Model
+ *
+ * @property PropertySchemaContainer $properties
  */
 class ModelSchematic implements ModelSchema,
                                 SmEntitySchematic,
@@ -45,7 +47,12 @@ class ModelSchematic implements ModelSchema,
         $this->_configArraySet__properties($configuration);
         return $this;
     }
-    
+    public function __get($name) {
+        switch ($name) {
+            case 'properties':
+                return $this->getProperties();
+        }
+    }
     #
     ##  Getters and Setters
     public function getProperties(): PropertySchemaContainer {

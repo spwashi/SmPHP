@@ -39,6 +39,10 @@ class Util {
         }
         return is_object($result) ? get_class($result) : gettype($result);
     }
+    public static function arrayIsAssociative(array $arr) {
+        if ([] === $arr) return false;
+        return array_keys($arr) !== range(0, count($arr) - 1);
+    }
     /**
      * Is there a good way for us to convert this into a string?
      *

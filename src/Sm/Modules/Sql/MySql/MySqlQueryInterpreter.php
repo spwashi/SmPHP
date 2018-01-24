@@ -75,7 +75,6 @@ class MySqlQueryInterpreter extends SqlQueryInterpreter {
         
         # Return the resultSet
         if ($return_type === 'auto') {
-            if ($sth->rowCount() === 1) return $sth->fetch(\PDO::FETCH_ASSOC);
             return $sth->fetchAll(\PDO::FETCH_ASSOC);
         }
         

@@ -22,7 +22,7 @@ class QueryComponent {
     /**
      * @return static
      */
-    public static function init() {
+    public static function init(...$arguments) {
         return new static(...func_get_args());
     }
     /**

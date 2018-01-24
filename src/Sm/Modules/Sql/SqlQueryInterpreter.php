@@ -21,7 +21,7 @@ use Sm\Query\Interpretation\QueryInterpreter;
  *
  * @package Sm\Modules\Sql
  */
-abstract class SqlQueryInterpreter extends QueryInterpreter {
+abstract class SqlQueryInterpreter implements QueryInterpreter {
     /** @var  \Sm\Modules\Sql\Authentication\SqlAuthentication $authentication The thing that gives us credentials to use to connect to the database */
     protected $authentication;
     /** @var  Formatting\SqlQueryFormatterManager $formatterManager The thing that does the formatting */

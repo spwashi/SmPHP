@@ -14,7 +14,7 @@ namespace Sm\Query\Interpretation;
  *
  * @package Sm\Query\Interpretation
  */
-abstract class QueryInterpreter {
+interface QueryInterpreter {
     /**
      * Given something, execute that thing as a Query and return a result
      *
@@ -22,5 +22,5 @@ abstract class QueryInterpreter {
      *
      * @return mixed
      */
-    abstract public function interpret($query_or_statement);
+    public function interpret($query_or_statement);
 }
