@@ -5,7 +5,6 @@ namespace Sm\Data\Model;
 
 
 use Sm\Data\Evaluation\Comparison\EqualToCondition;
-use Sm\Modules\Sql\Data\Column\DateTimeColumnSchema;
 use Sm\Query\Interpretation\QueryInterpreter;
 use Sm\Query\Statements\InsertStatement;
 use Sm\Query\Statements\SelectStatement;
@@ -75,7 +74,7 @@ class StdModelPersistenceManager implements ModelPersistenceManager {
         return $this->queryInterpreter->interpret($insert);
     }
     public function mark_delete(Model $model) {
-        $update = UpdateStatement::init([ $model->properties->delete_dt->getName() => DateTimeColumnSchema::CURRENT_TIMESTAMP ])
+        $update = UpdateStatement::init([ $model->properties->delete_dt->getName() => date("Y-m-d H:i:s") ])
                                  ->inSources($model->getName())
                                  ->where(EqualToCondition::init($model->properties->id,
                                                                 $model->properties->id->value));
