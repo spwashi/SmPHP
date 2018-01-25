@@ -65,7 +65,9 @@ class MySqlQueryInterpreter extends SqlQueryInterpreter {
      * @throws \Sm\Core\Exception\UnimplementedError
      */
     protected function interpretResult($query_or_statement, $sth, $return_type = 'auto') {
-        if (!($sth instanceof \PDOStatement)) throw new InvalidArgumentException("Expected the handle to be a PDOStatement - " . Util::getShape($sth) . " given");
+        if (!($sth instanceof \PDOStatement)) {
+            throw new InvalidArgumentException("Expected the handle to be a PDOStatement - " . Util::getShape($sth) . " given");
+        }
         
         # Don't fetch anything
         if ($return_type === false) return null;
