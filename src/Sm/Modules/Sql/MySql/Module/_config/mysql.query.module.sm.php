@@ -39,6 +39,7 @@ use Sm\Modules\Sql\Formatting\Proxy\Source\Table\TableSourceSchema_TableIdentifi
 use Sm\Modules\Sql\Formatting\Source\JoinedSourceSchemaFormatter;
 use Sm\Modules\Sql\Formatting\SqlFormattingProxyFactory;
 use Sm\Modules\Sql\Formatting\SqlQueryFormatterManager;
+use Sm\Modules\Sql\Formatting\Statements\DeleteStatementFormatter;
 use Sm\Modules\Sql\Formatting\Statements\InsertStatementFormatter;
 use Sm\Modules\Sql\Formatting\Statements\SelectStatementFormatter;
 use Sm\Modules\Sql\Formatting\Statements\Table\AlterTableStatementFormatter;
@@ -50,6 +51,7 @@ use Sm\Modules\Sql\Statements\CreateTableStatement;
 use Sm\Query\Exception\ImproperlyFormedQueryException;
 use Sm\Query\Proxy\String_QueryProxy;
 use Sm\Query\Statements\Clauses\ConditionalClause;
+use Sm\Query\Statements\DeleteStatement;
 use Sm\Query\Statements\InsertStatement;
 use Sm\Query\Statements\SelectStatement;
 use Sm\Query\Statements\UpdateStatement;
@@ -114,6 +116,7 @@ function register_formatting_handlers(SqlQueryFormatterManager $formatterManager
                 return '"' . $stringResolvable . '"';
             }),
             SelectStatement::class                        => new SelectStatementFormatter($formatterManager),
+            DeleteStatement::class                        => new DeleteStatementFormatter($formatterManager),
             UpdateStatement::class                        => new UpdateStatementFormatter($formatterManager),
             CreateTableStatement::class                   => new CreateTableStatementFormatter($formatterManager),
             AlterTableStatement::class                    => new AlterTableStatementFormatter($formatterManager),
@@ -130,7 +133,7 @@ function register_formatting_handlers(SqlQueryFormatterManager $formatterManager
                     $placeholderName = $columnSchema->getPlaceholderName();
                     return $placeholderName ? ":{$placeholderName}" : '?';
                 }),
-
+    
             JoinedSourceSchematic::class           => new JoinedSourceSchemaFormatter($formatterManager),
             SelectExpressionFormattingProxy::class => new SelectExpressionFormattingProxyFormatter($formatterManager),
             PrimaryKeyConstraintSchema::class      =>

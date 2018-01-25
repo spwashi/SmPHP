@@ -71,10 +71,10 @@ class StdModelPersistenceManagerTest extends \PHPUnit_Framework_TestCase {
         $model->setName('users');
         $model->properties->register('id', new Property);
         $model->properties->register('delete_dt', new Property);
-        
-        $model->properties->id = 5;
-        
-        $result = $this->modelPersistenceManager->mark_delete($model);
+    
+        $model->properties->id = 4;
+    
+        $result = $this->modelPersistenceManager->delete($model);
         var_dump($result);
     }
 }

@@ -24,6 +24,7 @@ use Sm\Modules\Sql\MySql\Module\MySqlQueryModule;
 use Sm\Modules\Sql\SqlExecutionContext;
 use Sm\Modules\Sql\Statements\AlterTableStatement;
 use Sm\Modules\Sql\Statements\CreateTableStatement;
+use Sm\Query\Statements\DeleteStatement;
 use Sm\Query\Statements\InsertStatement;
 use Sm\Query\Statements\SelectStatement;
 use Sm\Query\Statements\UpdateStatement;
@@ -47,6 +48,24 @@ class SqlQueryFormatterTest extends \PHPUnit_Framework_TestCase {
                                             ->setLength(25)
                                             ->setTableSchema($tableSource);
         $stmt          = SelectStatement::init('here.column_1', $boonman, $bran_slam, 'column_2')
+                                        ->from('there', JoinedSourceSchematic::init()
+                                                                             ->setOriginSources($tableSource)
+                                                                             ->setJoinConditions(EqualToCondition::init(1, 2))
+                                                                             ->setJoinedSources($tableSource_2))
+                                        ->where(EqualToCondition::init(1, $bran_slam));
+        $result        = $this->formatterManager->format($stmt, new SqlExecutionContext);
+        if (DO_ECHO_RESULTS) echo __FILE__ . "\n--\n$result\n\n";
+    }
+    public function testDelete() {
+        $tableSource   = new TableSource('tablename_is_here', new DatabaseSource('Database'));
+        $tableSource_2 = new TableSource('another_table', new DatabaseSource('Database'));
+        $boonman       = VarcharColumnSchema::init('boonman')
+                                            ->setLength(25)
+                                            ->setTableSchema($tableSource);
+        $bran_slam     = VarcharColumnSchema::init('bran_slam')
+                                            ->setLength(25)
+                                            ->setTableSchema($tableSource);
+        $stmt          = DeleteStatement::init()
                                         ->from('there', JoinedSourceSchematic::init()
                                                                              ->setOriginSources($tableSource)
                                                                              ->setJoinConditions(EqualToCondition::init(1, 2))

@@ -6,6 +6,7 @@ namespace Sm\Data\Model;
 
 use Sm\Data\Evaluation\Comparison\EqualToCondition;
 use Sm\Query\Interpretation\QueryInterpreter;
+use Sm\Query\Statements\DeleteStatement;
 use Sm\Query\Statements\InsertStatement;
 use Sm\Query\Statements\SelectStatement;
 use Sm\Query\Statements\UpdateStatement;
@@ -79,6 +80,14 @@ class StdModelPersistenceManager implements ModelPersistenceManager {
                                  ->where(EqualToCondition::init($model->properties->id,
                                                                 $model->properties->id->value));
         #$result1 = $this->queryInterpreter->getQueryFormatter()->format($update);
+        return $this->queryInterpreter->interpret($update);
+    }
+    public function delete(Model $model) {
+        $update  = DeleteStatement::init()
+                                  ->from($model->getName())
+                                  ->where(EqualToCondition::init($model->properties->id,
+                                                                 $model->properties->id->value));
+        $result1 = $this->queryInterpreter->getQueryFormatter()->format($update);
         return $this->queryInterpreter->interpret($update);
     }
     /**
