@@ -37,9 +37,13 @@ class StdModelPersistenceManager implements ModelPersistenceManager {
      * @param \Sm\Data\Model\Model $model
      *
      * @return \Sm\Data\Model\Model
+     * @throws \Sm\Data\Model\ModelNotFoundException
      */
     public function find(Model $model): Model {
         $result = $this->selectFind($model);
+        if (empty($result)) {
+            throw new ModelNotFoundException("Cannot find model specified by " . json_encode($model));
+        }
         $model->set($result[0] ?? []);
         return $model;
     }

@@ -17,7 +17,7 @@ use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
  *
  * @package Sm\Communication\Request
  */
-abstract class Request implements Context, \JsonSerializable {
+class Request implements Context, \JsonSerializable {
     use HasObjectIdentityTrait;
     /** @var  \Sm\Communication\Request\Request $parentRequest The request that spawned this one */
     protected $parentRequest;
@@ -31,6 +31,12 @@ abstract class Request implements Context, \JsonSerializable {
     public function setParentRequest(Request $parentRequest) {
         $this->parentRequest = $parentRequest;
         return $this;
+    }
+    
+    public function jsonSerialize() {
+        return [
+            'parentRequest' => $this->parentRequest,
+        ];
     }
     
 }
