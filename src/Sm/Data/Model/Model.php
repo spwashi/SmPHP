@@ -53,16 +53,6 @@ class Model implements ModelSchema,
                 return null;
         }
     }
-    /**
-     * When we save or create or delete, we might want to reset the value history so we can see if the Property has changed
-     */
-    public function resetPropertHistory() {
-        $properties = $this->properties;
-        /** @var \Sm\Data\Property\Property $property */
-        foreach ($properties as $property) {
-            $property->resetValueHistory();
-        }
-    }
     public function set($name, $value = null) {
         if (is_array($name) && isset($value)) {
             throw new UnimplementedError("Not sure what to do with a name and value");
@@ -108,11 +98,13 @@ class Model implements ModelSchema,
         
         $propertyDataManager = $modelSchematic->getPropertyDataManager();
         $propertySchemas     = $modelSchematic->getProperties();
-        $properties          = [];
+        $propertyArray       = [];
+        
         foreach ($propertySchemas as $index => $propertySchema) {
-            $properties[ $index ] = $propertyDataManager->instantiate($propertySchema);
+            $propertyArray[ $index ] = $propertyDataManager->instantiate($propertySchema);
         }
-        $this->getProperties()->register($properties);
+    
+        $this->getProperties()->register($propertyArray);
         return $this;
     }
     public function checkCanUseSchematic($schematic) {

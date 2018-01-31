@@ -104,7 +104,6 @@ class SqlQueryFormatter implements Formatter {
      * @return mixed
      */
     protected function formatComponent($component) {
-        if (!isset($component)) return null;
         $formatter = $this->buildComponentFormatter($component);
         return $formatter->format($component);
     }

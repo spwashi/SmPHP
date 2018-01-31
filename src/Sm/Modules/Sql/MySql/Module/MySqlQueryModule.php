@@ -12,7 +12,9 @@ use Sm\Core\Context\Context;
 use Sm\Core\Context\Layer\Layer;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
+use Sm\Core\Internal\Monitor\HasMonitorTrait;
 use Sm\Core\Module\ModuleProxy;
+use Sm\Core\Module\MonitoredModule;
 use Sm\Modules\Sql\Formatting\Aliasing\SqlFormattingAliasContainer;
 use Sm\Modules\Sql\Formatting\SqlFormattingProxyFactory;
 use Sm\Modules\Sql\Formatting\SqlQueryFormatterManager;
@@ -29,14 +31,19 @@ use Sm\Query\Statements\QueryComponent;
  *
  * @method MySqlQueryModuleProxy initialize(Context $context = null): ?MySqlQueryModuleProxy
  */
-class MySqlQueryModule extends QueryModule {
+class MySqlQueryModule extends QueryModule implements MonitoredModule {
+    use HasMonitorTrait;
+    
     const MYSQL = 'mysql';
+    
     protected $queryType = 'mysql';
     /** @var string $config_path The path from which we will load the Module configuration */
     protected $config_path = '_config/mysql.query.module.sm.php';
     /** @var  SqlQueryFormatterManager $queryFormatter */
     protected $queryFormatter;
     private   $authentication;
+    
+    
     /**
      * @return \Sm\Modules\Sql\MySql\Module\MySqlQueryModule
      */
@@ -54,7 +61,10 @@ class MySqlQueryModule extends QueryModule {
         }
         $queryInterpreter = new MySqlQueryInterpreter($this->getAuthentication($authentication),
                                                       $this->getQueryFormatter($layer));
-        return $queryInterpreter->interpret($query);
+        $result           = $queryInterpreter->interpret($query);
+        $this->getMonitor(MySqlQueryInterpreter::MONITOR__QUERY_EXECUTED)
+             ->append(...$queryInterpreter->getQueryMonitor()->dump());
+        return $result;
     }
     
     /**
@@ -63,7 +73,9 @@ class MySqlQueryModule extends QueryModule {
      * @return null|\Sm\Modules\Sql\Formatting\SqlQueryFormatterManager
      */
     public function getQueryFormatter(Layer $context = null): ? SqlQueryFormatterManager {
-        if (isset($context)) return $this->getContextRegistry($context)->resolve('queryFormatter');
+        if (isset($context)) {
+            return $this->getContextRegistry($context)->resolve('queryFormatter');
+        }
         return $this->queryFormatter;
     }
     /**
@@ -115,5 +127,11 @@ class MySqlQueryModule extends QueryModule {
     }
     protected function getAuthentication($authentication): MySqlAuthentication {
         return $authentication ?? $this->authentication;
+    }
+    
+    public function getMonitors(): array {
+        return [
+            MySqlQueryInterpreter::MONITOR__QUERY_EXECUTED => $this->getMonitor(MySqlQueryInterpreter::MONITOR__QUERY_EXECUTED),
+        ];
     }
 }

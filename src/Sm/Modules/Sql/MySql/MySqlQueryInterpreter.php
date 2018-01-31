@@ -13,10 +13,15 @@ use Sm\Authentication\Exception\InvalidAuthenticationException;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\TypeMismatchException;
 use Sm\Core\Exception\UnimplementedError;
+use Sm\Core\Internal\Monitor\HasMonitorTrait;
+use Sm\Core\Internal\Monitor\Monitor;
 use Sm\Core\Util;
+use Sm\Modules\Sql\Event\SqlQueryExecutionEvent;
 use Sm\Modules\Sql\MySql\Authentication\MySqlAuthentication;
+use Sm\Modules\Sql\SqlDisplayContext;
 use Sm\Modules\Sql\SqlExecutionContext;
 use Sm\Modules\Sql\SqlQueryInterpreter;
+
 
 /**
  * Class MySqlQueryInterpreter
@@ -26,6 +31,10 @@ use Sm\Modules\Sql\SqlQueryInterpreter;
  * @package Sm\Modules\Sql\MySql
  */
 class MySqlQueryInterpreter extends SqlQueryInterpreter {
+    use HasMonitorTrait;
+    const MONITOR__QUERY_EXECUTED = 'QUERY__EXECUTED';
+    protected $logQueries = true;
+    
     /** @var  MySqlAuthentication $authentication */
     protected $authentication;
     /** @var  \PDO */
@@ -46,25 +55,42 @@ class MySqlQueryInterpreter extends SqlQueryInterpreter {
         $authentication->connect();
         if (!$authentication->isValid()) throw new InvalidAuthenticationException("The Authentication for this");
     }
-    protected function execute($query_or_statement) {
+    protected function execute($query_or_statement): SqlQueryExecutionEvent {
         $formattingContext = new SqlExecutionContext;
         $formatted_query   = $this->format($query_or_statement, $formattingContext);
-        $connection        = $this->authentication->getConnection();
-        $variables         = $this->getVariables($formattingContext);
-        $sth               = $connection->prepare("$formatted_query");
-        $result            = $sth->execute($variables);
-        return [ $sth, $result ];
+        $bound_variables   = $this->getBoundVariables($formattingContext);
+        #
+        $connection       = $this->authentication->getConnection();
+        $sth              = $connection->prepare("$formatted_query");
+        $executionSuccess = $sth->execute($bound_variables);
+        
+        $executionEvent = MySqlQueryExecutionEvent::init()
+                                                  ->setQuery($query_or_statement)
+                                                  ->setFormattedQuery($formatted_query)
+                                                  ->setQueryVariables($bound_variables)
+                                                  ->setStatementHandler($sth)
+                                                  ->setExecutionSuccess($executionSuccess);
+        
+        if ($this->logQueries) {
+            $executionEvent->setFormattedQueryWithInlineVariables($this->format($query_or_statement, new SqlDisplayContext));
+            $this->getMonitor(static::MONITOR__QUERY_EXECUTED)->append($executionEvent);
+        }
+        
+        return $executionEvent;
     }
     /**
-     * @param mixed         $query_or_statement The thing that we just executed
-     * @param \PDOStatement $sth                Connection to the database after executing the query
-     * @param string        $return_type        The way we want data returned
+     * @param \Sm\Modules\Sql\Event\SqlQueryExecutionEvent $queryExecutionEvent
+     * @param string                                       $return_type The way we want data returned
      *
      * @return mixed
      * @throws \Sm\Core\Exception\InvalidArgumentException
      * @throws \Sm\Core\Exception\UnimplementedError
+     * @internal param mixed $query_or_statement The thing that we just executed
+     * @internal param \PDOStatement $sth Connection to the database after executing the query
      */
-    protected function interpretResult($query_or_statement, $sth, $return_type = 'auto') {
+    protected function interpretResult(SqlQueryExecutionEvent $queryExecutionEvent, $return_type) {
+        $sth = $queryExecutionEvent->getStatementHandler();
+        
         if (!($sth instanceof \PDOStatement)) {
             throw new InvalidArgumentException("Expected the handle to be a PDOStatement - " . Util::getShape($sth) . " given");
         }
@@ -73,7 +99,9 @@ class MySqlQueryInterpreter extends SqlQueryInterpreter {
         if ($return_type === false) return null;
         
         # If there are no columns, this query modifies rows & doesn't return a rowset
-        if ($sth->columnCount() === 0) return $sth->rowCount();
+        if ($sth->columnCount() === 0) {
+            return $sth->rowCount();
+        }
         
         # Return the resultSet
         if ($return_type === 'auto') {
@@ -82,7 +110,7 @@ class MySqlQueryInterpreter extends SqlQueryInterpreter {
         
         throw new UnimplementedError("No other return types are supported yet");
     }
-    protected function getVariables(SqlExecutionContext $formattingContext): array {
+    protected function getBoundVariables(SqlExecutionContext $formattingContext): array {
         $variables = $formattingContext->getVariables();
         if (!is_array($variables)) return [];
         
@@ -103,5 +131,9 @@ class MySqlQueryInterpreter extends SqlQueryInterpreter {
         }
         
         return $returned_variables;
+    }
+    
+    public function getQueryMonitor(): Monitor {
+        return $this->getMonitor(static::MONITOR__QUERY_EXECUTED);
     }
 }

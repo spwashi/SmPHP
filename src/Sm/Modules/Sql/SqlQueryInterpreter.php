@@ -9,6 +9,7 @@ namespace Sm\Modules\Sql;
 
 use Sm\Authentication\Authentication;
 use Sm\Core\Exception\UnimplementedError;
+use Sm\Modules\Sql\Event\SqlQueryExecutionEvent;
 use Sm\Modules\Sql\Formatting\SqlFormattingContext;
 use Sm\Modules\Sql\Formatting\SqlQueryFormatter;
 use Sm\Modules\Sql\Formatting\SqlQueryFormatterManager;
@@ -38,9 +39,13 @@ abstract class SqlQueryInterpreter implements QueryInterpreter {
     }
     
     public function interpret($query_or_statement, $return_type = 'auto') {
-        list($sth, $success) = $this->execute($query_or_statement);
-        if (!$success) throw new UnimplementedError("Better error name, also this was not successfully ");
-        return $this->interpretResult($query_or_statement, $sth, $return_type);
+        $executionEvent = $this->execute($query_or_statement);
+    
+        if (!$executionEvent->getExecutionSuccess()) {
+            throw new UnimplementedError("Could not execute query (better error should be here)");
+        }
+    
+        return $this->interpretResult($executionEvent, $return_type);
     }
     /**
      * Set the Authentication that we are going to use to connect to the Database & whatnot
@@ -80,13 +85,13 @@ abstract class SqlQueryInterpreter implements QueryInterpreter {
         
         return $this->formatterManager->format($query_or_statement, $sqlFormattingContext);
     }
-    abstract protected function execute($formatted_query);
+    abstract protected function execute($formatted_query): SqlQueryExecutionEvent;
     /**
-     * @param mixed  $query_or_statement The thing that we just executed
-     * @param mixed  $sth                Connection to the database after executing the query
-     * @param string $return_type        What the return type should look like
+     * @param \Sm\Modules\Sql\Event\SqlQueryExecutionEvent $executionEvent
+     *
+     * @param                                              $return_type
      *
      * @return mixed
      */
-    abstract protected function interpretResult($query_or_statement, $sth, $return_type = 'auto');
+    abstract protected function interpretResult(SqlQueryExecutionEvent $executionEvent, $return_type);
 }

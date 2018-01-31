@@ -10,10 +10,11 @@ class DatatypeFactory extends SmEntityFactory {
     public function __construct() {
         parent::__construct();
         $this->register([
-                            'int'      => Integer_::class,
-                            'string'   => String_::class,
-                            'null'     => Null_::class,
-                            'datetime' => DateTime_::class,
+                            'int'       => Integer_::class,
+                            'undefined' => Undefined_::class,
+                            'string'    => String_::class,
+                            'null'      => Null_::class,
+                            'datetime'  => DateTime_::class,
                         ]);
         
     }

@@ -16,6 +16,7 @@ use Sm\Modules\Sql\Formatting\Aliasing\Exception\InvalidAliasedItem;
 use Sm\Modules\Sql\Formatting\Aliasing\SqlFormattingAliasContainer;
 use Sm\Modules\Sql\Formatting\Proxy\Aliasing\AliasedFormattingProxy;
 use Sm\Modules\Sql\Formatting\Proxy\PlaceholderFormattingProxy;
+use Sm\Modules\Sql\SqlDisplayContext;
 
 /**
  * Class SqlQueryFormatterFactory
@@ -151,7 +152,14 @@ class SqlQueryFormatterManager {
      * @return mixed|null
      */
     public function placeholder($value, $name = null) {
+        # If we are only trying to display this query, it's best to not use placeholders for readability.
+        ## This should not be executed as is for the sake of preventing SQL injection
+        if ($this->formattingContext instanceof SqlDisplayContext) {
+            return $value;
+        }
+        
         $name = $name ?? Util::generateRandomString(4, Util::getAlphaCharacters(0));
+    
         if (isset($this->formattingContext)) {
             #todo flag this as being associative or not? nah
             $addedVariables = $name !== false ? [ $name => $value ] : [ $value ];

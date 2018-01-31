@@ -9,6 +9,7 @@ namespace Sm\Data\Evaluation\Comparison;
 
 
 use Sm\Data\Evaluation\StandardEvaluableStatement;
+use Sm\Data\Property\Property;
 
 /**
  * Class Comparison
@@ -27,6 +28,9 @@ abstract class Comparison extends StandardEvaluableStatement {
      * @param $right
      */
     public function __construct($left = null, $right = null) {
+        if ($left instanceof Property && !isset($right)) {
+            $right = $left->value;
+        }
         $this->left  = $left;
         $this->right = $right;
         parent::__construct();

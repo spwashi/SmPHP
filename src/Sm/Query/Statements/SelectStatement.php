@@ -38,7 +38,7 @@ class SelectStatement extends QueryComponent {
             try {
                 $this->from_sources[] = $this->getSourceGarage()->resolve($item);
             } catch (FactoryCannotBuildException $exception) {
-        
+    
             }
         }
         $this->selected_items = array_merge($this->selected_items, $select_items);
@@ -66,4 +66,11 @@ class SelectStatement extends QueryComponent {
      * @return array
      */
     public function getSelectedItems(): array { return $this->selected_items; }
+    public function __debugInfo() {
+        return [
+            'select' => $this->selected_items,
+            'from'   => $this->from_sources,
+            'where'  => $this->conditions,
+        ];
+    }
 }

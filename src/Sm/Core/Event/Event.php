@@ -29,4 +29,5 @@ abstract class Event implements Identifiable, \JsonSerializable {
             'creation_ts'     => $this->creation_timestamp,
         ];
     }
+    public function __debugInfo() { return $this->jsonSerialize(); }
 }

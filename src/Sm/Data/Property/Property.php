@@ -19,6 +19,7 @@ use Sm\Core\SmEntity\StdSchematicizedSmEntity;
 use Sm\Core\SmEntity\StdSmEntityTrait;
 use Sm\Data\Property\Event\PropertyValueChange;
 use Sm\Data\Property\Exception\ReadonlyPropertyException;
+use Sm\Data\Type\Undefined_;
 use Sm\Data\Type\Variable_\Variable_;
 
 /**
@@ -51,6 +52,7 @@ class Property extends Variable_ implements Readonly_able,
     public function __construct($name = null) {
         $this->valueHistory = new Monitor;
         parent::__construct($name);
+        $this->subject = Undefined_::init();
     }
     
     #
@@ -76,16 +78,24 @@ class Property extends Variable_ implements Readonly_able,
     }
     public function setSubject($subject) {
         $previous_value = $this->subject;
+        if ($subject instanceof Property) $subject = $subject->value;
         parent::setSubject($subject);
     
         $new_value = $this->getSubject();
     
-        $previous = $previous_value instanceof NativeResolvable ? $previous_value->resolve() : $previous_value;
-        $new      = $new_value instanceof NativeResolvable ? $new_value->resolve() : $new_value;
-    
-        if ($new !== $previous) {
-            $this->valueHistory->append(PropertyValueChange::init($this, $new, $previous));
+        if ($previous_value instanceof NativeResolvable && get_class($previous_value) === get_class($new_value)) {
+            $previous = $previous_value->resolve();
+            $new      = $new_value->resolve();
+        } else {
+            $new      = $new_value;
+            $previous = $previous_value;
         }
+        
+        if ($new !== $previous) {
+            $this->valueHistory->append(PropertyValueChange::init($this, $new_value, $previous_value));
+        }
+    
+    
         return $this;
     }
     /**

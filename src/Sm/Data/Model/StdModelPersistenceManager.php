@@ -4,7 +4,10 @@
 namespace Sm\Data\Model;
 
 
+use Sm\Core\Internal\Monitor\HasMonitorTrait;
+use Sm\Core\Module\MonitoredModule;
 use Sm\Data\Evaluation\Comparison\EqualToCondition;
+use Sm\Data\Type\Undefined_;
 use Sm\Query\Interpretation\QueryInterpreter;
 use Sm\Query\Statements\DeleteStatement;
 use Sm\Query\Statements\InsertStatement;
@@ -12,8 +15,12 @@ use Sm\Query\Statements\SelectStatement;
 use Sm\Query\Statements\UpdateStatement;
 
 class StdModelPersistenceManager implements ModelPersistenceManager {
+    const MONITOR__QUERY_EXECUTED = 'QUERY__EXECUTED';
+    use HasMonitorTrait;
     /** @var  QueryInterpreter $queryInterpreter */
     protected $queryInterpreter;
+    
+    
     public function setQueryInterpreter(QueryInterpreter $queryInterpreter) {
         $this->queryInterpreter = $queryInterpreter;
         
@@ -31,6 +38,7 @@ class StdModelPersistenceManager implements ModelPersistenceManager {
         $id = $model->getProperties()->id;
         return [ $id->getName() => $id ];
     }
+    
     /**
      * Locate one
      *
@@ -65,32 +73,32 @@ class StdModelPersistenceManager implements ModelPersistenceManager {
     public function save(Model $model) {
         $properties = $model->getChanged();
         $update     = UpdateStatement::init($properties)
-                                     ->inSources($model->getName())
-                                     ->where(EqualToCondition::init($model->properties->id,
-                                                                    $model->properties->id->value));
+            ->inSources($model->getName())
+            ->where(EqualToCondition::init($model->properties->id,
+                                           $model->properties->id->value));
         #$result1 = $this->queryInterpreter->getQueryFormatter()->format($update);
         return $this->queryInterpreter->interpret($update);
     }
     public function create(Model $model) {
         $properties = $model->getProperties()->getAll();
         $insert     = InsertStatement::init($this->getModelNon_IdentityProperties($model, $properties))
-                                     ->inSources($model->getName());
+            ->inSources($model->getName());
         #$result1 = $this->queryInterpreter->getQueryFormatter()->format($insert);
         return $this->queryInterpreter->interpret($insert);
     }
     public function mark_delete(Model $model) {
         $update = UpdateStatement::init([ $model->properties->delete_dt->getName() => date("Y-m-d H:i:s") ])
-                                 ->inSources($model->getName())
-                                 ->where(EqualToCondition::init($model->properties->id,
-                                                                $model->properties->id->value));
+            ->inSources($model->getName())
+            ->where(EqualToCondition::init($model->properties->id,
+                                           $model->properties->id->value));
         #$result1 = $this->queryInterpreter->getQueryFormatter()->format($update);
         return $this->queryInterpreter->interpret($update);
     }
     public function delete(Model $model) {
         $update  = DeleteStatement::init()
-                                  ->from($model->getName())
-                                  ->where(EqualToCondition::init($model->properties->id,
-                                                                 $model->properties->id->value));
+            ->from($model->getName())
+            ->where(EqualToCondition::init($model->properties->id,
+                                           $model->properties->id->value));
         $result1 = $this->queryInterpreter->getQueryFormatter()->format($update);
         return $this->queryInterpreter->interpret($update);
     }
@@ -102,18 +110,23 @@ class StdModelPersistenceManager implements ModelPersistenceManager {
     protected function selectFind(Model $model) {
         $properties = $model->properties;
         $conditions = [];
+        
         /** @var \Sm\Data\Property\Property $property */
-        foreach ($properties as $property) {
-            if (!is_null($property->value)) {
+        foreach ($properties as $property_name => $property) {
+            if (!($property->raw_value instanceof Undefined_)) {
                 $conditions[] = EqualToCondition::init($property);
             }
         }
-        $select = SelectStatement::init()
-                                 ->select(...array_keys($properties->getAll()))
-                                 ->from($model->getName())
-                                 ->where(...$conditions);
         
-        #$result1 = $this->queryInterpreter->getQueryFormatter()->format($select);
-        return $this->queryInterpreter->interpret($select);
+        $select            = SelectStatement::init()
+                                            ->select(...array_keys($properties->getAll()))
+                                            ->from($model->getName())
+                                            ->where(...$conditions);
+        $interpretedSelect = $this->queryInterpreter->interpret($select);
+        
+        if ($this->queryInterpreter instanceof MonitoredModule) {
+            #var_dump($this->queryInterpreter->getMonitors());
+        }
+        return $interpretedSelect;
     }
 }

@@ -8,6 +8,7 @@
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Resolvable\StringResolvable;
 use Sm\Core\Util;
+use Sm\Data\Evaluation\Comparison\EqualToCondition;
 use Sm\Data\Evaluation\TwoOperandStatement;
 use Sm\Data\Property\PropertySchema;
 use Sm\Data\Source\Constructs\JoinedSourceSchematic;
@@ -24,6 +25,7 @@ use Sm\Modules\Sql\Formatting\Column\ColumnSchemaFormatter;
 use Sm\Modules\Sql\Formatting\Column\DateTimeColumnSchemaFormatter;
 use Sm\Modules\Sql\Formatting\Column\IntegerColumnSchemaFormatter;
 use Sm\Modules\Sql\Formatting\Component\ColumnIdentifierFormattingProxyFormatter;
+use Sm\Modules\Sql\Formatting\Component\EqualToConditionFormatter;
 use Sm\Modules\Sql\Formatting\Component\SelectExpressionFormattingProxyFormatter;
 use Sm\Modules\Sql\Formatting\Component\String_ColumnIdentifierFormattingProxyFormatter;
 use Sm\Modules\Sql\Formatting\Component\TwoOperandStatementFormatter;
@@ -128,6 +130,7 @@ function register_formatting_handlers(SqlQueryFormatterManager $formatterManager
             ColumnIdentifierFormattingProxy::class        => new ColumnIdentifierFormattingProxyFormatter($formatterManager),
             String_ColumnIdentifierFormattingProxy::class => new String_ColumnIdentifierFormattingProxyFormatter($formatterManager),
             TwoOperandStatement::class                    => new TwoOperandStatementFormatter($formatterManager),
+            EqualToCondition::class                       => new EqualToConditionFormatter($formatterManager),
             PlaceholderFormattingProxy::class             =>
                 $formatterFactory->createFormatter(function (PlaceholderFormattingProxy $columnSchema) use ($formatterFactory) {
                     $placeholderName = $columnSchema->getPlaceholderName();
