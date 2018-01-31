@@ -51,10 +51,9 @@ trait EntityHasPrimaryModelTrait {
      * @return Model
      */
     protected function getPrimaryModel(ModelDataManager $modelDataManager, $context = null): Model {
-        $model              = $modelDataManager->instantiate($this->primaryModelName);
-        $identityProperties = $this->getPrimaryModelProperties($context)
-                                   ->getAll();
-        $model->set($identityProperties);
-        return $model;
+        $model            = $modelDataManager->instantiate($this->primaryModelName);
+        $searchProperties = $this->getPrimaryModelProperties($context);
+    
+        return $model->set($searchProperties);
     }
 }

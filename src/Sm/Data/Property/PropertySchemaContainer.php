@@ -60,8 +60,10 @@ class PropertySchemaContainer extends Container {
      */
     public function register($name = null, $registrand = null) {
         # Don't register to readonly PropertyContainers
-        if ($this->readonly) throw new ReadonlyPropertyException("Trying to add a property to a readonly PropertyContainer.");
-    
+        if ($this->readonly) {
+            throw new ReadonlyPropertyException("Trying to add a property to a readonly PropertyContainer.");
+        }
+        
         # Iterate through an array if we're registering multiple at a time
         if (is_array($name)) {
             foreach ($name as $index => $item) {

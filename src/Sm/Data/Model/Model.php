@@ -63,7 +63,7 @@ class Model implements ModelSchema,
                 $this->set($key, $val);
             }
         } else {
-            $this->properties->$name = $value;
+            $this->properties->set($name, $value);
         }
         return $this;
     }
