@@ -239,7 +239,10 @@ class Application implements \JsonSerializable, LayerRoot {
     
     public function getMonitors(): MonitorContainer {
         $returnMonitorContainer = new MonitorContainer();
-        foreach ($this->monitorContainers as $key => $monitorContainer) {
+        /** @var MonitorContainer[] $monitorContainers */
+        $monitorContainers = array_merge($this->monitorContainers, [ $this->getMonitorContainer() ]);
+    
+        foreach ($monitorContainers as $key => $monitorContainer) {
             $all = $monitorContainer->getAll();
             foreach ($all as $monitor_name => $monitor) {
                 $returnMonitorContainer->register($key . '--' . $monitor_name, $monitor);
