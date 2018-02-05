@@ -26,7 +26,7 @@ trait HasMonitorTrait {
         
         $monitorContainer->info->append(new GenericEvent($name, $details));
     }
-    protected function getMonitorContainer(): MonitorContainer {
+    public function getMonitorContainer(): MonitorContainer {
         if (!isset($this->monitorContainer)) $this->monitorContainer = new MonitorContainer;
         return $this->monitorContainer;
     }

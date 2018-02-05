@@ -15,6 +15,8 @@ use Sm\Core\Exception\Exception;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
 use Sm\Core\Internal\Monitor\HasMonitorTrait;
+use Sm\Core\Internal\Monitor\MonitorContainer;
+use Sm\Core\Internal\Monitor\Monitored;
 use Sm\Core\Paths\Exception\PathNotFoundException;
 use Sm\Core\Util;
 use Sm\Data\DataLayer;
@@ -47,6 +49,8 @@ class Application implements \JsonSerializable, LayerRoot {
     # -- class properties
     /** @var  \Sm\Core\Context\Layer\LayerContainer $layerContainer */
     protected $layerContainer;
+    /** @var  \Sm\Core\Internal\Monitor\MonitorContainer[] */
+    protected $monitorContainers = [];
     /** @var  \Sm\Application\AppSettings $settings */
     protected $settings;
     
@@ -124,13 +128,20 @@ class Application implements \JsonSerializable, LayerRoot {
         $this->_registerQueryLayer();
     }
     protected function _registerDataLayer() {
-        $this->layerContainer->register(DataLayer::LAYER_NAME, DataLayer::init()->setRoot($this));
+        $dataLayer = DataLayer::init()->setRoot($this);
+        $this->layerContainer->register(DataLayer::LAYER_NAME, $dataLayer);
+        #--
+    
+        $this->addMonitoredItem($dataLayer, DataLayer::LAYER_NAME);
     }
     protected function _registerRepresentationLayer() {
         /** @var \Sm\Representation\RepresentationLayer $representationLayer */
         $representationLayer = RepresentationLayer::init()->setRoot($this);
         #------------------------------------------------------------------------
         $this->layerContainer->register(RepresentationLayer::LAYER_NAME, $representationLayer);
+        #--
+    
+        $this->addMonitoredItem($representationLayer, RepresentationLayer::LAYER_NAME);
     }
     protected function _registerControllerLayer() {
         $this->layerContainer->register(ControllerLayer::LAYER_NAME, (new ControllerLayer)->setRoot($this));
@@ -144,10 +155,20 @@ class Application implements \JsonSerializable, LayerRoot {
         
         #------------------------------------------------------------------------------
         $this->layerContainer->register(CommunicationLayer::LAYER_NAME, $communicationLayer);
+    
+        #--
+    
+        $this->addMonitoredItem($communicationLayer, CommunicationLayer::LAYER_NAME);
     }
     protected function _registerQueryLayer(): QueryLayer {
         $queryLayer = (new QueryLayer)->setRoot($this);
         $this->layerContainer->register(QueryLayer::LAYER_NAME, $queryLayer);
+    
+    
+        #--
+    
+        $this->addMonitoredItem($queryLayer, QueryLayer::LAYER_NAME);
+        
         return $queryLayer;
     }
     public function registerDefaultQueryModule(QueryModule $queryModule) {
@@ -155,6 +176,8 @@ class Application implements \JsonSerializable, LayerRoot {
         $queryLayer = $this->layerContainer->resolve(QueryLayer::LAYER_NAME);
         if (!isset($queryLayer)) throw new Exception("Can't register QueryModule without a QueryLayer");
         $queryLayer->registerDefaultQueryModule($queryModule);
+    
+        $this->addMonitoredItem($queryModule, QueryModule::MONITOR__QUERY_MODULE);
     }
     
     ##########################################################################
@@ -209,5 +232,24 @@ class Application implements \JsonSerializable, LayerRoot {
     }
     public function jsonSerialize() {
         return $this->__debugInfo();
+    }
+    
+    public function getMonitors(): MonitorContainer {
+        $returnMonitorContainer = new MonitorContainer();
+        foreach ($this->monitorContainers as $key => $monitorContainer) {
+            $all = $monitorContainer->getAll();
+            foreach ($all as $monitor_name => $monitor) {
+                $returnMonitorContainer->register($key . '--' . $monitor_name, $monitor);
+            }
+        }
+        return $returnMonitorContainer;
+    }
+    /**
+     * @param \Sm\Core\Internal\Monitor\Monitored|\Sm\Query\Module\QueryModule $queryModule
+     * @param string                                                           $name
+     */
+    protected function addMonitoredItem(Monitored $queryModule, string $name): void {
+        $monitors                         = $queryModule->getMonitorContainer();
+        $this->monitorContainers[ $name ] = $monitors;
     }
 }

@@ -55,8 +55,16 @@ class HttpCommunicationModule extends CommunicationModule {
                     
                     if (!($result instanceof HttpResponse)) {
                         try {
-                            $body   = StringResolvable::init($result);
-                            $result = HttpResponse::init()->setBody($body);
+                            if (is_array($result) || $result instanceof \JsonSerializable) {
+                                $result = HttpResponse::init()
+                                                      ->setBody(json_encode($result))
+                                                      ->setContentType('application/json');
+                            } else {
+                                $body   = StringResolvable::init($result);
+                                $result = HttpResponse::init()
+                                                      ->setBody($body);
+                            }
+                            
                         } catch (UnresolvableException $exception) {
                             var_dump($result);
                         }
@@ -66,23 +74,23 @@ class HttpCommunicationModule extends CommunicationModule {
     
                     echo $result->getBody();
                 },
-    
+
             Http::REDIRECT =>
                 function ($route_or_request) {
                     if (!($route_or_request instanceof Route)) {
                         throw new UnimplementedError("Can only dispatch routes");
                     }
-            
+    
                     $route = $route_or_request;
-            
+    
                     unset($route_or_request);
-            
+    
                     $description = $route->getRequestDescriptor();
-            
+    
                     if (!($description instanceof HttpRequestDescriptor)) {
                         throw new UnimplementedError("HTTP Module can only dispatch HTTP routes");
                     }
-            
+    
                     $arguments = $route->getPrimedArguments();
                     $url       = $description->asUrlPath($arguments);
                     header("Location: {$url}");

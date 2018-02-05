@@ -75,9 +75,19 @@ class StandardRoutingModule extends LayerModule implements RoutingModule {
     }
     protected function _initialize(Layer $layer = null) {
         $this->setRouter($layer, new Router);
-        $route = new Route(function () { var_dump('HTHTHT'); }, 'Smd');
-    
-        $this->registerRoutes([ 't' => $route ], $layer);
+//        $route = new Route(function () { var_dump('HTHTHT'); }, 'Smd');
+
+//        $this->registerRoutes([ 't' => $route ], $layer);
+    }
+    /**
+     * Get a list of the routes this RoutingModule uses;
+     *
+     * @param \Sm\Core\Context\Layer\Layer|null $layer
+     *
+     * @return iterable
+     */
+    public function listRoutes(Layer $layer = null): iterable {
+        return $this->getRouter($layer)->getRoutes();
     }
     /**
      * @param \Sm\Core\Context\Context $context

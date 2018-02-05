@@ -18,7 +18,7 @@ use Sm\Core\Exception\InvalidArgumentException;
  *
  * @package Sm\Communication\Request
  */
-class RequestDescriptor extends ContextDescriptor {
+class RequestDescriptor extends ContextDescriptor implements \JsonSerializable {
     public function compare($request) {
         parent::compare($request);
         if (!($request instanceof Request)) throw new InvalidArgumentException("Not working with a Request");
@@ -36,6 +36,17 @@ class RequestDescriptor extends ContextDescriptor {
      * @return array
      */
     public function getArguments(Request $request) {
+        return [];
+    }
+    /**
+     * Specify data which should be serialized to JSON
+     *
+     * @link  http://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4.0
+     */
+    function jsonSerialize() {
         return [];
     }
 }

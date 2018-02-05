@@ -20,7 +20,9 @@ use Sm\Query\QueryLayer;
  *
  * @package Sm\Query\Module
  */
-abstract class QueryModule extends LayerModule implements QueryInterpreter {
+abstract class QueryModule extends LayerModule implements QueryInterpreter, \Sm\Core\Internal\Monitor\Monitored {
+    const MONITOR__QUERY_MODULE = 'query_module_monitor';
+    
     /** @var  string */
     protected $queryType;
     /** @var  QueryInterpreter */

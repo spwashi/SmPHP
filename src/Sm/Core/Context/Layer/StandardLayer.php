@@ -11,6 +11,7 @@ namespace Sm\Core\Context\Layer;
 use Sm\Core\Context\StandardContext;
 use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
 use Sm\Core\Internal\Monitor\HasMonitorTrait;
+use Sm\Core\Internal\Monitor\Monitored;
 use Sm\Core\Module\Module;
 use Sm\Core\Module\ModuleContainer;
 
@@ -25,7 +26,7 @@ use Sm\Core\Module\ModuleContainer;
  *
  * @package Sm\Core\Context\Layer
  */
-abstract class StandardLayer extends StandardContext implements Layer, \JsonSerializable {
+abstract class StandardLayer extends StandardContext implements Layer, \JsonSerializable, Monitored {
     /** @var ModuleContainer $moduleContainer */
     protected $moduleContainer;
     /** @var array An array of the Layer Roots we checked applicability for */

@@ -13,8 +13,8 @@ use Sm\Core\Context\Layer\Layer;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Internal\Monitor\HasMonitorTrait;
+use Sm\Core\Internal\Monitor\Monitored;
 use Sm\Core\Module\ModuleProxy;
-use Sm\Core\Module\MonitoredModule;
 use Sm\Modules\Sql\Formatting\Aliasing\SqlFormattingAliasContainer;
 use Sm\Modules\Sql\Formatting\SqlFormattingProxyFactory;
 use Sm\Modules\Sql\Formatting\SqlQueryFormatterManager;
@@ -31,7 +31,7 @@ use Sm\Query\Statements\QueryComponent;
  *
  * @method MySqlQueryModuleProxy initialize(Context $context = null): ?MySqlQueryModuleProxy
  */
-class MySqlQueryModule extends QueryModule implements MonitoredModule {
+class MySqlQueryModule extends QueryModule implements Monitored {
     use HasMonitorTrait;
     
     const MYSQL = 'mysql';
@@ -127,11 +127,5 @@ class MySqlQueryModule extends QueryModule implements MonitoredModule {
     }
     protected function getAuthentication($authentication): MySqlAuthentication {
         return $authentication ?? $this->authentication;
-    }
-    
-    public function getMonitors(): array {
-        return [
-            MySqlQueryInterpreter::MONITOR__QUERY_EXECUTED => $this->getMonitor(MySqlQueryInterpreter::MONITOR__QUERY_EXECUTED),
-        ];
     }
 }

@@ -9,7 +9,6 @@ namespace Sm\Communication\Network\Http\Response;
 
 
 use Sm\Communication\Response\AbstractResponse;
-use Sm\Core\Exception\UnimplementedError;
 
 /**
  * Class HttpResponse
@@ -19,16 +18,21 @@ use Sm\Core\Exception\UnimplementedError;
  * @package Sm\Communication\Network\Http
  */
 class HttpResponse extends AbstractResponse {
-    public $headers;
-    public $body;
-    
+    public    $body;
+    protected $headers;
+    public function setContentType(string $content_type = 'text/html') {
+        $this->headers['Content-Type'] = $content_type;
+        return $this;
+    }
     /**
      * Make the Headers that are referenced in this HttpResponse
      */
     public function makeHeaders() {
-        if (isset($this->headers))
-            throw new UnimplementedError("make headers");
-        
+        if (isset($this->headers)) {
+            foreach ($this->headers as $name => $value) {
+                header($name . ': ' . $value);
+            }
+        }
     }
     
     /**

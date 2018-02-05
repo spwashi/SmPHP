@@ -5,7 +5,7 @@ namespace Sm\Data\Model;
 
 
 use Sm\Core\Internal\Monitor\HasMonitorTrait;
-use Sm\Core\Module\MonitoredModule;
+use Sm\Core\Internal\Monitor\Monitored;
 use Sm\Data\Evaluation\Comparison\EqualToCondition;
 use Sm\Data\Type\Undefined_;
 use Sm\Query\Interpretation\QueryInterpreter;
@@ -123,8 +123,8 @@ class StdModelPersistenceManager implements ModelPersistenceManager {
                                             ->from($model->getName())
                                             ->where(...$conditions);
         $interpretedSelect = $this->queryInterpreter->interpret($select);
-        
-        if ($this->queryInterpreter instanceof MonitoredModule) {
+    
+        if ($this->queryInterpreter instanceof Monitored) {
             #var_dump($this->queryInterpreter->getMonitors());
         }
         return $interpretedSelect;

@@ -1,14 +1,14 @@
 <?php
 
 
-namespace Sm\Core\Module;
+namespace Sm\Core\Internal\Monitor;
 
 
-interface MonitoredModule {
+interface Monitored {
     /**
      * Get the Monitors used by this class to debug stuff
      *
      * @return \Sm\Core\Internal\Monitor\Monitor[]
      */
-    public function getMonitors(): array;
+    public function getMonitorContainer(): MonitorContainer;
 }

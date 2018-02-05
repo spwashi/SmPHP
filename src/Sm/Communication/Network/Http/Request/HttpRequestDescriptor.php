@@ -251,4 +251,11 @@ class HttpRequestDescriptor extends RequestDescriptor {
         
         throw new UnimplementedError("Can only get arguments from a string");
     }
+    
+    public function __debugInfo() {
+        return $this->jsonSerialize();
+    }
+    public function jsonSerialize() {
+        return get_object_vars($this);
+    }
 }

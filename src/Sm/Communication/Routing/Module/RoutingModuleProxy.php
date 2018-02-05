@@ -44,4 +44,7 @@ class RoutingModuleProxy extends ModuleProxy implements RoutingModule {
     public function describe($route_or_name):?RequestDescriptor {
         return $this->subject->describe($route_or_name, $this->getContext());
     }
+    public function listRoutes(): iterable {
+        return $this->subject->listRoutes($this->context);
+    }
 }

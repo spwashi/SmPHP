@@ -8,11 +8,12 @@
 namespace Sm\Modules\Sql\MySql\Module;
 
 
+use Sm\Core\Internal\Monitor\MonitorContainer;
+use Sm\Core\Internal\Monitor\Monitored;
 use Sm\Core\Module\ModuleProxy;
-use Sm\Core\Module\MonitoredModule;
 use Sm\Modules\Sql\MySql\Authentication\MySqlAuthentication;
 
-class MySqlQueryModuleProxy extends ModuleProxy implements MonitoredModule {
+class MySqlQueryModuleProxy extends ModuleProxy implements Monitored {
     /** @var  \Sm\Modules\Sql\MySql\Module\MySqlQueryModule */
     protected $subject;
     public function getQueryFormatter() {
@@ -30,7 +31,7 @@ class MySqlQueryModuleProxy extends ModuleProxy implements MonitoredModule {
      *
      * @return \Sm\Core\Internal\Monitor\Monitor[]
      */
-    public function getMonitors(): array {
-        return $this->subject->getMonitors();
+    public function getMonitorContainer(): MonitorContainer {
+        return $this->subject->getMonitorContainer();
     }
 }
