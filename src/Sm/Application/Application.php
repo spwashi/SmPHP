@@ -143,7 +143,11 @@ class Application implements \JsonSerializable, LayerRoot {
         $this->addMonitoredItem($representationLayer, RepresentationLayer::LAYER_NAME);
     }
     protected function _registerControllerLayer() {
-        $this->layerContainer->register(ControllerLayer::LAYER_NAME, (new ControllerLayer)->setRoot($this));
+        $controllerLayer = (new ControllerLayer)->setRoot($this);
+        $this->layerContainer->register(ControllerLayer::LAYER_NAME, $controllerLayer);
+        #--
+    
+        $this->addMonitoredItem($controllerLayer, ControllerLayer::LAYER_NAME);
     }
     protected function _registerCommunicationLayer() {
         /** @var CommunicationLayer $communicationLayer $communicationLayer */
