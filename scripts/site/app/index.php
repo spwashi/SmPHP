@@ -16,7 +16,7 @@ use Sm\Communication\Routing\Exception\RouteNotFoundException;
 
 require_once 'vendor/autoload.php';
 
-$app = Application::init('spwashi', EXAMPLE_APP__PATH);
+$app = Application::init(EXAMPLE_APP__PATH);
 
 try {
 #   - Create & Boot the application

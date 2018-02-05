@@ -64,9 +64,8 @@ class Application implements \JsonSerializable, LayerRoot {
      * @param string $root_path   Where the application is located
      * @param null   $config_path Where all of the config info is
      */
-    protected function __construct($name, $root_path, $config_path = null) {
+    protected function __construct($root_path, $config_path = null) {
         $this->initSettings()
-             ->setName($name)
              ->setRootPath($root_path);
         $this->config_path = $config_path ?? ($this->root_path . 'config/');
         $this->initLayers();
@@ -80,7 +79,7 @@ class Application implements \JsonSerializable, LayerRoot {
      *
      * @return Application
      */
-    public static function init($name, $root_path, $config_path = null) {
+    public static function init($root_path, $config_path = null) {
         return new static(...func_get_args());
     }
     public function boot(): Application {
