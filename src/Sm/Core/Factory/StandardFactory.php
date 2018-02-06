@@ -116,7 +116,7 @@ class StandardFactory extends AbstractContainer implements Factory {
      * @throws \Sm\Core\Factory\Exception\FactoryCannotBuildException If we can't build the item
      */
     protected function attempt_build($item = null) {
-        $args = func_get_args();
+        $original_args = $args = func_get_args();
         /** @var string $class_name */
         $class_name         = is_object($item) ? get_class($item) : $item;
         $previous_exception = null;

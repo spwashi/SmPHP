@@ -13,6 +13,7 @@ use Sm\Core\Context\Layer\LayerRoot;
 use Sm\Core\Event\GenericEvent;
 use Sm\Core\Exception\Exception;
 use Sm\Core\Exception\InvalidArgumentException;
+use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
 use Sm\Core\Internal\Monitor\HasMonitorTrait;
 use Sm\Core\Internal\Monitor\MonitorContainer;
@@ -108,10 +109,11 @@ class Application implements \JsonSerializable, LayerRoot {
             $app = $this; # defined for the include
             require_once $_config_php;
             $configEvent = GenericEvent::init("Configured application with path " . $_config_php);
+            $this->getMonitor('info')->append($configEvent);
         } else {
             $configEvent = GenericEvent::init("Could not configure application with path " . $_config_php);
+            throw new UnimplementedError("Could not configure application with path " . $_config_php);
         }
-        $this->getMonitor('info')->append($configEvent);
     }
     
     

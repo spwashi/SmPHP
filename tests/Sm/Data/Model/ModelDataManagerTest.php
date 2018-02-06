@@ -6,6 +6,9 @@ namespace Sm\Data\Model;
 use Sm\Data\Property\PropertySchema;
 use Sm\Data\Property\PropertySchemaContainer;
 
+class TestModel extends Model {
+}
+
 class ModelDataManagerTest extends \PHPUnit_Framework_TestCase {
     public function testCanResolveDefaultModel() {
         $mdm = ModelDataManager::init();
@@ -25,6 +28,20 @@ class ModelDataManagerTest extends \PHPUnit_Framework_TestCase {
         $configuration = [ 'name' => $model_name, 'smID' => '[Model]modelName' ];
         $modelSchema   = $mdm->configure($configuration);
         $this->assertInstanceOf(Model::class, $mdm->instantiate('[Model]modelName'));
+        $this->assertEquals($model_name, $modelSchema->getName());
+    }
+    public function testCanRegisterModelClassForSmID() {
+        $mdm = ModelDataManager::init();
+        $mdm->registerResolver(function ($smID, $schematic) {
+            if ($smID === '[Model]modelName') {
+                return new TestModel;
+            }
+            return null;
+        });
+        $model_name    = 'modelName';
+        $configuration = [ 'name' => $model_name, 'smID' => '[Model]modelName' ];
+        $modelSchema   = $mdm->configure($configuration);
+        $this->assertInstanceOf(TestModel::class, $mdm->instantiate('[Model]modelName'));
         $this->assertEquals($model_name, $modelSchema->getName());
     }
     public function testCanConfigureProperties() {

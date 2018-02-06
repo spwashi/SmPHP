@@ -39,7 +39,7 @@ class PropertyDataManager extends SmEntityDataManager {
         if ($schematic && !($schematic instanceof Schematic)) throw new InvalidArgumentException("Can only use Schematics to initialize PropertyDataManagers");
         return $this->propertyFactory->resolve(null, $schematic)->fromSchematic($schematic);
     }
-    public function initializeDefaultSmEntityFactory(): SmEntityFactory {
+    protected function initializeDefaultSmEntityFactory(): SmEntityFactory {
         return PropertyFactory::init();
     }
 }

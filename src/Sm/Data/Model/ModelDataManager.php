@@ -10,6 +10,7 @@ namespace Sm\Data\Model;
 
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\SmEntity\SmEntityFactory;
+use Sm\Core\SmEntity\SmEntitySchematic;
 use Sm\Data\DataLayer;
 use Sm\Data\Property\PropertyDataManager;
 use Sm\Data\SmEntity\SmEntityDataManager;
@@ -49,6 +50,24 @@ class ModelDataManager extends SmEntityDataManager {
         }
     }
     
+    /**
+     * Register a classname to instantiate based on the SmID provided
+     *
+     * @param $smID
+     * @param $classname
+     */
+    public function registerResolver(callable $resolver) {
+        $this->getSmEntityFactory()
+             ->register(null,
+                 function ($type = null, $schematic = null) use ($resolver) {
+                     if (!($schematic instanceof SmEntitySchematic)) {
+                         return null;
+                     }
+                
+                     return $resolver($schematic->getSmID(), $schematic);
+                 });
+    }
+    
     public function instantiate($schematic = null): Model {
         if (is_string($schematic)) {
             if (!isset($this->configuredModels[ $schematic ])) {
@@ -75,7 +94,7 @@ class ModelDataManager extends SmEntityDataManager {
         return $item;
     }
     
-    public function initializeDefaultSmEntityFactory(): SmEntityFactory {
+    protected function initializeDefaultSmEntityFactory(): SmEntityFactory {
         return ModelFactory::init();
     }
     /**

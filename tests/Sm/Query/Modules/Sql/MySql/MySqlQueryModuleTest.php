@@ -41,10 +41,11 @@ class MySqlQueryModuleTest extends \PHPUnit_Framework_TestCase {
     public function testCanInterpretSelect() {
         $result = $this->layer->interpret(String_QueryProxy::init('SELECT "hello"'));
         $this->assertInternalType('array', $result);
-        $this->assertEquals($result['hello'] ?? 0, 'hello');
+        var_dump($result);
+        $this->assertEquals('hello', $result[0]['hello'] ?? 0);
         $result = $this->layer->interpret(SelectStatement::init()->select(StringResolvable::init('hello')));
         $this->assertInternalType('array', $result);
-        $this->assertEquals($result['hello'] ?? 0, 'hello');
+        $this->assertEquals('hello', $result[0]['hello'] ?? 0);
     }
     public function testCan() {
         $id           = IntegerColumnSchema::init('id')->setLength(11)->setNullability(0);

@@ -38,7 +38,7 @@ class DataSourceDataManager extends SmEntityDataManager {
      *
      * @return mixed
      */
-    public function initializeDefaultSmEntityFactory(): SmEntityFactory {
+    protected function initializeDefaultSmEntityFactory(): SmEntityFactory {
         return DataSourceSchemaFactory::init();
     }
 }

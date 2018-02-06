@@ -37,8 +37,8 @@ abstract class SmEntityDataManager implements SmEntityManager {
     /**
      * Static constructor for SmEntityManagers
      *
-     * @param \Sm\Data\DataLayer|null                $dataLayer
-     * @param \Sm\Core\SmEntity\SmEntityFactory|null $smEntityFactory
+     * @param \Sm\Data\DataLayer|null $dataLayer
+     * @param SmEntityFactory|null    $smEntityFactory
      *
      * @return static
      */
@@ -50,7 +50,7 @@ abstract class SmEntityDataManager implements SmEntityManager {
      *
      * @return mixed
      */
-    abstract public function initializeDefaultSmEntityFactory(): SmEntityFactory;
+    abstract protected function initializeDefaultSmEntityFactory(): SmEntityFactory;
     
     #
     ##  Configuration/
@@ -81,5 +81,8 @@ abstract class SmEntityDataManager implements SmEntityManager {
         }
         $this->smEntityFactory = $smEntityFactory;
         return $this;
+    }
+    public function getSmEntityFactory(): SmEntityFactory {
+        return $this->smEntityFactory;
     }
 }
