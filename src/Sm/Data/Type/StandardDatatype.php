@@ -10,10 +10,10 @@ namespace Sm\Data\Type;
 
 use Sm\Core\Resolvable\AbstractResolvable;
 use Sm\Core\Resolvable\ResolvableFactory;
-use Sm\Core\SmEntity\StdSmEntityTrait;
+use Sm\Core\SmEntity\Is_StdSmEntityTrait;
 
 abstract class StandardDatatype extends AbstractResolvable implements Datatype {
-    use StdSmEntityTrait;
+    use Is_StdSmEntityTrait;
     /** @var  \Sm\Core\Resolvable\Resolvable $subject */
     protected $subject;
     

@@ -13,7 +13,7 @@ namespace Sm\Core\SmEntity;
  * For SmEntities that can be Configured
  *
  */
-trait StdSmEntityTrait {
+trait Is_StdSmEntityTrait {
     protected $_smID;
     protected $_name;
     

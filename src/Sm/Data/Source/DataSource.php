@@ -10,7 +10,7 @@ namespace Sm\Data\Source;
 
 use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
 use Sm\Core\Internal\Identification\Identifiable;
-use Sm\Core\SmEntity\StdSmEntityTrait;
+use Sm\Core\SmEntity\Is_StdSmEntityTrait;
 use Sm\Data\Source\Schema\DataSourceSchema;
 
 /**
@@ -26,7 +26,7 @@ abstract class DataSource implements Identifiable,
                                      DataSourceSchema {
     # Traits
     use HasObjectIdentityTrait;
-    use StdSmEntityTrait;
+    use Is_StdSmEntityTrait;
     
     # Properties
     /** @var string The SmID of the prototype of the DataSources */

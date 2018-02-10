@@ -11,9 +11,9 @@ namespace Sm\Data\Model;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Schema\Schematicized;
+use Sm\Core\SmEntity\Is_StdSchematicizedSmEntityTrait;
+use Sm\Core\SmEntity\Is_StdSmEntityTrait;
 use Sm\Core\SmEntity\SmEntity;
-use Sm\Core\SmEntity\StdSchematicizedSmEntity;
-use Sm\Core\SmEntity\StdSmEntityTrait;
 use Sm\Data\Property\PropertyContainer;
 
 /**
@@ -35,9 +35,9 @@ class Model implements ModelSchema,
                        Schematicized,
                        SmEntity,
                        \JsonSerializable {
-    use StdSmEntityTrait;
+    use Is_StdSmEntityTrait;
     use ModelTrait;
-    use StdSchematicizedSmEntity {
+    use Is_StdSchematicizedSmEntityTrait {
         fromSchematic as protected _fromSchematic_std;
     }
     /** @var  PropertyContainer */

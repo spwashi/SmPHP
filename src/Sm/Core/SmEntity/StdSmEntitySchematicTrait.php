@@ -7,7 +7,7 @@ namespace Sm\Core\SmEntity;
 use Sm\Core\Exception\UnimplementedError;
 
 trait StdSmEntitySchematicTrait {
-    use StdSmEntityTrait;
+    use Is_StdSmEntityTrait;
     public function load($configuration) {
         if (!is_array($configuration)) {
             throw new UnimplementedError("Cannot configure schematic using something other than an array");

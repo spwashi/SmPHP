@@ -8,7 +8,7 @@ namespace Sm\Core\SmEntity;
  *
  * For SmEntities that we would identify as being Schematicized (schema,schematic,
  */
-trait StdSchematicizedSmEntity {
+trait Is_StdSchematicizedSmEntityTrait {
     /**
      *
      * @param $schematic
