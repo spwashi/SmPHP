@@ -41,7 +41,10 @@ class QueryLayer extends StandardLayer {
         $queryModule = $this->getQueryModule($query, $interpreter);
     
         #@todo resolve queryModule based on index
-        if (!$queryModule) throw new UnfoundQueryModuleException("No QueryModule enabled to handle this kind of query.");
+        if (!$queryModule) {
+            throw new UnfoundQueryModuleException("No QueryModule enabled to handle this kind of query.");
+        }
+        
         return $queryModule->interpret($query, $this);
     }
     /**

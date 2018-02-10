@@ -5,7 +5,6 @@ namespace Sm\Data\Model;
 
 
 use Sm\Core\Internal\Monitor\HasMonitorTrait;
-use Sm\Core\Internal\Monitor\Monitored;
 use Sm\Data\Evaluation\Comparison\EqualToCondition;
 use Sm\Data\Type\Undefined_;
 use Sm\Query\Interpretation\QueryInterpreter;
@@ -49,9 +48,6 @@ class StdModelPersistenceManager implements ModelPersistenceManager {
      */
     public function find(Model $model): Model {
         $result = $this->selectFind($model);
-        if (empty($result)) {
-            throw new ModelNotFoundException("Cannot find model specified by " . json_encode($model));
-        }
         $model->set($result[0] ?? []);
         return $model;
     }
@@ -73,32 +69,32 @@ class StdModelPersistenceManager implements ModelPersistenceManager {
     public function save(Model $model) {
         $properties = $model->getChanged();
         $update     = UpdateStatement::init($properties)
-            ->inSources($model->getName())
-            ->where(EqualToCondition::init($model->properties->id,
-                                           $model->properties->id->value));
+                                     ->inSources($model->getName())
+                                     ->where(EqualToCondition::init($model->properties->id,
+                                                                    $model->properties->id->value));
         #$result1 = $this->queryInterpreter->getQueryFormatter()->format($update);
         return $this->queryInterpreter->interpret($update);
     }
     public function create(Model $model) {
         $properties = $model->getProperties()->getAll();
         $insert     = InsertStatement::init($this->getModelNon_IdentityProperties($model, $properties))
-            ->inSources($model->getName());
+                                     ->inSources($model->getName());
         #$result1 = $this->queryInterpreter->getQueryFormatter()->format($insert);
         return $this->queryInterpreter->interpret($insert);
     }
     public function mark_delete(Model $model) {
         $update = UpdateStatement::init([ $model->properties->delete_dt->getName() => date("Y-m-d H:i:s") ])
-            ->inSources($model->getName())
-            ->where(EqualToCondition::init($model->properties->id,
-                                           $model->properties->id->value));
+                                 ->inSources($model->getName())
+                                 ->where(EqualToCondition::init($model->properties->id,
+                                                                $model->properties->id->value));
         #$result1 = $this->queryInterpreter->getQueryFormatter()->format($update);
         return $this->queryInterpreter->interpret($update);
     }
     public function delete(Model $model) {
         $update  = DeleteStatement::init()
-            ->from($model->getName())
-            ->where(EqualToCondition::init($model->properties->id,
-                                           $model->properties->id->value));
+                                  ->from($model->getName())
+                                  ->where(EqualToCondition::init($model->properties->id,
+                                                                 $model->properties->id->value));
         $result1 = $this->queryInterpreter->getQueryFormatter()->format($update);
         return $this->queryInterpreter->interpret($update);
     }
@@ -106,6 +102,9 @@ class StdModelPersistenceManager implements ModelPersistenceManager {
      * @param \Sm\Data\Model\Model $model
      *
      * @return array
+     * @throws \Sm\Data\Model\ModelNotFoundException
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     * @throws \Sm\Core\Resolvable\Error\UnresolvableException
      */
     protected function selectFind(Model $model) {
         $properties = $model->properties;
@@ -124,8 +123,9 @@ class StdModelPersistenceManager implements ModelPersistenceManager {
                                             ->where(...$conditions);
         $interpretedSelect = $this->queryInterpreter->interpret($select);
     
-        if ($this->queryInterpreter instanceof Monitored) {
-            #var_dump($this->queryInterpreter->getMonitors());
+        if (empty($result)) {
+            throw (new ModelNotFoundException("Could not find Model"))->setModel($model)
+                                                                      ->setModelSearchConditions($conditions);
         }
         return $interpretedSelect;
     }

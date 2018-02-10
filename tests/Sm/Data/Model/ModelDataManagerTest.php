@@ -5,11 +5,25 @@ namespace Sm\Data\Model;
 
 use Sm\Data\Property\PropertySchema;
 use Sm\Data\Property\PropertySchemaContainer;
+use Sm\Modules\Sql\MySql\Authentication\MySqlAuthentication;
+use Sm\Modules\Sql\MySql\Module\MySqlQueryModule;
 
 class TestModel extends Model {
 }
 
 class ModelDataManagerTest extends \PHPUnit_Framework_TestCase {
+    protected $queryModule;
+    public function setUp() {
+        $module = new MySqlQueryModule;
+        $module->registerAuthentication(MySqlAuthentication::init()
+                                                           ->setCredentials("codozsqq",
+                                                                            "^bzXfxDc!Dl6",
+                                                                            "localhost",
+                                                                            'sm_test'));
+        
+        $this->queryModule = $module;
+        
+    }
     public function testCanResolveDefaultModel() {
         $mdm = ModelDataManager::init();
         $this->assertInstanceOf(Model::class, $mdm->instantiate());
@@ -66,4 +80,14 @@ class ModelDataManagerTest extends \PHPUnit_Framework_TestCase {
         $this->assertInstanceOf(PropertySchema::class, $propertySchema);
     }
     
+    public function testCanCreateModels() {
+        $mdm           = ModelDataManager::init();
+        $configuration = [ 'name' => 'users' ];
+        $modelSchema   = $mdm->configure($configuration);
+        $model         = new Model();
+        $model->fromSchematic($modelSchema);
+        $persistenceManager = new StdModelPersistenceManager;
+        $mdm->setPersistenceManager($persistenceManager->setQueryInterpreter($this->queryModule));
+        $item = $mdm->persistenceManager->find($model);
+    }
 }

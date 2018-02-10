@@ -40,6 +40,14 @@ class DataSourceSchemaGarage implements Registry {
         else $this->dataSourceContainer->register($name, $registrand);
         return $this;
     }
+    /**
+     * @param null $item
+     *
+     * @return mixed|null|\Sm\Data\Source\Schema\DataSourceSchema
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     * @throws \Sm\Core\Factory\Exception\WrongFactoryException
+     * @throws \Sm\Core\Resolvable\Error\UnresolvableException
+     */
     public function resolve($item = null) {
         if (!$item) throw new InvalidArgumentException("Cannot resolve Null");
         $result = $this->dataSourceContainer->resolve($item);

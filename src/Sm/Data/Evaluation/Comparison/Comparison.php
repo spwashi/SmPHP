@@ -19,8 +19,8 @@ use Sm\Data\Property\Property;
  * @package Sm\Data\Evaluation\Comparison
  */
 abstract class Comparison extends StandardEvaluableStatement {
-    private $left;
-    private $right;
+    protected $left;
+    protected $right;
     /**
      * Comparison constructor.
      *

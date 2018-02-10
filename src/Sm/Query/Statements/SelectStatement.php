@@ -9,7 +9,8 @@ namespace Sm\Query\Statements;
 
 
 use Sm\Core\Exception\InvalidArgumentException;
-use Sm\Core\Factory\Exception\FactoryCannotBuildException;
+use Sm\Core\Factory\Exception\WrongFactoryException;
+use Sm\Core\Resolvable\Error\UnresolvableException;
 use Sm\Data\Source\Schema\DataSourceSchema;
 use Sm\Query\Statements\Clauses\HasWhereClauseTrait;
 
@@ -30,6 +31,8 @@ class SelectStatement extends QueryComponent {
      *
      * @param mixed ...$select_items
      *
+     * @throws InvalidArgumentException
+     * @throws UnresolvableException
      * @return $this
      */
     public function select(...$select_items) {
@@ -37,13 +40,18 @@ class SelectStatement extends QueryComponent {
             if (is_string($item)) continue;
             try {
                 $this->from_sources[] = $this->getSourceGarage()->resolve($item);
-            } catch (FactoryCannotBuildException $exception) {
-    
+            } catch (WrongFactoryException $e) {
             }
         }
         $this->selected_items = array_merge($this->selected_items, $select_items);
         return $this;
     }
+    /**
+     * @param mixed ...$from_sources
+     *
+     * @return $this
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     */
     public function from(...$from_sources) {
         foreach ($from_sources as $source) {
             if (is_string($source)) {

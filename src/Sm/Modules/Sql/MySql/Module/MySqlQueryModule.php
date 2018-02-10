@@ -54,6 +54,15 @@ class MySqlQueryModule extends QueryModule implements Monitored {
         $this->authentication = $mySqlAuthentication;
         return $this;
     }
+    /**
+     * @param                                   $query
+     * @param \Sm\Core\Context\Layer\Layer|null $layer
+     * @param null                              $authentication
+     *
+     * @return mixed
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     * @throws \Sm\Core\Exception\UnimplementedError
+     */
     public function interpret($query, Layer $layer = null, $authentication = null) {
         $this->initialize($layer);
         if (!($query instanceof QueryComponent) && !($query instanceof QueryProxy)) {
@@ -84,7 +93,7 @@ class MySqlQueryModule extends QueryModule implements Monitored {
      * @param SqlQueryFormatterManager     $queryFormatter The SqlQueryFormatterFactory that is going to be responsible for formatting the queries on this layer.
      * @param \Sm\Core\Context\Layer\Layer $context        The Layer on which we are registering it. If not specified, just registered on the class.
      *
-     * @return \Sm\Modules\Sql\MySql\MySqlQueryModule
+     * @return \Sm\Modules\Sql\MySql\Module\MySqlQueryModule
      */
     public function setQueryFormatter(SqlQueryFormatterManager $queryFormatter, Layer $context = null): MySqlQueryModule {
         if (!isset($context)) {

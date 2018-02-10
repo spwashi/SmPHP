@@ -8,10 +8,14 @@
 namespace Sm\Modules\Sql\MySql;
 
 
+use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Module\ModuleContainer;
+use Sm\Core\Query\Module\Exception\UnfoundQueryModuleException;
+use Sm\Core\Resolvable\Error\UnresolvableException;
 use Sm\Core\Resolvable\StringResolvable;
 use Sm\Modules\Sql\Constraints\PrimaryKeyConstraintSchema;
 use Sm\Modules\Sql\Data\Column\IntegerColumnSchema;
+use Sm\Modules\Sql\Formatting\Statements\Exception\MalformedStatementException;
 use Sm\Modules\Sql\MySql\Authentication\MySqlAuthentication;
 use Sm\Modules\Sql\MySql\Module\MySqlQueryModule;
 use Sm\Modules\Sql\Statements\CreateTableStatement;
@@ -25,13 +29,13 @@ class MySqlQueryModuleTest extends \PHPUnit_Framework_TestCase {
     /** @var  MySqlQueryModule $module */
     protected $module;
     public function setUp() {
-        $layer  = new QueryLayer(new ModuleContainer);
-        $module = new MySqlQueryModule;
+        $layer = new QueryLayer(new ModuleContainer);
+        $module       = new MySqlQueryModule;
         $module->registerAuthentication(MySqlAuthentication::init()
-                                                           ->setCredentials("codozsqq",
-                                                                            "^bzXfxDc!Dl6",
-                                                                            "localhost",
-                                                                            'sm_test'));
+                                            ->setCredentials("codozsqq",
+                                                             "^bzXfxDc!Dl6",
+                                                             "localhost",
+                                                             'sm_test'));
         
         $layer->registerQueryModule($module, function () use ($module) { return $module; }, 0);
         $this->layer  = $layer;
@@ -39,13 +43,29 @@ class MySqlQueryModuleTest extends \PHPUnit_Framework_TestCase {
     }
     
     public function testCanInterpretSelect() {
-        $result = $this->layer->interpret(String_QueryProxy::init('SELECT "hello"'));
-        $this->assertInternalType('array', $result);
-        var_dump($result);
-        $this->assertEquals('hello', $result[0]['hello'] ?? 0);
-        $result = $this->layer->interpret(SelectStatement::init()->select(StringResolvable::init('hello')));
-        $this->assertInternalType('array', $result);
-        $this->assertEquals('hello', $result[0]['hello'] ?? 0);
+        try {
+            $result = $this->layer->interpret(String_QueryProxy::init('SELECT "hello"'));
+            $this->assertInternalType('array', $result);
+            $this->assertEquals('hello', $result[0]['hello'] ?? 0);
+            
+            $query           = StringResolvable::init('hello');
+            $selectStatement = SelectStatement::init()->select($query);
+            $result_2        = $this->layer->interpret($selectStatement);
+            
+            $this->assertInternalType('array', $result_2);
+            $this->assertEquals('hello', $result_2[0]['hello'] ?? 0);
+            
+            
+            # For an empty class
+            $this->expectException(MalformedStatementException::class);
+            
+            $emptySelectStatement = SelectStatement::init()->select()->from('users');
+            $this->layer->interpret($emptySelectStatement);
+            
+        } catch (UnfoundQueryModuleException|InvalidArgumentException|UnresolvableException $e) {
+            throw $e;
+        }
+        
     }
     public function testCan() {
         $id           = IntegerColumnSchema::init('id')->setLength(11)->setNullability(0);

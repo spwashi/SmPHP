@@ -18,7 +18,7 @@ use Sm\Data\Evaluation\TwoOperandStatement;
  *
  * @package Sm\Data\Evaluation\Comparison
  */
-class EqualToCondition extends Comparison implements TwoOperandStatement {
+class EqualToCondition extends Comparison implements TwoOperandStatement, \JsonSerializable {
     public function getOperator(): string {
         return '=';
     }
@@ -35,5 +35,9 @@ class EqualToCondition extends Comparison implements TwoOperandStatement {
     protected function evaluateWithDefault(...$items) {
         if (count($items) !== 2) throw new InvalidArgumentException("Can only compare 2 items");
         return $items[1] == $items[0];
+    }
+    
+    public function jsonSerialize() {
+        return get_object_vars($this);
     }
 }

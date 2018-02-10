@@ -12,7 +12,7 @@ use Sm\Core\Internal\Monitor\Monitor;
 use Sm\Core\Internal\Monitor\MonitorContainer;
 use Sm\Core\Internal\Monitor\Monitored;
 
-class Exception extends \Exception implements Monitored {
+class Exception extends \Exception implements Monitored, \JsonSerializable {
     /** @var \Sm\Core\Internal\Monitor\MonitorContainer $relevant_monitors */
     protected $relevant_monitors;
     public function __construct($message = "", $code = 0, \Throwable $previous = null) {
@@ -34,5 +34,28 @@ class Exception extends \Exception implements Monitored {
     
     public function getMonitorContainer(): MonitorContainer {
         return $this->relevant_monitors;
+    }
+    
+    public function __get($name) {
+        switch ($name) {
+            case 'vars':
+                return get_object_vars($this);
+        }
+    }
+    public function jsonSerialize() {
+        $trace = $this->getTrace()[0] ?? [];
+        return [
+            'message'  => $this->getMessage(),
+            'previous' => $this->getPrevious(),
+            'trace'    => [
+                'file'     => $trace['file'] ?? 0,
+                'line'     => $trace['line'] ?? 0,
+                'function' => $trace['function'] ?? 0,
+                'class'    => $trace['class'] ?? 0,
+                'args'     => $trace['args'] ?? 0,
+            ],
+            'line'     => $this->line,
+            'monitors' => $this->relevant_monitors,
+        ];
     }
 }

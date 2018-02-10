@@ -17,9 +17,15 @@ use Sm\Modules\Sql\Formatting\Proxy\Column\ColumnIdentifierFormattingProxy;
 use Sm\Modules\Sql\Formatting\Proxy\Component\SelectExpressionFormattingProxy;
 use Sm\Modules\Sql\Formatting\Proxy\Source\Table\TableIdentifierFormattingProxy;
 use Sm\Modules\Sql\Formatting\SqlQueryFormatter;
+use Sm\Modules\Sql\Formatting\Statements\Exception\MalformedStatementException;
 use Sm\Query\Statements\SelectStatement;
 
 class SelectStatementFormatter extends SqlQueryFormatter implements Formatter {
+    /**
+     * @param $item
+     *
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     */
     public function prime($item) {
         if (!($item instanceof SelectStatement)) throw new InvalidArgumentException("Can only format SelectStatements");
         $sources = $item->getFromSources();
@@ -32,6 +38,7 @@ class SelectStatementFormatter extends SqlQueryFormatter implements Formatter {
      *
      * @return string
      * @throws \Sm\Core\Exception\InvalidArgumentException
+     * @throws \Sm\Modules\Sql\Formatting\Statements\Exception\MalformedStatementException
      */
     public function format($item): string {
         if (!($item instanceof SelectStatement)) {
@@ -40,8 +47,9 @@ class SelectStatementFormatter extends SqlQueryFormatter implements Formatter {
         $this->prime($item);
         $sources     = $this->getPrimedSources($item->getFromSources());
         $whereClause = $item->getWhereClause();
-        
-        $select_expression_list = $this->formatSelectExpressionList($item->getSelectedItems());
+    
+        $selectedItems          = $item->getSelectedItems();
+        $select_expression_list = $this->formatSelectExpressionList($selectedItems);
         $from_string            = count($sources) ? "FROM\t" . $this->formatSelectFromList($sources) : '';
         $where_string           = $whereClause ? "WHERE\t" . $this->formatComponent($whereClause) : '';
         $select_stmt_string     = "SELECT\t{$select_expression_list}\n{$from_string}\n{$where_string}";
@@ -72,6 +80,7 @@ class SelectStatementFormatter extends SqlQueryFormatter implements Formatter {
      * @param array $sources
      *
      * @return array
+     * @throws \Sm\Core\Exception\InvalidArgumentException
      */
     protected function getPrimedSources(array $sources) {
         $top_level_joins = [];
@@ -106,6 +115,7 @@ class SelectStatementFormatter extends SqlQueryFormatter implements Formatter {
      * @param $source_array
      *
      * @return string
+     * @throws \Sm\Modules\Sql\Formatting\Statements\Exception\MalformedStatementException
      */
     protected function formatSelectFromList($source_array): string {
         $sources = [];
@@ -115,6 +125,9 @@ class SelectStatementFormatter extends SqlQueryFormatter implements Formatter {
             $formatted_source = $this->formatComponent($selectExpression);
             $sources[]        = $formatted_source;
         }
+        if (empty($sources)) {
+            throw new MalformedStatementException("Cannot select without any sources.");
+        }
         return join(",\n\t\t", $sources);
     }
     /**
@@ -123,7 +136,7 @@ class SelectStatementFormatter extends SqlQueryFormatter implements Formatter {
      * @param array $selects
      *
      * @return string
-     * @throws \Sm\Core\Exception\UnimplementedError
+     * @throws \Sm\Modules\Sql\Formatting\Statements\Exception\MalformedStatementException
      */
     protected function formatSelectExpressionList(array $selects): string {
         $expression_list = [];
@@ -131,6 +144,9 @@ class SelectStatementFormatter extends SqlQueryFormatter implements Formatter {
             # Assume it's a column - otherwise, we'd use a different object
             $proxy             = $this->proxy($item, ColumnIdentifierFormattingProxy::class);
             $expression_list[] = $this->formatComponent($proxy);
+        }
+        if (empty($expression_list)) {
+            throw new MalformedStatementException("Cannot select without any items being selected.");
         }
         return join(",\n\t\t", $expression_list);
     }

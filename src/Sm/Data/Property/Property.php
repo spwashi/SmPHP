@@ -62,8 +62,7 @@ class Property extends AbstractResolvable implements Readonly_able, PropertySche
     public function __construct($name = null) {
         $this->valueHistory = new Monitor;
         if (isset($name)) $this->name = $name;
-        $this->subject = Undefined_::init();
-        parent::__construct(null);
+        parent::__construct(Undefined_::init());
     }
     /**
      * Create a Variable
