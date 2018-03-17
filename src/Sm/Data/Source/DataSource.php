@@ -29,8 +29,6 @@ abstract class DataSource implements Identifiable,
     use Is_StdSmEntityTrait;
     
     # Properties
-    /** @var string The SmID of the prototype of the DataSources */
-    protected $protoSmID = '[DataSource]';
     
     ####################################
     #   Constructors/Initialization

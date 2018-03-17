@@ -7,6 +7,8 @@
 
 namespace Sm\Query\Interpretation;
 
+use Sm\Core\Internal\Monitor\Monitored;
+
 /**
  * Class QueryInterpreter
  *
@@ -14,7 +16,7 @@ namespace Sm\Query\Interpretation;
  *
  * @package Sm\Query\Interpretation
  */
-interface QueryInterpreter {
+interface QueryInterpreter extends Monitored {
     /**
      * Given something, execute that thing as a Query and return a result
      *

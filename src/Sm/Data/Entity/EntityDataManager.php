@@ -5,7 +5,7 @@
  * Time: 12:21 PM
  */
 
-namespace Sm\Data\Property;
+namespace Sm\Data\Entity;
 
 
 use Sm\Core\SmEntity\SmEntityFactory;
@@ -13,17 +13,17 @@ use Sm\Core\SmEntity\SmEntitySchematic;
 use Sm\Data\SmEntity\SmEntityDataManager;
 
 /**
- * Class PropertyDataManager
+ * Class EntityDataManager
  *
  * Handles the loading/configuration of Properties
  *
- * @method configure($configuration):PropertySchematic
+ * @method configure($configuration):EntitySchematic
  */
-class PropertyDataManager extends SmEntityDataManager {
+class EntityDataManager extends SmEntityDataManager {
     public function createSchematic(): SmEntitySchematic {
-        return PropertySchematic::init();
+        return EntitySchematic::init();
     }
     protected function createSmEntityFactory(): SmEntityFactory {
-        return PropertyFactory::init();
+        return EntityFactory::init();
     }
 }

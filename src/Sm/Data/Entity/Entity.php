@@ -4,7 +4,12 @@
 namespace Sm\Data\Entity;
 
 
+use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
+use Sm\Core\Schema\Schematicized;
+use Sm\Core\SmEntity\Is_StdSchematicizedSmEntityTrait;
+use Sm\Core\SmEntity\Is_StdSmEntityTrait;
+use Sm\Core\SmEntity\SmEntity;
 use Sm\Data\Model\ModelDataManager;
 use Sm\Data\Property\PropertyContainer;
 
@@ -15,7 +20,12 @@ use Sm\Data\Property\PropertyContainer;
  *
  * @property PropertyContainer $properties
  */
-abstract class Entity implements \JsonSerializable {
+abstract class Entity implements \JsonSerializable, EntitySchema, Schematicized, SmEntity {
+    use Is_StdSmEntityTrait;
+    use Is_StdSchematicizedSmEntityTrait {
+        fromSchematic as protected _fromSchematic_std;
+    }
+    
     /** @var  \Sm\Data\Model\ModelDataManager $modelDataManager */
     protected $modelDataManager;
     
@@ -74,7 +84,11 @@ abstract class Entity implements \JsonSerializable {
         $this->modelDataManager = $modelDataManager;
         return $this;
     }
-    
+    protected function checkCanUseSchematic($schematic) {
+        if (!($schematic instanceof EntitySchematic)) {
+            throw new InvalidArgumentException("Can only initialize Properties using EntitySchematics");
+        }
+    }
     public function jsonSerialize() {
         return [
             'properties' => $this->getProperties()->getAll(),

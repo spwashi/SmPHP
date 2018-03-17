@@ -30,9 +30,8 @@ class StdModelPersistenceManagerTest extends \PHPUnit_Framework_TestCase {
         
         
         $model->properties->id = 1;
-        
-        $result = $this->modelPersistenceManager->find($model);
-        var_dump($result);
+        $result                = $this->modelPersistenceManager->find($model);
+        $this->assertInstanceOf(Model::class, $result);
     }
     public function testCanSaveModel() {
         $model = new Model;
@@ -71,9 +70,9 @@ class StdModelPersistenceManagerTest extends \PHPUnit_Framework_TestCase {
         $model->setName('users');
         $model->properties->register('id', new Property);
         $model->properties->register('delete_dt', new Property);
-    
+        
         $model->properties->id = 4;
-    
+        
         $result = $this->modelPersistenceManager->delete($model);
         var_dump($result);
     }

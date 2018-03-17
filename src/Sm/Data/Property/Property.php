@@ -52,8 +52,8 @@ class Property extends AbstractResolvable implements Readonly_able, PropertySche
     protected $name;
     
     use ReadonlyTrait;
-    use Is_StdSmEntityTrait;
     use PropertyTrait;
+    use Is_StdSmEntityTrait;
     use Is_StdSchematicizedSmEntityTrait {
         fromSchematic as protected _fromSchematic_std;
     }

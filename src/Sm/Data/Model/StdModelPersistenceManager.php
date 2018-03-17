@@ -6,6 +6,8 @@ namespace Sm\Data\Model;
 
 use Sm\Core\Internal\Monitor\HasMonitorTrait;
 use Sm\Data\Evaluation\Comparison\EqualToCondition;
+use Sm\Data\Model\Exception\ModelNotFoundException;
+use Sm\Data\Model\Exception\ModelNotSoughtException;
 use Sm\Data\Type\Undefined_;
 use Sm\Query\Interpretation\QueryInterpreter;
 use Sm\Query\Statements\DeleteStatement;
@@ -44,7 +46,7 @@ class StdModelPersistenceManager implements ModelPersistenceManager {
      * @param \Sm\Data\Model\Model $model
      *
      * @return \Sm\Data\Model\Model
-     * @throws \Sm\Data\Model\ModelNotFoundException
+     * @throws \Sm\Data\Model\Exception\ModelNotFoundException
      */
     public function find(Model $model): Model {
         $result = $this->selectFind($model);
@@ -102,7 +104,7 @@ class StdModelPersistenceManager implements ModelPersistenceManager {
      * @param \Sm\Data\Model\Model $model
      *
      * @return array
-     * @throws \Sm\Data\Model\ModelNotFoundException
+     * @throws \Sm\Data\Model\Exception\ModelNotFoundException
      * @throws \Sm\Core\Exception\InvalidArgumentException
      * @throws \Sm\Core\Resolvable\Error\UnresolvableException
      */
@@ -117,16 +119,23 @@ class StdModelPersistenceManager implements ModelPersistenceManager {
             }
         }
         
-        $select            = SelectStatement::init()
-                                            ->select(...array_keys($properties->getAll()))
-                                            ->from($model->getName())
-                                            ->where(...$conditions);
-        $interpretedSelect = $this->queryInterpreter->interpret($select);
-    
-        if (empty($result)) {
+        if (empty($conditions)) {
+            throw (new ModelNotSoughtException("Cannot search without conditions"))->setModel($model);
+            
+        }
+        
+        $select       = SelectStatement::init()
+                                       ->select(...array_keys($properties->getAll()))
+                                       ->from($model->getName())
+                                       ->where(...$conditions);
+        $selectResult = $this->queryInterpreter->interpret($select);
+        
+        if (empty($selectResult)) {
             throw (new ModelNotFoundException("Could not find Model"))->setModel($model)
+                                                                      ->addMonitors(array_merge_recursive($this->getMonitorContainer()->getAll(),
+                                                                                                          $this->queryInterpreter->getMonitorContainer()->getAll()))
                                                                       ->setModelSearchConditions($conditions);
         }
-        return $interpretedSelect;
+        return $selectResult;
     }
 }

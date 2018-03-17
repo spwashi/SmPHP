@@ -4,6 +4,7 @@
 namespace Sm\Data\Property;
 
 
+use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\SmEntity\SmEntitySchematic;
 use Sm\Core\SmEntity\StdSmEntitySchematicTrait;
 use Sm\Data\Type\DatatypeFactory;
@@ -14,12 +15,17 @@ use Sm\Data\Type\DatatypeFactory;
  * Represents the structure of a Property
  */
 class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSerializable {
-    protected $protoSmID   = '[Property]';
     protected $datatypeFactory;
     protected $length;
+    /** @var ReferenceDescriptorSchematic $referenceDescriptor */
+    protected $referenceDescriptor;
     protected $onModelUpdateValue;
     protected $defaultValue;
     protected $isGenerated = false;
+    public function __construct(DatatypeFactory $datatypeFactory = null) {
+        $this->setDatatypeFactory($datatypeFactory);
+    }
+    public static function init() { return new static(...func_get_args()); }
     
     use PropertyTrait;
     use StdSmEntitySchematicTrait {
@@ -28,10 +34,6 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
     
     #
     ##  Constructors/initialization
-    public function __construct(DatatypeFactory $datatypeFactory = null) {
-        $this->setDatatypeFactory($datatypeFactory);
-    }
-    public static function init() { return new static(...func_get_args()); }
     
     #
     ##  Configuration
@@ -42,6 +44,7 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
         $this->_configArraySet__updateValue($configuration);
         $this->_configArraySet__defaultValue($configuration);
         $this->_configArraySet__isGenerated($configuration);
+        $this->_configArraySet__reference($configuration);
         
         return $this;
     }
@@ -66,6 +69,20 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
     protected function _configArraySet__isGenerated(array $configuration) {
         if (isset($configuration['isGenerated'])) {
             $this->setIsGenerated($configuration['isGenerated']);
+        }
+    }
+    /**
+     * @param array $configuration
+     *
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     */
+    protected function _configArraySet__reference(array $configuration) {
+        if (isset($configuration['reference'])) {
+            $reference = $configuration['reference'];
+            if (!is_array($reference)) {
+                throw new InvalidArgumentException('Cannot reference -- ' . json_encode($reference));
+            }
+            $this->setReferenceDescriptor(new ReferenceDescriptorSchematic($reference['hydrationMethod'] ?? null));
         }
     }
     #
@@ -98,6 +115,15 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
     public function getDefaultValue() {
         return $this->defaultValue;
     }
+    public function getReferenceDescriptor(): ?ReferenceDescriptorSchematic {
+        return $this->referenceDescriptor;
+    }
+    public function setReferenceDescriptor(ReferenceDescriptorSchematic $referenceDescriptor): PropertySchematic {
+        $this->referenceDescriptor = $referenceDescriptor;
+        return $this;
+    }
+    
+    
     #
     ##  Serialization
     public function jsonSerialize() {

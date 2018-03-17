@@ -6,6 +6,7 @@ namespace Sm\Data\Source;
 
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\SmEntity\SmEntityFactory;
+use Sm\Core\SmEntity\SmEntitySchematic;
 use Sm\Data\SmEntity\SmEntityDataManager;
 use Sm\Data\Source\Database\DatabaseSourceSchematic;
 use Sm\Data\Source\Database\Table\TableSourceSchematic;
@@ -38,7 +39,10 @@ class DataSourceDataManager extends SmEntityDataManager {
      *
      * @return mixed
      */
-    protected function initializeDefaultSmEntityFactory(): SmEntityFactory {
+    protected function createSmEntityFactory(): SmEntityFactory {
         return DataSourceSchemaFactory::init();
+    }
+    protected function createSchematic(): SmEntitySchematic {
+        return DatabaseSourceSchematic::init();
     }
 }

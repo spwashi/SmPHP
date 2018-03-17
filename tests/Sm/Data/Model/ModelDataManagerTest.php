@@ -5,6 +5,7 @@ namespace Sm\Data\Model;
 
 use Sm\Data\Property\PropertySchema;
 use Sm\Data\Property\PropertySchemaContainer;
+use Sm\Data\Property\ReferenceDescriptorSchematic;
 use Sm\Modules\Sql\MySql\Authentication\MySqlAuthentication;
 use Sm\Modules\Sql\MySql\Module\MySqlQueryModule;
 
@@ -79,15 +80,52 @@ class ModelDataManagerTest extends \PHPUnit_Framework_TestCase {
         $propertySchema = $propertySchemaContainer->id;
         $this->assertInstanceOf(PropertySchema::class, $propertySchema);
     }
-    
+    /**
+     *
+     */
+    public function testCanConfigurePropertiesAsReferences() {
+        $mdm                       = ModelDataManager::init();
+        $model_name                = 'id';
+        $expected__hydrationMethod = '[Property]{[Model]example}id';
+        $configuration             = [
+            'name'       => $model_name,
+            'properties' => [
+                'id' => [
+                    'reference' => [
+                        'identity'        => '[Model]example',
+                        'hydrationMethod' => $expected__hydrationMethod,
+                    ],
+                ],
+            ],
+        ];
+        
+        /** @var \Sm\Data\Model\ModelSchematic $modelSchema */
+        $modelSchema             = $mdm->configure($configuration);
+        $propertySchemaContainer = $modelSchema->getProperties();
+        
+        $this->assertInstanceOf(PropertySchemaContainer::class, $propertySchemaContainer);
+        
+        /** @var \Sm\Data\Property\PropertySchematic $propertySchema */
+        $propertySchema = $propertySchemaContainer->id;
+        /** @var ReferenceDescriptorSchematic $referenceDescriptor */
+        $referenceDescriptor = $propertySchema->getReferenceDescriptor();
+        $this->assertInstanceOf(ReferenceDescriptorSchematic::class, $referenceDescriptor);
+        
+        $hydrationMethod = $referenceDescriptor->getHydrationMethod();
+        $this->assertEquals($expected__hydrationMethod, $hydrationMethod);
+    }
     public function testCanCreateModels() {
         $mdm           = ModelDataManager::init();
-        $configuration = [ 'name' => 'users' ];
+        $configuration = [ 'name' => 'users', 'properties' => [ 'id' => [] ] ];
         $modelSchema   = $mdm->configure($configuration);
-        $model         = new Model();
+        
+        $model = new Model;
         $model->fromSchematic($modelSchema);
+        $model->set('id', 1);
+        
         $persistenceManager = new StdModelPersistenceManager;
         $mdm->setPersistenceManager($persistenceManager->setQueryInterpreter($this->queryModule));
         $item = $mdm->persistenceManager->find($model);
+        var_dump(json_encode($item));
     }
 }

@@ -5,6 +5,7 @@ namespace Sm\Data\Property;
 
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
+use Sm\Data\Property\Exception\NonexistentPropertyException;
 
 /**
  * Class PropertyContainer

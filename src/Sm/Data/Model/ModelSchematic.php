@@ -6,7 +6,9 @@ namespace Sm\Data\Model;
 
 use Sm\Core\SmEntity\SmEntitySchematic;
 use Sm\Core\SmEntity\StdSmEntitySchematicTrait;
+use Sm\Data\Property\Property;
 use Sm\Data\Property\PropertyDataManager;
+use Sm\Data\Property\PropertySchema;
 use Sm\Data\Property\PropertySchemaContainer;
 
 /**
@@ -26,22 +28,20 @@ class ModelSchematic implements ModelSchema,
     
     
     protected $properties;
-    protected $protoSmID = '[Model]';
     protected $propertyMeta;
     /** @var PropertyDataManager $propertyDataManager The SmEntityDataManager that will help configure PropertySchemas for us */
     private $propertyDataManager;
     
+    protected function __construct() { }
+    
     #
     ##  Constructors/Initialization
-    /**
-     * ModelSchematic constructor.
-     *
-     * @param PropertyDataManager $propertyDataManager
-     */
-    public function __construct(PropertyDataManager $propertyDataManager) {
-        $this->propertyDataManager = $propertyDataManager;
+    public static function init(PropertyDataManager $propertyDataManager): ModelSchematic {
+        $model                      = new static;
+        $model->propertyDataManager = $propertyDataManager;
+        $model->properties          = PropertySchemaContainer::init();
+        return $model;
     }
-    public static function init(PropertyDataManager $propertyDataManager) { return new static(...func_get_args()); }
     public function load($configuration) {
         $this->_load_std($configuration);
         $this->_configArraySet__properties($configuration);
@@ -56,7 +56,7 @@ class ModelSchematic implements ModelSchema,
     #
     ##  Getters and Setters
     public function getProperties(): PropertySchemaContainer {
-        return $this->properties = $this->properties ?? PropertySchemaContainer::init();
+        return $this->properties;
     }
     /**
      * @param mixed $properties
@@ -70,52 +70,73 @@ class ModelSchematic implements ModelSchema,
     
     #
     ##  Configuration
+    /**
+     * @param $configuration
+     *
+     * @throws \Sm\Core\Exception\UnimplementedError
+     */
     protected function _configArraySet__properties($configuration) {
         $propertySchemaContainer = PropertySchemaContainer::init();
         $properties              = $configuration['properties'] ?? [];
-    
-        $meta = $configuration['propertyMeta'] ?? null;
-    
-        $this->propertyMeta = ModelPropertyMetaSchematic::init($propertySchemaContainer)->load($meta);
+        $meta_config_array       = $configuration['propertyMeta'] ?? [];
         
-        if (!count($properties)) return;
+        $this->propertyMeta = $this->createAndConfigureMeta($propertySchemaContainer, $meta_config_array);
+        
+        if (!count($properties)) {
+            return;
+        }
         
         # - convert the configurations to schematics
         $propertySchematic_array = [];
         foreach ($properties as $property_name => $property_config) {
-    
-            if (is_array($property_config)) $property_config['name'] = $property_config['name'] ?? $property_name;
-    
-            $name = $property_name;
-            /** @var PropertyDataManager $propertyDataManager */
-            $propertyDataManager              = $this->propertyDataManager;
-            $propertySchematic                = $propertyDataManager->configure($property_config);
-            $propertySchematic_array[ $name ] = $propertySchematic;
+            
+            if (is_array($property_config)) {
+                $property_config['name'] = $property_config['name'] ?? $property_name;
+            }
+            
+            $propertySchematic_array[ $property_name ] = $this->propertyDataManager->configure($property_config);
         }
         
         # - register the properties
         $propertySchemaContainer->register($propertySchematic_array);
         
-        #
-        if (isset($propertySchemaContainer)) $this->setProperties($propertySchemaContainer);
+        # add them to the ModelSchematic
+        $this->setProperties($propertySchemaContainer);
+    }
+    
+    /**
+     *
+     * @param \Sm\Data\Property\PropertySchema $propertySchema
+     *
+     * @return \Sm\Data\Property\Property
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     * @throws \Sm\Core\Exception\UnimplementedError
+     */
+    public function instantiateProperty(PropertySchema $propertySchema): Property {
+        return $this->propertyDataManager->instantiate($propertySchema);
     }
     
     #
     ##  Serialization
+    public function getPropertyMeta(): ModelPropertyMetaSchematic {
+        return $this->propertyMeta;
+    }
+    /**
+     * @param $propertySchemaContainer
+     * @param $meta
+     *
+     * @return $this
+     * @throws \Sm\Core\Exception\UnimplementedError
+     */
+    protected function createAndConfigureMeta(PropertySchemaContainer $propertySchemaContainer, array $meta = []): ModelPropertyMetaSchematic {
+        return ModelPropertyMetaSchematic::init($propertySchemaContainer)->load($meta);
+    }
+    
     public function jsonSerialize() {
         return [
             'smID'       => $this->getSmID(),
             'name'       => $this->getName(),
             'properties' => $this->propertyMeta,
         ];
-    }
-    /**
-     * @return PropertyDataManager
-     */
-    public function getPropertyDataManager(): PropertyDataManager {
-        return $this->propertyDataManager;
-    }
-    public function getPropertyMeta(): ModelPropertyMetaSchematic {
-        return $this->propertyMeta;
     }
 }

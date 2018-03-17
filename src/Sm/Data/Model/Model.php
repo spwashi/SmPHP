@@ -40,6 +40,7 @@ class Model implements ModelSchema,
     use Is_StdSchematicizedSmEntityTrait {
         fromSchematic as protected _fromSchematic_std;
     }
+    
     /** @var  PropertyContainer */
     protected $properties;
     
@@ -90,20 +91,27 @@ class Model implements ModelSchema,
     
     #
     ##  Configuration/Initialization
+    
+    /**
+     * @param $modelSchematic
+     *
+     * @return $this
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     * @throws \Sm\Core\Exception\UnimplementedError
+     * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException
+     */
     public function fromSchematic($modelSchematic) {
         /** @var \Sm\Data\Model\ModelSchematic $modelSchematic */
         $this->_fromSchematic_std($modelSchematic);
         
         $this->setName($this->getName() ?? $modelSchematic->getName());
-        
-        $propertyDataManager = $modelSchematic->getPropertyDataManager();
         $propertySchemas     = $modelSchematic->getProperties();
         $propertyArray       = [];
         
         foreach ($propertySchemas as $index => $propertySchema) {
-            $propertyArray[ $index ] = $propertyDataManager->instantiate($propertySchema);
+            $propertyArray[ $index ] = $modelSchematic->instantiateProperty($propertySchema);
         }
-    
+        
         $this->getProperties()->register($propertyArray);
         return $this;
     }

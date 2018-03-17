@@ -1,6 +1,0 @@
-.schema--identity {
-  &::before {
-    @extend %schema-decorator;
-    content : '@';
-  }
-}

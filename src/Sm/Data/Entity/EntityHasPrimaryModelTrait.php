@@ -3,9 +3,10 @@
 
 namespace Sm\Data\Entity;
 
+use Sm\Data\Entity\Exception\EntityModelNotFoundException;
+use Sm\Data\Model\Exception\ModelNotFoundException;
 use Sm\Data\Model\Model;
 use Sm\Data\Model\ModelDataManager;
-use Sm\Data\Model\ModelNotFoundException;
 use Sm\Data\Property\PropertyContainer;
 
 /**
@@ -30,7 +31,7 @@ trait EntityHasPrimaryModelTrait {
      * @param null                            $context
      *
      * @return Model
-     * @throws \Sm\Data\Entity\EntityModelNotFoundException
+     * @throws \Sm\Data\Entity\Exception\EntityModelNotFoundException
      */
     protected function findPrimaryModel(ModelDataManager $modelDataManager, $context = null) {
         $model = $this->getPrimaryModel($modelDataManager, $context);

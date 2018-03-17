@@ -17,10 +17,6 @@ trait StdSmEntitySchematicTrait {
         $this->_configArraySet__name($configuration);
         return $this;
     }
-    public function getPrototypeSmID():?string {
-        if (!isset($this->protoSmID)) throw new UnimplementedError("No prototypical smID set");
-        return $this->protoSmID;
-    }
     public static function getNameFromSmID($smID) {
         $regex = '(^\[[a-zA-Z_]+])(.+)'; # [Type]name   e.g.   [Model]users
         preg_match("~{$regex}~", $smID, $matches);
