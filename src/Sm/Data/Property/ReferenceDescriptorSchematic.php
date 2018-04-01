@@ -15,6 +15,7 @@ class ReferenceDescriptorSchematic implements Schematic, \JsonSerializable {
      * @var null|string
      */
     protected $hydrationMethod;
+    protected $identity;
     /**
      * ReferenceDescriptorSchematic constructor.
      *

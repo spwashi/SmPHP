@@ -127,13 +127,15 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
     #
     ##  Serialization
     public function jsonSerialize() {
-        $length = $this->getLength();
-        $items  = [
+        $length                       = $this->getLength();
+        $referenceDescriptorSchematic = $this->getReferenceDescriptor();
+        $items                        = [
             'smID'      => $this->getSmID(),
             'name'      => $this->getName(),
             'datatypes' => $this->_getDatatypes(),
         ];
         if (isset($length)) $items['length'] = $length;
+        if (isset($referenceDescriptorSchematic)) $items['reference'] = $referenceDescriptorSchematic;
         return $items;
     }
 }
