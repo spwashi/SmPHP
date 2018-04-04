@@ -10,6 +10,11 @@ use Sm\Core\Schema\Schematic;
 use Sm\Data\Property\PropertySchema;
 use Sm\Data\Property\PropertySchemaContainer;
 
+/**
+ * Class ModelPropertyMetaSchematic
+ *
+ * @property-read \Sm\Data\Property\PropertyContainer $properties
+ */
 class ModelPropertyMetaSchematic implements Schematic, \JsonSerializable {
     protected $propertyContainer;
     /** @var array $primarySmIDs an array of the smIDs that we say are primary */
@@ -26,7 +31,12 @@ class ModelPropertyMetaSchematic implements Schematic, \JsonSerializable {
     public static function init(PropertySchemaContainer $propertySchemaContainer) {
         return new static($propertySchemaContainer);
     }
-    
+    public function __get($name) {
+        switch ($name) {
+            case 'properties':
+                return $this->propertyContainer;
+        }
+    }
     
     #
     ##  Configuration
@@ -61,19 +71,19 @@ class ModelPropertyMetaSchematic implements Schematic, \JsonSerializable {
         return $uniqueKeys;
     }
     /**
-     * @param $propertySmID
+     * @param $property
      *
      * @return bool
      * @throws \Sm\Core\Exception\InvalidArgumentException
      */
-    protected function getPropertySmID(&$propertySmID): bool {
-        if ($propertySmID instanceof PropertySchema) {
-            $propertySmID = $propertySmID->getSmID();
+    protected function getPropertySmID(&$property): bool {
+        if ($property instanceof PropertySchema) {
+            $property = $property->getSmID();
         }
         
-        if (!$propertySmID) return false;
+        if (!$property) return false;
         
-        if (!is_string($propertySmID)) {
+        if (!is_string($property)) {
             throw new InvalidArgumentException("Can only check smIDs or Properties for primary status");
         }
         
@@ -84,10 +94,7 @@ class ModelPropertyMetaSchematic implements Schematic, \JsonSerializable {
     ##  Serialization
     public function jsonSerialize() {
         return [
-            'items' => $this->propertyContainer->getAll(),
-            'meta'  => [
-                'primarySmIDs' => $this->primarySmIDs,
-            ],
+            'primary' => $this->primarySmIDs,
         ];
     }
 }

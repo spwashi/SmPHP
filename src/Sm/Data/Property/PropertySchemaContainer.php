@@ -40,7 +40,7 @@ class PropertySchemaContainer extends Container {
     public function resolve($name = null): ?PropertySchema {
         return parent::resolve($name);
     }
-    protected function getResolvedValue(Resolvable $item, $args):?PropertySchema {
+    protected function getResolvedValue(Resolvable $item, $args): ?PropertySchema {
         return $item instanceof PropertySchema ? $item : $item->resolve();
     }
     
@@ -71,7 +71,7 @@ class PropertySchemaContainer extends Container {
             }
             return $this;
         }
-    
+        
         # If the first parameter is a named property, register it
         if ($name instanceof PropertySchema && isset($name->name)) {
             if (isset($registrand)) throw new InvalidArgumentException("When using a PropertySchema as the first parameter, ther can be no second");
@@ -119,5 +119,8 @@ class PropertySchemaContainer extends Container {
         if (!($registrand instanceof PropertySchema)) {
             throw new InvalidArgumentException("Can only add Properties to the PropertyContainer");
         }
+    }
+    public function jsonSerialize() {
+        return $this->registry;
     }
 }

@@ -28,6 +28,7 @@ class ModelSchematic implements ModelSchema,
     
     
     protected $properties;
+    /** @var \Sm\Data\Model\ModelPropertyMetaSchematic $propertyMeta */
     protected $propertyMeta;
     /** @var PropertyDataManager $propertyDataManager The SmEntityDataManager that will help configure PropertySchemas for us */
     private $propertyDataManager;
@@ -134,9 +135,10 @@ class ModelSchematic implements ModelSchema,
     
     public function jsonSerialize() {
         return [
-            'smID'       => $this->getSmID(),
-            'name'       => $this->getName(),
-            'properties' => $this->propertyMeta,
+            'smID'         => $this->getSmID(),
+            'name'         => $this->getName(),
+            'properties'   => $this->properties,
+            'propertyMeta' => $this->propertyMeta,
         ];
     }
 }
