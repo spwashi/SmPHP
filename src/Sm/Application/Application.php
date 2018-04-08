@@ -39,8 +39,15 @@ class Application implements \JsonSerializable, LayerRoot {
     use HasObjectIdentityTrait;
     use HasMonitorTrait;
     
+    const ENV_DEV     = 'development';
+    const ENV_PROD    = 'production';
+    const ENV_STAGING = 'staging';
+    
     # -- the application name
     protected $name;
+    
+    # -- the application name
+    protected $env = Application::ENV_STAGING;
     
     # -- paths
     protected $config_path;
@@ -94,7 +101,27 @@ class Application implements \JsonSerializable, LayerRoot {
         
         return $this;
     }
-    
+    public function setEnvironment(string $env) {
+        switch ($env) {
+            case Application::ENV_DEV:
+            case Application::ENV_PROD:
+            case Application::ENV_STAGING:
+                $this->env = $env;
+                break;
+            default:
+                die('Unrecognized environment');
+        }
+    }
+    /**
+     * Check to see if the environment is ____
+     *
+     * @param $env
+     *
+     * @return bool
+     */
+    public function environmentIs($env): bool {
+        return $this->env === $env;
+    }
     #
     ##  Configuration
     /**
@@ -132,7 +159,7 @@ class Application implements \JsonSerializable, LayerRoot {
         $dataLayer = DataLayer::init()->setRoot($this);
         $this->layerContainer->register(DataLayer::LAYER_NAME, $dataLayer);
         #--
-    
+        
         $this->addMonitoredItem($dataLayer, DataLayer::LAYER_NAME);
     }
     protected function _registerRepresentationLayer() {
@@ -141,14 +168,14 @@ class Application implements \JsonSerializable, LayerRoot {
         #------------------------------------------------------------------------
         $this->layerContainer->register(RepresentationLayer::LAYER_NAME, $representationLayer);
         #--
-    
+        
         $this->addMonitoredItem($representationLayer, RepresentationLayer::LAYER_NAME);
     }
     protected function _registerControllerLayer() {
         $controllerLayer = (new ControllerLayer)->setRoot($this);
         $this->layerContainer->register(ControllerLayer::LAYER_NAME, $controllerLayer);
         #--
-    
+        
         $this->addMonitoredItem($controllerLayer, ControllerLayer::LAYER_NAME);
     }
     protected function _registerCommunicationLayer() {
@@ -160,18 +187,18 @@ class Application implements \JsonSerializable, LayerRoot {
         
         #------------------------------------------------------------------------------
         $this->layerContainer->register(CommunicationLayer::LAYER_NAME, $communicationLayer);
-    
+        
         #--
-    
+        
         $this->addMonitoredItem($communicationLayer, CommunicationLayer::LAYER_NAME);
     }
     protected function _registerQueryLayer(): QueryLayer {
         $queryLayer = (new QueryLayer)->setRoot($this);
         $this->layerContainer->register(QueryLayer::LAYER_NAME, $queryLayer);
-    
-    
+        
+        
         #--
-    
+        
         $this->addMonitoredItem($queryLayer, QueryLayer::LAYER_NAME);
         
         return $queryLayer;
@@ -181,7 +208,7 @@ class Application implements \JsonSerializable, LayerRoot {
         $queryLayer = $this->layerContainer->resolve(QueryLayer::LAYER_NAME);
         if (!isset($queryLayer)) throw new Exception("Can't register QueryModule without a QueryLayer");
         $queryLayer->registerDefaultQueryModule($queryModule);
-    
+        
         $this->addMonitoredItem($queryModule, QueryModule::MONITOR__QUERY_MODULE);
     }
     
@@ -243,7 +270,7 @@ class Application implements \JsonSerializable, LayerRoot {
         $returnMonitorContainer = new MonitorContainer();
         /** @var MonitorContainer[] $monitorContainers */
         $monitorContainers = array_merge($this->monitorContainers, [ $this->getMonitorContainer() ]);
-    
+        
         foreach ($monitorContainers as $key => $monitorContainer) {
             $all = $monitorContainer->getAll();
             foreach ($all as $monitor_name => $monitor) {

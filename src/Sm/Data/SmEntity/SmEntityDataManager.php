@@ -145,7 +145,6 @@ abstract class SmEntityDataManager implements SmEntityManager {
         
         $identityManager_id = '[' . static::$identityManagerName . ']';
         
-        
         # if `name` was provided, search for `[Model]name`
         if (strpos($schematic_name, $identityManager_id) === 0) {
             throw new InvalidArgumentException("Cannot find Model to match '{$schematic_name}'");
