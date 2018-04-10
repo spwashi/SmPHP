@@ -32,7 +32,7 @@ class Util {
             foreach ($result as $item) {
                 $string .= static::getShape($item) . '|';
             }
-    
+            
             $string = trim($string, '|');
             $string .= ']';
             return $string;
@@ -42,6 +42,17 @@ class Util {
     public static function arrayIsAssociative(array $arr) {
         if ([] === $arr) return false;
         return array_keys($arr) !== range(0, count($arr) - 1);
+    }
+    public static function arrayMergeRecursive(array &$array1, array &$array2) {
+        $merged = $array1;
+        foreach ($array2 as $key => &$value) {
+            if (is_array($value) && isset ($merged [ $key ]) && is_array($merged [ $key ])) {
+                $merged [ $key ] = static::arrayMergeRecursive($merged [ $key ], $value);
+            } else {
+                $merged [ $key ] = $value;
+            }
+        }
+        return $merged;
     }
     /**
      * Is there a good way for us to convert this into a string?
