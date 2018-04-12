@@ -8,8 +8,8 @@
 namespace Sm\Communication\Request;
 
 
-use Sm\Communication\Network\Http\Request\HttpRequest;
-use Sm\Communication\Network\Http\Request\HttpRequestDescriptor;
+use Sm\Modules\Network\Http\Request\HttpRequest;
+use Sm\Modules\Network\Http\Request\HttpRequestDescriptor;
 
 class HttpRequestTest extends \PHPUnit_Framework_TestCase {
     public function testCanCreate() {

@@ -8,9 +8,9 @@
 namespace Sm\Communication\Routing;
 
 
-use Sm\Communication\Network\Http\Request\HttpRequest;
 use Sm\Core\Resolvable\PassiveResolvable;
 use Sm\Core\Resolvable\StringResolvable;
+use Sm\Modules\Network\Http\Request\HttpRequest;
 
 
 class Controller {

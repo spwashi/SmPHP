@@ -4,12 +4,14 @@ namespace Sm\Data\Model;
 
 
 use Sm\Data\Property\Property;
-use Sm\Modules\Sql\MySql\Authentication\MySqlAuthentication;
-use Sm\Modules\Sql\MySql\Module\MySqlQueryModule;
+use Sm\Modules\Query\MySql\Authentication\MySqlAuthentication;
+use Sm\Modules\Query\MySql\MySqlQueryModule;
 
 class StdModelPersistenceManagerTest extends \PHPUnit_Framework_TestCase {
     /** @var  \Sm\Data\Model\StdModelPersistenceManager $modelPersistenceManager */
     protected $modelPersistenceManager;
+    /** @var \Sm\Query\Module\QueryModule $queryModule */
+    protected $queryModule;
     public function setUp() {
         $module = new MySqlQueryModule;
         $module->registerAuthentication(MySqlAuthentication::init()
@@ -47,7 +49,7 @@ class StdModelPersistenceManagerTest extends \PHPUnit_Framework_TestCase {
         $model->properties->last_name  = 'Washington';
         
         $result = $this->modelPersistenceManager->save($model);
-        var_dump($result);
+        var_dump(json_encode($this->queryModule->getMonitorContainer()));
     }
     public function testCanCreateModel() {
         $model = new Model;
@@ -58,11 +60,13 @@ class StdModelPersistenceManagerTest extends \PHPUnit_Framework_TestCase {
         $model->properties->register('email', new Property);
         $model->properties->register('delete_dt', new Property);
         
-        $model->properties->email      = 'sam@spwashi.com';
+        $model->properties->email      = 'sam@spwashi.colm';
         $model->properties->first_name = 'Bread';
         $model->properties->last_name  = 'Hootenanny';
         
         $result = $this->modelPersistenceManager->create($model);
+        
+        
         var_dump($result);
     }
     public function testCanDestroyModel() {

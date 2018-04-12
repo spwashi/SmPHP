@@ -3,10 +3,10 @@
 namespace Sm\Communication;
 
 
-use Sm\Communication\Network\Http\Request\HttpRequestDescriptor;
 use Sm\Communication\Routing\Module\StandardRoutingModule;
 use Sm\Communication\Routing\RequestContext;
 use Sm\Core\Resolvable\FunctionResolvable;
+use Sm\Modules\Network\Http\Request\HttpRequestDescriptor;
 
 class CommunicationLayerTest extends \PHPUnit_Framework_TestCase {
     public function testCanDescribeRoutes() {

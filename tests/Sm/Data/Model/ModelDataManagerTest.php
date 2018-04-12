@@ -6,8 +6,8 @@ namespace Sm\Data\Model;
 use Sm\Data\Property\PropertySchema;
 use Sm\Data\Property\PropertySchemaContainer;
 use Sm\Data\Property\ReferenceDescriptorSchematic;
-use Sm\Modules\Sql\MySql\Authentication\MySqlAuthentication;
-use Sm\Modules\Sql\MySql\Module\MySqlQueryModule;
+use Sm\Modules\Query\MySql\Authentication\MySqlAuthentication;
+use Sm\Modules\Query\MySql\MySqlQueryModule;
 
 class TestModel extends Model {
 }

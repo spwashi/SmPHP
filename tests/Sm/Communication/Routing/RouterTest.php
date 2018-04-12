@@ -8,12 +8,12 @@
 namespace Sm\Communication\Routing;
 
 
-use Sm\Communication\Network\Http\Request\HttpRequest;
 use Sm\Communication\Request\NamedRequest;
 use Sm\Communication\Routing\Exception\RouteNotFoundException;
 use Sm\Core\Resolvable\FunctionResolvable;
 use Sm\Core\Resolvable\NullResolvable;
 use Sm\Core\Resolvable\StringResolvable;
+use Sm\Modules\Network\Http\Request\HttpRequest;
 
 class Example {
     public function returnEleven() {

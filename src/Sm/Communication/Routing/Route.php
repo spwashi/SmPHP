@@ -8,7 +8,6 @@
 namespace Sm\Communication\Routing;
 
 
-use Sm\Communication\Network\Http\Request\HttpRequestDescriptor;
 use Sm\Communication\Request\InternalRequest;
 use Sm\Communication\Request\Request;
 use Sm\Communication\Request\RequestDescriptor;
@@ -21,6 +20,7 @@ use Sm\Core\Resolvable\FunctionResolvable;
 use Sm\Core\Resolvable\Resolvable;
 use Sm\Core\Resolvable\ResolvableFactory;
 use Sm\Core\Util;
+use Sm\Modules\Network\Http\Request\HttpRequestDescriptor;
 
 class Route extends FunctionResolvable implements \JsonSerializable {
     protected $primedRequest;
@@ -44,7 +44,7 @@ class Route extends FunctionResolvable implements \JsonSerializable {
             $this->setRequestDescriptor(new HttpRequestDescriptor($requestDescriptor));
         } else if (isset($requestDescriptor)) {
             # Trying to register something that isn't a string (when we have the Http module) and isn't a RequestDescriptor
-            throw new UnimplementedError("Cannot accept RequestDescriptors that aren't RequestDescriptors ");
+            throw new UnimplementedError("Cannot accept RequestDescriptors that aren't RequestDescriptors --- " . Util::getShape($requestDescriptor));
         }
         
         /** @var Resolvable $resolution */
@@ -55,9 +55,9 @@ class Route extends FunctionResolvable implements \JsonSerializable {
         if (!isset($resolution)) {
             throw new InvalidArgumentException("Cannot initialize route without a resolution");
         }
-    
+        
         if ($resolution instanceof Route) return $resolution;
-    
+        
         $Route = new static($resolution, $pattern, $default);
         return $Route;
     }
@@ -109,7 +109,7 @@ class Route extends FunctionResolvable implements \JsonSerializable {
         $primedRequest = $this->primedRequest;
         if ($this->matches($primedRequest)) {
             $arguments = $this->requestDescriptor ? $this->requestDescriptor->getArguments($primedRequest) : [];
-    
+            
             $merged_arguments_1 = array_merge($arguments, $this->primedArguments);
             $merged_arguments_2 = array_merge(array_values($merged_arguments_1), func_get_args());
             return $this->subject->resolve(...$merged_arguments_2);
@@ -173,8 +173,8 @@ class Route extends FunctionResolvable implements \JsonSerializable {
                     $method_name     = $resolution_expl[1] ?? null;
                     
                     # If the class doesn't have the requested method, skip it
-    
-    
+                    
+                    
                     $self->checkClassMethod($class_name, $method_name);
                     
                     $resolution = [ new $class_name, $method_name, ];

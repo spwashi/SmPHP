@@ -7,7 +7,6 @@
 
 
 use Sm\Communication\CommunicationLayer;
-use Sm\Communication\Network\Http\Request\HttpRequest;
 use Sm\Communication\Routing\Exception\RouteNotFoundException;
 use Sm\Communication\Routing\Module\StandardRoutingModule;
 use Sm\Communication\Routing\Route;
@@ -15,6 +14,7 @@ use Sm\Controller\ControllerLayer;
 use Sm\Core\Context\Layer\LayerContainer;
 use Sm\Core\Context\Layer\LayerRoot;
 use Sm\Core\Resolvable\StringResolvable;
+use Sm\Modules\Network\Http\Request\HttpRequest;
 
 class HelloController {
     public function index() {

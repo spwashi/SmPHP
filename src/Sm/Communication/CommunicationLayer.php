@@ -8,7 +8,6 @@
 namespace Sm\Communication;
 
 
-use Sm\Communication\Network\Http\Request\HttpRequestFromEnvironment;
 use Sm\Communication\Request\NamedRequest;
 use Sm\Communication\Request\RequestFactory;
 use Sm\Communication\Response\ResponseDispatcher;
@@ -27,6 +26,7 @@ use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Module\Error\InvalidModuleException;
 use Sm\Core\Module\Module;
 use Sm\Core\Module\ModuleContainer;
+use Sm\Modules\Network\Http\Request\HttpRequestFromEnvironment;
 
 /**
  * Class CommunicationLayer

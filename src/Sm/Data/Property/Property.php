@@ -43,7 +43,11 @@ use Sm\Data\Type\Undefined_;
  * @property Resolvable                             $raw_value                 The raw, unresolved Resolvable that this Variable_ holds a reference to
  *
  */
-class Property extends AbstractResolvable implements Readonly_able, PropertySchema, Schematicized, SmEntity, \JsonSerializable {
+class Property extends AbstractResolvable implements Readonly_able,
+                                                     PropertySchema,
+                                                     Schematicized,
+                                                     SmEntity,
+                                                     \JsonSerializable {
     /** @var  Resolvable $subject */
     protected $subject;
     /** @var  Resolvable $_default */

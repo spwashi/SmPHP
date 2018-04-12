@@ -62,7 +62,7 @@ class RepresentationLayer extends StandardLayer {
         $modules          = $this->getModuleContainer();
         
         foreach ($modules_from_end as $module_name) {
-            /** @var RepresentationModule $representationModule */
+            /** @var \Sm\Representation\Module\RepresentationModule $representationModule */
             $representationModule = $modules->{$module_name};
             try {
                 $result = $representationModule->represent(...func_get_args());

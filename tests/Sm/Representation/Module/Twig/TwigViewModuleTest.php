@@ -1,6 +1,6 @@
 <?php
 
-namespace Sm\Representation\Module\Twig;
+namespace Sm\Modules\View\Twig;
 
 
 use Sm\Representation\RepresentationLayer;

@@ -5,7 +5,6 @@ namespace Sm\Application;
 
 
 use Sm\Communication\CommunicationLayer;
-use Sm\Communication\Module\HttpCommunicationModule;
 use Sm\Communication\Routing\Module\StandardRoutingModule;
 use Sm\Controller\ControllerLayer;
 use Sm\Core\Context\Layer\LayerContainer;
@@ -21,6 +20,7 @@ use Sm\Core\Internal\Monitor\Monitored;
 use Sm\Core\Paths\Exception\PathNotFoundException;
 use Sm\Core\Util;
 use Sm\Data\DataLayer;
+use Sm\Modules\Network\Http\HttpCommunicationModule;
 use Sm\Query\Module\QueryModule;
 use Sm\Query\QueryLayer;
 use Sm\Representation\RepresentationLayer;
