@@ -51,6 +51,9 @@ class StdModelPersistenceManagerTest extends \PHPUnit_Framework_TestCase {
         $result = $this->modelPersistenceManager->save($model);
         var_dump(json_encode($this->queryModule->getMonitorContainer()));
     }
+    public function testSom() {
+        var_dump((Boon::class));
+    }
     public function testCanCreateModel() {
         $model = new Model;
         $model->setName('users');

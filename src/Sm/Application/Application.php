@@ -182,8 +182,11 @@ class Application implements \JsonSerializable, LayerRoot {
         /** @var CommunicationLayer $communicationLayer $communicationLayer */
         $communicationLayer = CommunicationLayer::init()
                                                 ->setRoot($this)
-                                                ->registerRoutingModule(new StandardRoutingModule)
-                                                ->registerModule(new HttpCommunicationModule, CommunicationLayer::MODULE_HTTP);
+                                                ->registerRoutingModule(new StandardRoutingModule);
+        
+        if (class_exists(HttpCommunicationModule::class)) {
+            $communicationLayer->registerModule(new HttpCommunicationModule, CommunicationLayer::MODULE_HTTP);
+        }
         
         #------------------------------------------------------------------------------
         $this->layerContainer->register(CommunicationLayer::LAYER_NAME, $communicationLayer);
