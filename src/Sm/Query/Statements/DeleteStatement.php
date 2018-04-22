@@ -23,6 +23,12 @@ class DeleteStatement extends QueryComponent {
     protected $deleted_items = [];
     /** @var  array The sources that we are going to use */
     protected $from_sources = [];
+    /**
+     * @param mixed ...$from_sources
+     *
+     * @return $this
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     */
     public function from(...$from_sources) {
         foreach ($from_sources as $source) {
             if (is_string($source)) {

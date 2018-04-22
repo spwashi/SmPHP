@@ -20,20 +20,23 @@ class ReferenceDescriptorSchematic implements Schematic, \JsonSerializable {
      * ReferenceDescriptorSchematic constructor.
      *
      * @param string|null $hydrationMethod
+     * @param null        $identity
      */
-    public function __construct($hydrationMethod = null) {
+    public function __construct($hydrationMethod = null, $identity = null) {
         $this->hydrationMethod = $hydrationMethod;
+        $this->identity        = $identity;
     }
     
     public function jsonSerialize() {
         return [
             'hydrationMethod' => $this->hydrationMethod,
+            'identity'        => $this->identity,
         ];
     }
-    /**
-     * @return null|string
-     */
     public function getHydrationMethod() {
         return $this->hydrationMethod;
+    }
+    public function getIdentity() {
+        return $this->identity;
     }
 }

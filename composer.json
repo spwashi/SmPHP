@@ -1,25 +1,26 @@
 {
-  "name":              "spwashi/smphp",
+    "name":              "spwashi/smphp",
 
-  "description":       "PHP Framework for when you (I) have a fear of commitment",
-  "minimum-stability": "dev",
-  "type":              "library",
-  "license":           "proprietary",
-  "autoload": {
-    "files": ["src/Sm.php"]
-  },
-  "authors":           [
-    {
-      "name":  "Sam Washington",
-      "email": "sam@spwashi.com"
+    "description":       "PHP Framework for when you (I) have a fear of commitment",
+    "minimum-stability": "dev",
+    "type":              "library",
+    "license":           "proprietary",
+    "autoload":          {
+        "files": [ "src/Sm.php" ]
+    },
+    "authors":           [
+        {
+            "name":  "Sam Washington",
+            "email": "sam@spwashi.com"
+        }
+    ],
+    "require-dev":       {
+        "squizlabs/php_codesniffer": "3.0.x-dev",
+        "phpunit/phpunit":           "5.7.9"
+    },
+    "require":           {
+        "twig/twig":            "2.4.*",
+        "monolog/monolog":      "1.9.*",
+        "icanboogie/inflector": "1.4.*"
     }
-  ],
-  "require-dev":       {
-    "squizlabs/php_codesniffer": "3.0.x-dev",
-    "phpunit/phpunit":           "5.7.9"
-  },
-  "require":           {
-    "twig/twig":       "2.4.*",
-    "monolog/monolog": "1.9.*"
-  }
 }

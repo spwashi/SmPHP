@@ -82,7 +82,7 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
             if (!is_array($reference)) {
                 throw new InvalidArgumentException('Cannot reference -- ' . json_encode($reference));
             }
-            $this->setReferenceDescriptor(new ReferenceDescriptorSchematic($reference['hydrationMethod'] ?? null));
+            $this->setReferenceDescriptor(new ReferenceDescriptorSchematic($reference['hydrationMethod'] ?? null, $reference['identity'] ?? null));
         }
     }
     #
@@ -129,11 +129,15 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
     public function jsonSerialize() {
         $length                       = $this->getLength();
         $referenceDescriptorSchematic = $this->getReferenceDescriptor();
+        $datatypes                    = $this->_getDatatypes();
         $items                        = [
             'smID'      => $this->getSmID(),
             'name'      => $this->getName(),
-            'datatypes' => $this->_getDatatypes(),
+            'datatypes' => $datatypes,
         ];
+        if (!in_array('null', $datatypes ?? [])) {
+            $items['isRequired'] = true;
+        }
         if (isset($length)) $items['length'] = $length;
         if (isset($referenceDescriptorSchematic)) $items['reference'] = $referenceDescriptorSchematic;
         return $items;

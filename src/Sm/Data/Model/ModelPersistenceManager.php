@@ -3,6 +3,8 @@
 
 namespace Sm\Data\Model;
 
+use Sm\Data\Source\DataSource;
+
 /**
  * Interface ModelPersistenceManager
  *
@@ -12,5 +14,6 @@ interface ModelPersistenceManager {
     public function save(Model $model);
     public function find(Model $model);
     public function create(Model $modelSchema);
-    public function mark_delete(Model $model);
+    public function markDelete(Model $model);
+    public function getModelSource($model): DataSource;
 }

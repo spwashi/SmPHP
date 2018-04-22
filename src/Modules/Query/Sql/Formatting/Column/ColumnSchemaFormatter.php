@@ -22,8 +22,9 @@ class ColumnSchemaFormatter extends SqlQueryFormatter {
         $unique      = $columnSchema->isUnique() ? 'UNIQUE' : '';
         $can_be_null = $columnSchema->canBeNull() ? 'NULL' : 'NOT NULL';
         $length      = $columnSchema->getLength();
+        $default     = !is_null($columnSchema->getDefault()) ? $columnSchema->getDefault() : ($columnSchema->canBeNull() ? 'DEFAULT NULL' : '');
         $length      = $length ? "($length)" : '';
-        return "{$column_name} {$type}{$length} {$can_be_null} {$unique}";
+        return "{$column_name} {$type}{$length} {$can_be_null} {$unique} {$default}";
     }
     
 }

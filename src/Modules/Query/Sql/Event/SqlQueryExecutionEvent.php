@@ -11,7 +11,8 @@ class SqlQueryExecutionEvent extends Event {
     protected $query_variables;
     protected $formatted_query;
     protected $executionSuccess;
-    private   $statementHandler;
+    private   $statementHandle;
+    private   $databaseHandle;
     public function __construct($query = null,
     
                                 $statementHandler = null,
@@ -25,7 +26,7 @@ class SqlQueryExecutionEvent extends Event {
         $this->query_variables  = $variables;
         $this->formatted_query  = $formatted_query;
         $this->executionSuccess = $result;
-        $this->statementHandler = $statementHandler;
+        $this->statementHandle  = $statementHandler;
     }
     public static function init($query = null,
     
@@ -65,11 +66,11 @@ class SqlQueryExecutionEvent extends Event {
         $this->executionSuccess = $executionSuccess;
         return $this;
     }
-    public function getStatementHandler() {
-        return $this->statementHandler;
+    public function getStatementHandle() {
+        return $this->statementHandle;
     }
-    public function setStatementHandler($statementHandler) {
-        $this->statementHandler = $statementHandler;
+    public function setStatementHandle($statementHandle) {
+        $this->statementHandle = $statementHandle;
         return $this;
     }
     public function jsonSerialize() {
@@ -80,5 +81,12 @@ class SqlQueryExecutionEvent extends Event {
                                'formatted_query' => $this->formatted_query,
                                'query_variables' => $this->query_variables,
                            ]);
+    }
+    public function getDatabaseHandle() {
+        return $this->databaseHandle;
+    }
+    public function setDatabaseHandle($databaseHandle) {
+        $this->databaseHandle = $databaseHandle;
+        return $this;
     }
 }

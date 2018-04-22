@@ -39,15 +39,17 @@ abstract class QueryModule extends LayerModule implements QueryInterpreter {
      *
      * @return mixed
      */
-    abstract public function interpret($query, Layer $layer = null);
+    abstract public function interpret($query);
     /**
      * @param QueryLayer|Layer $context
      *
      * @throws \Sm\Core\Context\Exception\InvalidContextException
      */
-    protected function _initialize(Layer $context = null) {
+    protected function establishContext(Layer $context = null) {
         /** @var QueryLayer $context */
-        if (!($context instanceof QueryLayer)) throw new InvalidContextException("Cannot register on anything but a QueryLayer.");
-        parent::_initialize($context);
+        if (isset($context) && !($context instanceof QueryLayer)) {
+            throw new InvalidContextException("Cannot register on anything but a QueryLayer.");
+        }
+        parent::establishContext($context);
     }
 }

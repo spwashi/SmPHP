@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection PhpUnhandledExceptionInspection */
+
 /**
  * User: Sam Washington
  * Date: 7/8/17
@@ -13,7 +14,8 @@ use Sm\Data\Evaluation\Comparison\EqualToCondition;
 use Sm\Data\Source\Constructs\JoinedSourceSchematic;
 use Sm\Data\Source\Database\DatabaseSource;
 use Sm\Data\Source\Database\Table\TableSource;
-use Sm\Data\Source\Database\Table\TableSourceSchematic;
+use Sm\Modules\Query\MySql\Authentication\MySqlAuthentication;
+use Sm\Modules\Query\MySql\Interpretation\MySqlQueryInterpreter;
 use Sm\Modules\Query\Sql\Constraints\ForeignKeyConstraintSchema;
 use Sm\Modules\Query\Sql\Constraints\PrimaryKeyConstraintSchema;
 use Sm\Modules\Query\Sql\Constraints\UniqueKeyConstraintSchema;
@@ -23,8 +25,6 @@ use Sm\Modules\Query\Sql\Data\Column\VarcharColumnSchema;
 use Sm\Modules\Query\Sql\Formatting\Aliasing\SqlFormattingAliasContainer;
 use Sm\Modules\Query\Sql\Formatting\SqlFormattingProxyFactory;
 use Sm\Modules\Query\Sql\Formatting\SqlQueryFormatterManager;
-use Sm\Modules\Query\MySql\Authentication\MySqlAuthentication;
-use Sm\Modules\Query\MySql\Interpretation\MySqlQueryInterpreter;
 use Sm\Modules\Query\Sql\SqlExecutionContext;
 use Sm\Modules\Query\Sql\Statements\AlterTableStatement;
 use Sm\Modules\Query\Sql\Statements\CreateTableStatement;
@@ -45,11 +45,12 @@ class _Queries {
     protected $user__lastName;
     /** @var  DateTimeColumnSchema */
     protected $user__update_dt;
+    protected $user__role_id;
+    
     /** @var  DateTimeColumnSchema */
     protected $user__creation_dt;
-    
-    /** @var  TableSource $table__user */
-    protected $table__user;
+    /** @var  TableSource $table__users */
+    protected $table__users;
     /** @var  TableSource $table__clients */
     protected $table__clients;
     protected $clients__creation_dt;
@@ -58,6 +59,10 @@ class _Queries {
     protected $clients__user_id;
     protected $clients__id;
     protected $clients__note;
+    /** @var TableSource $table__user_roles */
+    protected $table__user_roles;
+    protected $user_roles__id;
+    protected $user_roles__name;
     
     /** @var  \Sm\Modules\Query\Sql\Formatting\SqlQueryFormatterManager $formatterManager */
     private $formatterManager;
@@ -69,60 +74,9 @@ class _Queries {
     public function __construct(SqlQueryFormatterManager $formatterManager) {
         $this->formatterManager = $formatterManager;
         $databaseSource         = new DatabaseSource('Database');
-        #
-        $this->table__user = new TableSource('users', $databaseSource);
-        #
-        ##  COLUMNS (USER)
-        #
-        $this->user__id            = IntegerColumnSchema::init('id')
-                                                        ->setAutoIncrement()
-                                                        ->setLength(10)
-                                                        ->setTableSchema($this->table__user);
-        $this->user__email_address = VarcharColumnSchema::init('email_address')
-                                                        ->setNullability(0)
-                                                        ->setLength(255)
-                                                        ->setTableSchema($this->table__user);
-        $this->user__firstName     = VarcharColumnSchema::init('first_name')
-                                                        ->setLength(255)
-                                                        ->setTableSchema($this->table__user);
-        $this->user__lastName      = VarcharColumnSchema::init()
-                                                        ->setLength(255)
-                                                        ->setName('last_name')
-                                                        ->setTableSchema($this->table__user);
-        $this->user__update_dt     = DateTimeColumnSchema::init('update_dt')
-                                                         ->setOnUpdate(DateTimeColumnSchema::CURRENT_TIMESTAMP)
-                                                         ->setDefault(null)
-                                                         ->setTableSchema($this->table__user);
-        $this->user__creation_dt   = DateTimeColumnSchema::init('creation_dt')
-                                                         ->setDefault(DateTimeColumnSchema::CURRENT_TIMESTAMP)
-                                                         ->setTableSchema($this->table__user);
-        #
-        ##  COLUMNS (CLIENTS)
-        #
-        $this->table__clients     = new TableSource('clients', $databaseSource);
-        $this->clients__id        = IntegerColumnSchema::init('id')
-                                                       ->setAutoIncrement()
-                                                       ->setLength(10)
-                                                       ->setTableSchema($this->table__clients);
-        $this->clients__user_id   = IntegerColumnSchema::init('user_id')
-                                                       ->setLength(10)
-                                                       ->setTableSchema($this->table__clients);
-        $this->clients__client_id = IntegerColumnSchema::init('client_id')
-                                                       ->setLength(10)
-                                                       ->setTableSchema($this->table__clients);
-        
-        $this->clients__note = VarcharColumnSchema::init('note')
-                                                  ->setLength(255)
-                                                  ->setTableSchema($this->table__clients);
-        
-        $this->clients__update_dt   = DateTimeColumnSchema::init('update_dt')
-                                                          ->setOnUpdate(DateTimeColumnSchema::CURRENT_TIMESTAMP)
-                                                          ->setDefault(null)
-                                                          ->setTableSchema($this->table__clients);
-        $this->clients__creation_dt = DateTimeColumnSchema::init('creation_dt')
-                                                          ->setOnUpdate(DateTimeColumnSchema::CURRENT_TIMESTAMP)
-                                                          ->setDefault(null)
-                                                          ->setTableSchema($this->table__clients);
+        $this->buildUserRolesTable($databaseSource);
+        $this->buildUserTable($databaseSource);
+        $this->buildClientsTable($databaseSource);
         
     }
     
@@ -133,10 +87,9 @@ class _Queries {
             $this->user__lastName,
             $this->user__email_address->getName())
                                     ->from(JoinedSourceSchematic::init()
-                                                                ->setOriginSources($this->table__user)
+                                                                ->setOriginSources($this->table__users)
                                                                 ->setJoinConditions(EqualToCondition::init($this->user__id, $this->clients__user_id))
-                                                                ->setJoinedSources($this->table__clients))//                               ->where(EqualToCondition::init($this->user__id, 1))
-        ;
+                                                                ->setJoinedSources($this->table__clients));#->where(EqualToCondition::init($this->user__id, 1))
         
         $result = $this->formatterManager->format($statement, new SqlExecutionContext);
         if (DO_ECHO_RESULTS) echo __FILE__ . "\n--\n$result\n\n";
@@ -147,14 +100,18 @@ class _Queries {
                                                      $this->user__firstName->getName() => 'FIRST_NAME',
                                                      $this->user__lastName->getName()  => 'LAST_NAME',
                                                  ])
-                                          ->inSources($this->table__user)
+                                          ->inSources($this->table__users)
                                           ->where(EqualToCondition::init($this->user__id, 2));
         $result          = $this->formatterManager->format($updateStatement, new SqlExecutionContext);
         if (DO_ECHO_RESULTS) echo __FILE__ . "\n--\n$result\n\n";
         
         return $updateStatement;
     }
-    public function insert1() {
+    /**
+     * @return \Sm\Query\Statements\InsertStatement
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     */
+    public function insertUsers() {
         $bran            = [
             'first_name'    => 'Bran',
             'last_name'     => 'Washington',
@@ -175,18 +132,22 @@ class _Queries {
             'last_name'     => 'Washington',
             'email_address' => 'sam@spwashi.com',
         ];
-        $insertStatement = InsertStatement::init()
-                                          ->set($bran,
-                                                $moonshine,
-                                                $harold,
-                                                $sam)
-                                          ->inSources($this->table__user);
+        $insertStatement = InsertStatement::init()->set($bran, $moonshine, $harold, $sam)
+                                          ->inSources($this->table__users);
         $result          = $this->formatterManager->format($insertStatement, new SqlExecutionContext);
         if (DO_ECHO_RESULTS) echo __FILE__ . "\n--\n$result\n\n";
         return $insertStatement;
     }
-    public function createTables() {
-        $result = [ static::createTable_users(), static::createTable_clients() ];
+    public function insertUserRoles() {
+        $insertStatement = InsertStatement::init()
+                                          ->set([ 'name' => 'Visitor' ], [ 'name' => 'Admin' ])
+                                          ->inSources($this->table__user_roles);
+        $result          = $this->formatterManager->format($insertStatement, new SqlExecutionContext);
+        if (DO_ECHO_RESULTS) echo __FILE__ . "\n--\n$result\n\n";
+        return $insertStatement;
+    }
+    public function makeCreateTableStatements(): array {
+        $result = [ static::createTable_user_roles(), static::createTable_users(), static::createTable_clients() ];
         
         if (DO_ECHO_RESULTS) {
             echo __FILE__;
@@ -197,29 +158,60 @@ class _Queries {
         
         return $result;
     }
-    public function testAlterTable() {
-        $iColumn1 = IntegerColumnSchema::init('one_thing')
-                                       ->setAutoIncrement()
-                                       ->setLength(10);
-        $otherr   = IntegerColumnSchema::init('another_one_thing')
-                                       ->setLength(10)
-                                       ->setTableSchema(TableSourceSchematic::init('other_tablename'));
+    public function makeDropTableStatements(): array {
+        $tables = [ $this->table__clients, $this->table__users, $this->table__user_roles ];
+        $result = [];
+        foreach ($tables as $table) {
+            $result[] = 'DROP TABLE ' . $table->getName();
+        }
+        
+        if (DO_ECHO_RESULTS) {
+            echo __FILE__;
+            foreach ($result as $item) {
+                echo "\n--\n$item\n\n";
+            }
+        }
+        
+        return $result;
+    }
+    public function alterTable_users() {
+        $column     = $this->user__role_id;
+        $referenced = $this->user_roles__id;
         
         
-        $alterTableStatement = AlterTableStatement::init('TableName')
-                                                  ->withConstraints(ForeignKeyConstraintSchema::init()
-                                                                                              ->setConstraintName('table_table_id')
-                                                                                              ->addColumn($iColumn1)
-                                                                                              ->addRefeferencedColumns($otherr));
-        $result              = $this->formatterManager->format($alterTableStatement, new SqlExecutionContext);
+        $fk_constraint_name   = $this->table__users->getName() . '_' . $this->table__user_roles->getName();
+        $foreignKeyConstraint = ForeignKeyConstraintSchema::init()
+                                                          ->setConstraintName($fk_constraint_name)
+                                                          ->addColumn($column)
+                                                          ->addRefeferencedColumns($referenced);
+        $alterTableStatement  = AlterTableStatement::init($this->table__users->getName())
+                                                   ->withConstraints($foreignKeyConstraint);
+        $result               = $this->formatterManager->format($alterTableStatement, new SqlExecutionContext);
         if (DO_ECHO_RESULTS) echo __FILE__ . "\n--\n$result\n\n";
+        return $result;
+    }
+    public function createTable_user_roles(): string {
+        $createTableStatement = CreateTableStatement::init($this->table__user_roles->getName())
+                                                    ->withColumns($this->user_roles__id,
+                                                                  $this->user_roles__name)
+                                                    ->index($this->user__id)
+                                                    ->withConstraints(PrimaryKeyConstraintSchema::init()
+                                                                                                ->addColumn($this->user_roles__id),
+                                                                      UniqueKeyConstraintSchema::init()
+                                                                                               ->addColumn($this->user_roles__name));
+        
+        $result = $this->formatterManager->format($createTableStatement,
+                                                  new SqlExecutionContext);
+        return $result;
     }
     public function createTable_users(): string {
         # todo
         #        ->setTableSchema(TableSourceSchematic::init('other_tablename'));
         
-        $createTableStatement = CreateTableStatement::init($this->table__user->getName())
+        $createTableStatement = CreateTableStatement::init($this->table__users->getName())
                                                     ->withColumns($this->user__id,
+        
+                                                                  $this->user__role_id,
         
                                                                   $this->user__firstName,
                                                                   $this->user__lastName,
@@ -229,7 +221,7 @@ class _Queries {
                                                                   $this->user__creation_dt,
                                                                   $this->user__update_dt)
             //
-                                                    ->index($this->user__id)
+                                                    ->index($this->user__id, $this->user__role_id)
             //
                                                     ->withConstraints(PrimaryKeyConstraintSchema::init()
                                                                                                 ->addColumn($this->user__email_address)
@@ -264,30 +256,116 @@ class _Queries {
         
         return $this->formatterManager->format($createTableStatement, new SqlExecutionContext);
     }
+    
+    protected function buildUserRolesTable($databaseSource): void {
+        $this->table__user_roles = new TableSource('user_roles', $databaseSource);
+        #
+        ##  COLUMNS (USER)
+        #
+        $this->user_roles__id   = IntegerColumnSchema::init('id')
+                                                     ->setAutoIncrement()
+                                                     ->setLength(10)
+                                                     ->setTableSchema($this->table__user_roles);
+        $this->user_roles__name = VarcharColumnSchema::init('name')
+                                                     ->setNullability(0)
+                                                     ->setLength(40)
+                                                     ->setTableSchema($this->table__user_roles);
+    }
+    protected function buildUserTable($databaseSource): void {
+#
+        $this->table__users = new TableSource('users', $databaseSource);
+        #
+        ##  COLUMNS (USER)
+        #
+        $this->user__id            = IntegerColumnSchema::init('id')
+                                                        ->setAutoIncrement()
+                                                        ->setLength(10)
+                                                        ->setTableSchema($this->table__users);
+        $this->user__role_id       = IntegerColumnSchema::init('role_id')
+                                                        ->setDefault(1)
+                                                        ->setLength(10)
+                                                        ->setTableSchema($this->table__users);
+        $this->user__email_address = VarcharColumnSchema::init('email_address')
+                                                        ->setNullability(0)
+                                                        ->setLength(255)
+                                                        ->setTableSchema($this->table__users);
+        $this->user__firstName     = VarcharColumnSchema::init('first_name')
+                                                        ->setLength(255)
+                                                        ->setTableSchema($this->table__users);
+        $this->user__lastName      = VarcharColumnSchema::init()
+                                                        ->setLength(255)
+                                                        ->setName('last_name')
+                                                        ->setTableSchema($this->table__users);
+        $this->user__update_dt     = DateTimeColumnSchema::init('update_dt')
+                                                         ->setOnUpdate(DateTimeColumnSchema::CURRENT_TIMESTAMP)
+                                                         ->setDefault(null)
+                                                         ->setTableSchema($this->table__users);
+        $this->user__creation_dt   = DateTimeColumnSchema::init('creation_dt')
+                                                         ->setDefault(DateTimeColumnSchema::CURRENT_TIMESTAMP)
+                                                         ->setTableSchema($this->table__users);
+    }
+    protected function buildClientsTable($databaseSource): void {
+        $this->table__clients     = new TableSource('clients', $databaseSource);
+        $this->clients__id        = IntegerColumnSchema::init('id')
+                                                       ->setAutoIncrement()
+                                                       ->setLength(10)
+                                                       ->setTableSchema($this->table__clients);
+        $this->clients__user_id   = IntegerColumnSchema::init('user_id')
+                                                       ->setLength(10)
+                                                       ->setTableSchema($this->table__clients);
+        $this->clients__client_id = IntegerColumnSchema::init('client_id')
+                                                       ->setLength(10)
+                                                       ->setTableSchema($this->table__clients);
+        
+        $this->clients__note = VarcharColumnSchema::init('note')
+                                                  ->setLength(255)
+                                                  ->setTableSchema($this->table__clients);
+        
+        $this->clients__update_dt   = DateTimeColumnSchema::init('update_dt')
+                                                          ->setOnUpdate(DateTimeColumnSchema::CURRENT_TIMESTAMP)
+                                                          ->setDefault(null)
+                                                          ->setTableSchema($this->table__clients);
+        $this->clients__creation_dt = DateTimeColumnSchema::init('creation_dt')
+                                                          ->setOnUpdate(DateTimeColumnSchema::CURRENT_TIMESTAMP)
+                                                          ->setDefault(null)
+                                                          ->setTableSchema($this->table__clients);
+    }
 }
 
 class MySqlQueryInterpreterTest extends \PHPUnit_Framework_TestCase {
     /** @var  \Sm\Modules\Query\MySql\Interpretation\MySqlQueryInterpreter $interpreter */
     protected $interpreter;
     /** @var  \Sm\Modules\Query\MySql\_Queries */
-    protected $queries;
+    protected $QUERIES;
     /** @var  \Sm\Modules\Query\MySql\Proxy\MySqlQueryModuleProxy */
     protected $mysqlQueryModule;
     
     
-    public function testCreateTable() {
-        $createTables = $this->queries->createTables();
-        foreach ($createTables as $createTableStmt) {
-            $result = $this->interpreter->interpret($createTableStmt);
+    public function testStringDropTables() {
+        $statements = $this->QUERIES->makeDropTableStatements();
+        foreach ($statements as $dropTableStatement) {
+            $result = $this->interpreter->interpret($dropTableStatement);
             var_dump($result);
         }
     }
+    public function testCreateTable() {
+        $createTables = $this->QUERIES->makeCreateTableStatements();
+        foreach ($createTables as $createTableStatement) {
+            $result = $this->interpreter->interpret($createTableStatement);
+            var_dump($result);
+        }
+        $alterTableStatement = $this->QUERIES->alterTable_users();
+        $result              = $this->interpreter->interpret($alterTableStatement);
+        var_dump($result);
+    }
     public function testInsert() {
-        $result2 = $this->mysqlQueryModule->interpret($this->queries->insert1());
-        var_dump($result2);
+        $insertUserRoles = $this->mysqlQueryModule->interpret($this->QUERIES->insertUserRoles());
+        var_dump($insertUserRoles);
+        $insertUsers = $this->mysqlQueryModule->interpret($this->QUERIES->insertUsers());
+        var_dump($insertUsers);
     }
     public function testUpdate() {
-        $result2 = $this->mysqlQueryModule->interpret($this->queries->update1());
+        $result2 = $this->mysqlQueryModule->interpret($this->QUERIES->update1());
         var_dump($result2);
     }
     public function testCanSelect() {
@@ -295,7 +373,7 @@ class MySqlQueryInterpreterTest extends \PHPUnit_Framework_TestCase {
         $this->assertInternalType('array', $result1);
         $this->assertEquals('hello', $result1['test']);
         
-        $result2 = $this->mysqlQueryModule->interpret($this->queries->select1());
+        $result2 = $this->mysqlQueryModule->interpret($this->QUERIES->select1());
         var_dump($result2);
     }
     
@@ -311,7 +389,7 @@ class MySqlQueryInterpreterTest extends \PHPUnit_Framework_TestCase {
                                                                                           new SqlFormattingAliasContainer));
         $this->mysqlQueryModule = MySqlQueryModule::init()->initialize()->registerAuthentication($authentication);
         $formatterManager       = $this->mysqlQueryModule->getQueryFormatter();
-        $this->queries          = new _Queries($formatterManager);
+        $this->QUERIES          = new _Queries($formatterManager);
     }
     
 }

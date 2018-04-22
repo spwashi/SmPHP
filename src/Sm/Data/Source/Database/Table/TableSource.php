@@ -8,7 +8,6 @@
 namespace Sm\Data\Source\Database\Table;
 
 
-use Sm\Authentication\Authentication;
 use Sm\Data\Property\PropertySchemaContainer;
 use Sm\Data\Source\Database\DatabaseSource;
 use Sm\Data\Source\DataSource;
@@ -22,20 +21,22 @@ use Sm\Data\Source\DataSource;
  *
  * @property-read \Sm\Data\Source\Database\ColumnSchemaContainer $columns
  *
- * @method static TableSource init(DatabaseSource $DatabaseSource, string $table_name = null)
  * @package Sm\Data\Source\Database
  */
-class TableSource extends DataSource implements TableSourceSchema {
+class TableSource extends DataSource implements TableSourceSchema, \JsonSerializable {
     protected $table_name;
     /** @var  DatabaseSource $databaseSource */
     protected $databaseSource;
     /** @var PropertySchemaContainer $columnContainer */
     protected $columnContainer;
     
-    public function __construct($table_name, DatabaseSource $DatabaseSource = null) {
+    public function __construct($table_name = null, DatabaseSource $databaseSource = null) {
         parent::__construct();
         $this->table_name     = $table_name;
-        $this->databaseSource = $DatabaseSource;
+        $this->databaseSource = $databaseSource;
+    }
+    public static function init($table_name = null, DatabaseSource $databaseSource = null) {
+        return new static($table_name, $databaseSource);
     }
     public function __get($name) {
         if ($name === 'columns') return $this->columnContainer;
@@ -49,7 +50,7 @@ class TableSource extends DataSource implements TableSourceSchema {
      *
      * @return string
      */
-    public function getName():?string {
+    public function getName(): ?string {
         return $this->table_name;
     }
     /**
@@ -60,5 +61,12 @@ class TableSource extends DataSource implements TableSourceSchema {
     public function setTableName($table_name) {
         $this->table_name = $table_name;
         return $this;
+    }
+    public function jsonSerialize() {
+        $json = [ 'name' => $this->table_name, ];
+        
+        if (isset($this->databaseSource)) $json['database'] = $this->databaseSource;
+        
+        return $json;
     }
 }

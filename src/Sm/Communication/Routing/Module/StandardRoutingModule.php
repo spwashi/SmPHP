@@ -73,7 +73,7 @@ class StandardRoutingModule extends LayerModule implements RoutingModule {
         $router = $this->getRouter($layerProxy);
         return $router->resolveName($name);
     }
-    protected function _initialize(Layer $layer = null) {
+    protected function establishContext(Layer $layer = null) {
         $this->setRouter($layer, new Router);
 //        $route = new Route(function () { var_dump('HTHTHT'); }, 'Smd');
 
@@ -94,7 +94,7 @@ class StandardRoutingModule extends LayerModule implements RoutingModule {
      *
      * @return \Sm\Core\Module\ModuleProxy
      */
-    protected function createModuleProxy(Context $context = null): ModuleProxy {
+    protected function proxyOnContext(Context $context = null): ModuleProxy {
         return new RoutingModuleProxy($this, $context);
     }
     /**

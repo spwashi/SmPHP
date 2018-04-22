@@ -68,6 +68,13 @@ use Sm\Query\Statements\UpdateStatement;
 function register_proxy_handlers(SqlFormattingProxyFactory $formattingProxyFactory) {
     $formattingProxyFactory->register([
                                           ColumnIdentifierFormattingProxy::class                  => function ($item, SqlFormattingProxyFactory $formattingProxyFactory) {
+                                              if (is_array($item)) {
+                                                  if (count($item) !== 2 || !is_string($item[0]) || !is_string($item[1])) {
+                                                      throw new UnimplementedError("Can only proxy arrays of the format [tablename, columnname]");
+                                                  }
+                                                  $column_id_string = $item[0] . '.' . $item[1];
+                                                  return $formattingProxyFactory->build(String_ColumnIdentifierFormattingProxy::class, $column_id_string);
+                                              }
                                               if ($item instanceof ColumnSchema || $item instanceof PropertySchema) {
                                                   return $formattingProxyFactory->build(ColumnSchema_ColumnIdentifierFormattingProxy::class, $item);
                                               }
@@ -118,7 +125,7 @@ function register_formatting_handlers(SqlQueryFormatterManager $formatterManager
             StringResolvable::class                       => $formatterFactory->createFormatter(function (StringResolvable $stringResolvable) {
                 return '"' . $stringResolvable . '"';
             }),
-            Property::class                               => $formatterFactory->createFormatter(function (Property $property) use($formatterManager) {
+            Property::class                               => $formatterFactory->createFormatter(function (Property $property) use ($formatterManager) {
                 return $property->getValue();
             }),
             SelectStatement::class                        => new SelectStatementFormatter($formatterManager),

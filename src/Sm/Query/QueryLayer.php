@@ -32,20 +32,21 @@ class QueryLayer extends StandardLayer {
      * Interpret Queries
      *
      * @param \Sm\Query\Statements\QueryComponent|\Sm\Query\Proxy\QueryProxy $query
-     * @param string                                                         $interpreter The name or identifier of the QueryModule to use (e.g. mysql)
+     * @param string|mixed|null                                              $return_type
      *
      * @return mixed
+     * @throws \Sm\Core\Factory\Exception\FactoryCannotBuildException
      * @throws \Sm\Core\Query\Module\Exception\UnfoundQueryModuleException
      */
-    public function interpret($query, string $interpreter = null) {
-        $queryModule = $this->getQueryModule($query, $interpreter);
-    
+    public function interpret($query, $return_type = null) {
+        $queryModule = $this->getQueryModule();
+        
         #@todo resolve queryModule based on index
         if (!$queryModule) {
             throw new UnfoundQueryModuleException("No QueryModule enabled to handle this kind of query.");
         }
         
-        return $queryModule->interpret($query, $this);
+        return $queryModule->interpret($query, $return_type);
     }
     /**
      * Register a QueryModule on this layer.
@@ -76,9 +77,13 @@ class QueryLayer extends StandardLayer {
     public function registerDefaultQueryModule(QueryModule $queryModule) {
         return $this->registerQueryModule($queryModule, function () use ($queryModule) { return $queryModule; }, false);
     }
-    public function getQueryModule($query, string $interpreter = null): QueryModule {
+    /**
+     * @return \Sm\Query\Module\QueryModule
+     * @throws \Sm\Core\Factory\Exception\FactoryCannotBuildException
+     */
+    public function getQueryModule(): QueryModule {
         /** @var QueryModule $queryModule */
-        $queryModule = $this->queryModuleFactory->build($interpreter, $query);
+        $queryModule = $this->queryModuleFactory->build();
         return $queryModule;
     }
 }

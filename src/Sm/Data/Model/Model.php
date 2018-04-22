@@ -9,11 +9,12 @@ namespace Sm\Data\Model;
 
 
 use Sm\Core\Exception\InvalidArgumentException;
-use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Schema\Schematicized;
 use Sm\Core\SmEntity\Is_StdSchematicizedSmEntityTrait;
 use Sm\Core\SmEntity\Is_StdSmEntityTrait;
 use Sm\Core\SmEntity\SmEntity;
+use Sm\Data\Property\Exception\ReadonlyPropertyException;
+use Sm\Data\Property\Property;
 use Sm\Data\Property\PropertyContainer;
 
 /**
@@ -54,11 +55,15 @@ class Model implements ModelSchema,
                 return null;
         }
     }
+    /**
+     * @param      $name
+     * @param null $value
+     *
+     * @return $this
+     * @throws \Sm\Core\Exception\UnimplementedError
+     * @throws \Sm\Data\Property\Exception\NonexistentPropertyException
+     */
     public function set($name, $value = null) {
-        if (is_array($name) && isset($value)) {
-            throw new UnimplementedError("Not sure what to do with a name and value");
-        }
-        
         if (is_array($name)) {
             foreach ($name as $key => $val) {
                 $this->set($key, $val);
@@ -80,7 +85,14 @@ class Model implements ModelSchema,
         
         return $changed_properties;
     }
-    
+    public function markUnchanged() {
+        /**
+         * @var Property $property ;
+         */
+        foreach ($this->properties->getAll() as $property) {
+            $property->resetValueHistory();
+        }
+    }
     public function getProperties(): PropertyContainer {
         return $this->properties = $this->properties ?? PropertyContainer::init();
     }
@@ -88,7 +100,12 @@ class Model implements ModelSchema,
         $this->properties = $properties;
         return $this;
     }
-    
+    public function registerProperty(string $name, Property $property = null) {
+        try {
+            $this->getProperties()->register($name, $property ?? new Property);
+        } catch (InvalidArgumentException|ReadonlyPropertyException $e) {
+        }
+    }
     #
     ##  Configuration/Initialization
     
@@ -105,8 +122,8 @@ class Model implements ModelSchema,
         $this->_fromSchematic_std($modelSchematic);
         
         $this->setName($this->getName() ?? $modelSchematic->getName());
-        $propertySchemas     = $modelSchematic->getProperties();
-        $propertyArray       = [];
+        $propertySchemas = $modelSchematic->getProperties();
+        $propertyArray   = [];
         
         foreach ($propertySchemas as $index => $propertySchema) {
             $propertyArray[ $index ] = $modelSchematic->instantiateProperty($propertySchema);
@@ -115,6 +132,11 @@ class Model implements ModelSchema,
         $this->getProperties()->register($propertyArray);
         return $this;
     }
+    /**
+     * @param $schematic
+     *
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     */
     public function checkCanUseSchematic($schematic) {
         if (!($schematic instanceof ModelSchematic)) {
             throw new InvalidArgumentException("Cannot use anything except for a Model Schema to initialize these");

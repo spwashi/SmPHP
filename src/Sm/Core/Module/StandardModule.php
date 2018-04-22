@@ -50,14 +50,15 @@ abstract class StandardModule extends StandardContext implements HookHaver, Modu
      * @param \Sm\Core\Context\Context $context
      *
      * @return \Sm\Core\Module\ModuleProxy|\Sm\Core\Module\Module
+     * @throws \Sm\Core\Exception\Exception
      */
     public function initialize(Context $context = null) {
         # Check to see if we can initialize the Module within this context
         $this->check($context);
         $this->resolveHook(Hook::INIT, $context);
-        $this->_initialize($context);
-        # Return a ModuleProxy that will allow us to refer to this Module within this Context consistently
-        return $this->createModuleProxy($context);
+        $this->establishContext($context);
+        # Return a ModuleProxy or $this that will allow us to refer to this Module within this Context consistently
+        return $this->proxyOnContext($context);
     }
     /**
      * Throw an error if the Context is not valid for whatever reason
@@ -67,12 +68,12 @@ abstract class StandardModule extends StandardContext implements HookHaver, Modu
      * @throws \Sm\Core\Exception\Exception
      * @return bool|null
      */
-    public function check(Context $context = null):?bool {
+    public function check(Context $context = null): ?bool {
         if ($this->hasValidatedContext($context)) return null;
         
         # This should throw an error if the Module is not applicable on this context
         $this->resolveHook(Hook::CHECK, $context);
-        $this->_check($context);
+        $this->validateContext($context);
         
         if ($context) $this->createContextRegistry($context);
         return true;
@@ -89,7 +90,7 @@ abstract class StandardModule extends StandardContext implements HookHaver, Modu
         if (!$this->hasValidatedContext($context)) return null;
         $this->check($context);
         $this->resolveHook(Hook::DEACTIVATE, $context);
-        $this->_deactivate($context);
+        $this->removeFromContext($context);
         $this->removeValidatedContext($context);
         return true;
     }
@@ -143,19 +144,19 @@ abstract class StandardModule extends StandardContext implements HookHaver, Modu
      *
      * @see \Sm\Core\Module\StandardModule::initialize
      */
-    protected function _initialize() { }
+    protected function establishContext() { }
     /**
      * Set up the Class. Meant to be overridden
      *
      * @see \Sm\Core\Module\StandardModule::deactivate
      */
-    protected function _deactivate() { }
+    protected function removeFromContext() { }
     /**
      * Check to see if the Module is applicable in this context. Meant to be overridden
      *
      * @see \Sm\Core\Module\StandardModule::check
      */
-    protected function _check() { }
+    protected function validateContext() { }
     
     /**
      * Return a ModuleProxy that maps on to this Module within a given Context
@@ -164,8 +165,7 @@ abstract class StandardModule extends StandardContext implements HookHaver, Modu
      *
      * @return \Sm\Core\Module\ModuleProxy|\Sm\Core\Module\Module
      */
-    protected function createModuleProxy(Context $context) {
+    protected function proxyOnContext(Context $context = null) {
         return $this;
     }
-    
 }

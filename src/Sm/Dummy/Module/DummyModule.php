@@ -15,9 +15,9 @@ abstract class DummyModule extends LayerModule {
      *
      * @throws \Sm\Core\Context\Exception\InvalidContextException
      */
-    protected function _initialize(Layer $context = null) {
+    protected function establishContext(Layer $context = null) {
         if (!($context instanceof DummyLayer)) throw new InvalidContextException("Cannot register anything but a DummyLayer!");
         /** @var DummyLayer $context */
-        parent::_initialize($context);
+        parent::establishContext($context);
     }
 }

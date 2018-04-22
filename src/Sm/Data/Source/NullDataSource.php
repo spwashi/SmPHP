@@ -16,9 +16,9 @@ namespace Sm\Data\Source;
  */
 class NullDataSource extends DataSource {
     static $instance;
-    public static function init($Authentication = null) {
+    public static function init() {
         # No need to keep doing this
-        return isset(static::$instance) ? static::$instance : (static::$instance = parent::init($Authentication));
+        return isset(static::$instance) ? static::$instance : (static::$instance = new static);
     }
     public function isAuthenticated(): bool {
         return true;

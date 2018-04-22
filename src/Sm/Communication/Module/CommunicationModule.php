@@ -26,9 +26,9 @@ abstract class CommunicationModule extends LayerModule {
      *
      * @throws \Sm\Core\Context\Exception\InvalidContextException
      */
-    protected function _initialize(Layer $context = null) {
+    protected function establishContext(Layer $context = null) {
         if (!($context instanceof CommunicationLayer)) throw new InvalidContextException("Cannot register anything but a CommunicationLayer!");
-        parent::_initialize($context);
+        parent::establishContext($context);
         /** @var CommunicationLayer $context */
         $context->registerRequestResolvers($this->getRequestResolutionMethods());
         $context->registerRequestResolvers($this->getResponseResolutionMethods());

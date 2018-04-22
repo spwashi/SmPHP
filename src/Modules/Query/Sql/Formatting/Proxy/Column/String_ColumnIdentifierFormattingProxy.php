@@ -15,6 +15,7 @@ use Sm\Data\Source\Schema\DataSourceSchema;
 use Sm\Modules\Query\Sql\Formatting\Proxy\Source\NamedDataSourceFormattingProxy;
 use Sm\Modules\Query\Sql\Formatting\Proxy\Source\Table\TableFormattingProxy;
 
+
 class String_ColumnIdentifierFormattingProxy extends ColumnIdentifierFormattingProxy {
     protected $subject;
     #

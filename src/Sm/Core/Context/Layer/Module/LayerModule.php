@@ -29,7 +29,7 @@ abstract class LayerModule extends StandardModule {
         return $this->hookContainer = $this->hookContainer ?? new HookContainer;
     }
     
-    protected function _check(Layer $context = null) { return parent::_check(); }
-    protected function _initialize(Layer $context = null) { return parent::_initialize(); }
-    protected function _deactivate(Layer $context = null) { return parent::_deactivate(); }
+    protected function validateContext(Layer $context = null) { return parent::validateContext(); }
+    protected function establishContext(Layer $context = null) { return parent::establishContext(); }
+    protected function removeFromContext(Layer $context = null) { return parent::removeFromContext(); }
 }

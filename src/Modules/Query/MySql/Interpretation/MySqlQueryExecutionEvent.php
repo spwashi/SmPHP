@@ -10,8 +10,8 @@ use Sm\Modules\Query\Sql\Event\SqlQueryExecutionEvent;
 class MySqlQueryExecutionEvent extends SqlQueryExecutionEvent {
     protected $formatted_query_with_inline_variables;
     
-    public function getStatementHandler(): \PDOStatement {
-        return parent::getStatementHandler();
+    public function getStatementHandle(): \PDOStatement {
+        return parent::getStatementHandle();
     }
     /**
      * @param \PDOStatement $statementHandler
@@ -19,11 +19,11 @@ class MySqlQueryExecutionEvent extends SqlQueryExecutionEvent {
      * @return $this
      * @throws \Sm\Core\Exception\InvalidArgumentException
      */
-    public function setStatementHandler($statementHandler) {
+    public function setStatementHandle($statementHandler) {
         if (!($statementHandler instanceof \PDOStatement)) {
             throw new InvalidArgumentException("Can only use PDOStatements for this Handler");
         }
-        parent::setStatementHandler($statementHandler);
+        parent::setStatementHandle($statementHandler);
         return $this;
     }
     public function setFormattedQueryWithInlineVariables($formatted_query_with_inline_variables) {

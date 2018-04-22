@@ -11,16 +11,14 @@ namespace Sm\Modules\Query\MySql;
 use Sm\Core\Context\Context;
 use Sm\Core\Context\Layer\Layer;
 use Sm\Core\Exception\InvalidArgumentException;
-use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Internal\Monitor\HasMonitorTrait;
 use Sm\Core\Internal\Monitor\Monitored;
-use Sm\Core\Module\ModuleProxy;
-use Sm\Modules\Query\Sql\Formatting\Aliasing\SqlFormattingAliasContainer;
-use Sm\Modules\Query\Sql\Formatting\SqlFormattingProxyFactory;
-use Sm\Modules\Query\Sql\Formatting\SqlQueryFormatterManager;
 use Sm\Modules\Query\MySql\Authentication\MySqlAuthentication;
 use Sm\Modules\Query\MySql\Interpretation\MySqlQueryInterpreter;
 use Sm\Modules\Query\MySql\Proxy\MySqlQueryModuleProxy;
+use Sm\Modules\Query\Sql\Formatting\Aliasing\SqlFormattingAliasContainer;
+use Sm\Modules\Query\Sql\Formatting\SqlFormattingProxyFactory;
+use Sm\Modules\Query\Sql\Formatting\SqlQueryFormatterManager;
 use Sm\Query\Module\QueryModule;
 use Sm\Query\Proxy\QueryProxy;
 use Sm\Query\Statements\QueryComponent;
@@ -36,7 +34,6 @@ class MySqlQueryModule extends QueryModule implements Monitored {
     use HasMonitorTrait;
     
     const MYSQL = 'mysql';
-    
     protected $queryType = 'mysql';
     /** @var string $config_path The path from which we will load the Module configuration */
     protected $config_path = '_config/mysql.query.module.sm.php';
@@ -50,42 +47,31 @@ class MySqlQueryModule extends QueryModule implements Monitored {
      */
     public static function init() { return new static(...func_get_args()); }
     
-    public function registerAuthentication(MySqlAuthentication $mySqlAuthentication, string $name = null) {
-        if (isset($name)) throw new UnimplementedError("Cannot name Authentications yet");
+    public function registerAuthentication(MySqlAuthentication $mySqlAuthentication) {
         $this->authentication = $mySqlAuthentication;
         return $this;
     }
     /**
-     * @param                                   $query
-     * @param \Sm\Core\Context\Layer\Layer|null $layer
-     * @param null                              $authentication
+     * Interpret a mysql query
+     *
+     * @param      $query
+     * @param null $return_type
      *
      * @return mixed
      * @throws \Sm\Core\Exception\InvalidArgumentException
      * @throws \Sm\Core\Exception\UnimplementedError
      */
-    public function interpret($query, Layer $layer = null, $authentication = null) {
-        $this->initialize($layer);
+    public function interpret($query, $return_type = null) {
         if (!($query instanceof QueryComponent) && !($query instanceof QueryProxy)) {
             throw new InvalidArgumentException("Can only query on components or proxies");
         }
-        $queryInterpreter = new MySqlQueryInterpreter($this->getAuthentication($authentication),
-                                                      $this->getQueryFormatter($layer));
-        $result           = $queryInterpreter->interpret($query);
+        $queryInterpreter = new MySqlQueryInterpreter($this->getAuthentication(), $this->getQueryFormatter());
+        $result           = $queryInterpreter->interpret($query, $return_type);
         $this->getMonitor(MySqlQueryInterpreter::MONITOR__QUERY_EXECUTED)
              ->append(...$queryInterpreter->getQueryMonitor()->dump());
         return $result;
     }
-    
-    /**
-     * @param \Sm\Core\Context\Layer\Layer|null $context
-     *
-     * @return null|\Sm\Modules\Query\Sql\Formatting\SqlQueryFormatterManager
-     */
-    public function getQueryFormatter(Layer $context = null): ? SqlQueryFormatterManager {
-        if (isset($context)) {
-            return $this->getContextRegistry($context)->resolve('queryFormatter');
-        }
+    public function getQueryFormatter(): ?SqlQueryFormatterManager {
         return $this->queryFormatter;
     }
     /**
@@ -96,24 +82,16 @@ class MySqlQueryModule extends QueryModule implements Monitored {
      *
      * @return \Sm\Modules\Query\MySql\MySqlQueryModule
      */
-    public function setQueryFormatter(SqlQueryFormatterManager $queryFormatter, Layer $context = null): MySqlQueryModule {
-        if (!isset($context)) {
-            $this->queryFormatter = $queryFormatter;
-        } else {
-            $this->getContextRegistry($context)->register('queryFormatter', $queryFormatter);
-        }
+    public function setQueryFormatter(SqlQueryFormatterManager $queryFormatter): MySqlQueryModule {
+        $this->queryFormatter = $queryFormatter;
         return $this;
     }
-    protected function createModuleProxy(Context $context = null): ModuleProxy {
-        return new MySqlQueryModuleProxy($this, $context);
+    protected function establishContext(Layer $context = null) {
+        if ($context) parent::establishContext($context);
+        $this->initializeFormatter();
     }
-    protected function _initialize(Layer $context = null) {
-        if ($context) parent::_initialize($context);
-        $this->initializeFormatter($context);
-    }
-    
-    protected function initializeFormatter(Layer $context = null) {
-        $queryFormatter = $this->getQueryFormatter($context);
+    protected function initializeFormatter() {
+        $queryFormatter = $this->getQueryFormatter();
         if (isset($queryFormatter)) return;
         
         # Includes functions to load configuration into both the proxy_handlers and the formatting_handlers
@@ -133,9 +111,9 @@ class MySqlQueryModule extends QueryModule implements Monitored {
         }
         
         #
-        $this->setQueryFormatter($queryFormatter, $context);
+        $this->setQueryFormatter($queryFormatter);
     }
-    protected function getAuthentication($authentication): MySqlAuthentication {
-        return $authentication ?? $this->authentication;
+    protected function getAuthentication(): MySqlAuthentication {
+        return $this->authentication;
     }
 }

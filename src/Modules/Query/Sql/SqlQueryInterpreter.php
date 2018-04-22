@@ -13,6 +13,7 @@ use Sm\Modules\Query\Sql\Event\SqlQueryExecutionEvent;
 use Sm\Modules\Query\Sql\Formatting\SqlFormattingContext;
 use Sm\Modules\Query\Sql\Formatting\SqlQueryFormatter;
 use Sm\Modules\Query\Sql\Formatting\SqlQueryFormatterManager;
+use Sm\Modules\Query\Sql\Statements\CreateTableStatement;
 use Sm\Query\Interpretation\QueryInterpreter;
 use Sm\Query\Statements\InsertStatement;
 
@@ -25,6 +26,7 @@ use Sm\Query\Statements\InsertStatement;
  */
 abstract class SqlQueryInterpreter implements QueryInterpreter {
     const RETURN_TYPE__LAST_INSERT_ID = 'LAST_INSERT_ID';
+    const RETURN_TYPE__SUCCESS        = 'WAS_SUCCESSFUL';
     
     /** @var  \Sm\Modules\Query\Sql\Authentication\SqlAuthentication $authentication The thing that gives us credentials to use to connect to the database */
     protected $authentication;
@@ -46,10 +48,13 @@ abstract class SqlQueryInterpreter implements QueryInterpreter {
         
         switch ($return_type) {
             case null:
-                $return_type =
-                    $query_or_statement instanceof InsertStatement
-                        ? static::RETURN_TYPE__LAST_INSERT_ID
-                        : 'auto';
+                if ($query_or_statement instanceof CreateTableStatement) {
+                    $return_type = static::RETURN_TYPE__SUCCESS;
+                } else if ($query_or_statement instanceof InsertStatement) {
+                    $return_type = static::RETURN_TYPE__LAST_INSERT_ID;
+                } else {
+                    $return_type = 'auto';
+                }
                 break;
         }
         

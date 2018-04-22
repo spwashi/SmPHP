@@ -63,6 +63,11 @@ class Property extends AbstractResolvable implements Readonly_able,
     }
     /** @var  \Sm\Core\Internal\Monitor\Monitor $valueHistory */
     protected $valueHistory;
+    /** @var $valueIsNotDefault */
+    protected $valueIsNotDefault;
+    /** @var ReferenceDescriptorSchematic $referenceDescriptor */
+    protected $referenceDescriptor;
+    
     public function __construct($name = null) {
         $this->valueHistory = new Monitor;
         if (isset($name)) $this->name = $name;
@@ -86,7 +91,7 @@ class Property extends AbstractResolvable implements Readonly_able,
         if ($name === 'object_id') return $this->getObjectId();
         if ($name === 'potential_types') return $this->getPotentialTypes();
         if ($name === 'valueHistory') return $this->getValueHistory();
-    
+        
         if ($name === 'name') {
             return $this->name;
         }
@@ -99,8 +104,6 @@ class Property extends AbstractResolvable implements Readonly_able,
         return null;
     }
     /**
-     * Setter for this Property
-     *
      * @param $name
      * @param $value
      *
@@ -118,21 +121,36 @@ class Property extends AbstractResolvable implements Readonly_able,
         }
         
     }
+    public function getReferenceDescriptor(): ?ReferenceDescriptorSchematic {
+        return $this->referenceDescriptor;
+    }
+    public function setReferenceDescriptor(ReferenceDescriptorSchematic $referenceDescriptor): Property {
+        $this->referenceDescriptor = $referenceDescriptor;
+        return $this;
+    }
+    /**
+     * @param $subject
+     *
+     * @return $this
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     */
     public function setSubject($subject) {
         $previous_value = $this->subject;
         if ($subject instanceof Property) $subject = $subject->value;
-    
+        
+        if (!($subject instanceof Undefined_)) $this->valueIsNotDefault = true;
+        
         # --
-    
+        
         # Only deal with Resolvables
         $subject = (new ResolvableFactory)->resolve($subject);
         $this->checkCanSetValue($subject);
         parent::setSubject($subject);
-    
+        
         # --
         
         $new_value = $this->getSubject();
-    
+        
         if ($previous_value instanceof NativeResolvable && get_class($previous_value) === get_class($new_value)) {
             $previous = $previous_value->resolve();
             $new      = $new_value->resolve();
@@ -144,8 +162,8 @@ class Property extends AbstractResolvable implements Readonly_able,
         if ($new !== $previous) {
             $this->valueHistory->append(PropertyValueChange::init($this, $new_value, $previous_value));
         }
-    
-    
+        
+        
         return $this;
     }
     /**
@@ -207,13 +225,6 @@ class Property extends AbstractResolvable implements Readonly_able,
         $this->_potential_types = $_potential_types;
         return $this;
     }
-    /**
-     * Alias for "set subject"
-     *
-     * @param $value
-     *
-     * @return $this
-     */
     public function setValue($value) {
         return $this->setSubject($value);
     }
@@ -229,7 +240,9 @@ class Property extends AbstractResolvable implements Readonly_able,
     public function resolve() {
         return $this->subject ? $this->subject->resolve() : null;
     }
-    
+    public function isValueDefault() {
+        return $this->valueIsNotDefault;
+    }
     
     #
     ##  Initialization
@@ -237,12 +250,22 @@ class Property extends AbstractResolvable implements Readonly_able,
         /** @var \Sm\Data\Property\PropertySchematic $schematic */
         $this->_fromSchematic_std($schematic);
         
-        $rawDataTypes = $this->getRawDataTypes();
-        $name         = $this->getName() ?? ($schematic ? $schematic->getName() : null);
+        $rawDataTypes        = $this->getRawDataTypes();
+        $name                = $this->getName() ?? ($schematic ? $schematic->getName() : null);
+        $referenceDescriptor = $this->getReferenceDescriptor() ?? ($schematic ? $schematic->getReferenceDescriptor() : null);
+        $datatypes           = count($rawDataTypes) ? $rawDataTypes : ($schematic ? $schematic->getRawDataTypes() : null);
+        
         if (isset($name)) $this->setName($name);
-        $this->setDatatypes(count($rawDataTypes) ? $rawDataTypes : ($schematic ? $schematic->getRawDataTypes() : null));
+        if (isset($referenceDescriptor)) $this->setReferenceDescriptor($referenceDescriptor);
+        if (isset($datatypes)) $this->setDatatypes($datatypes);
+        
         return $this;
     }
+    /**
+     * @param $schematic
+     *
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     */
     protected function checkCanUseSchematic($schematic) {
         if (!($schematic instanceof PropertySchema)) {
             throw new InvalidArgumentException("Can only initialize Properties using PropertySchematics");
@@ -252,12 +275,19 @@ class Property extends AbstractResolvable implements Readonly_able,
     #
     ##  Debugging/Serialization
     public function jsonSerialize() {
-        return [
-            'smID'      => $this->getSmID(),
-            'name'      => $this->getName(),
-            'datatypes' => $this->getRawDataTypes(),
-            'value'     => $this->resolve(),
-        ];
+        $arr          = [ 'name' => $this->getName() ];
+        $rawDataTypes = $this->getRawDataTypes();
+        $smID         = $this->getSmID();
+        
+        if ($smID) $arr['smID'] = $smID;
+        if (count($rawDataTypes)) {
+            $arr['datatypes'] = $rawDataTypes;
+            if (in_array('null', $rawDataTypes)) {
+                $arr['isRequired'] = true;
+            }
+        }
+        if ($this->isValueDefault()) $arr['value'] = $this->resolve();
+        return $arr;
     }
     public function __debugInfo() {
         return $this->jsonSerialize();

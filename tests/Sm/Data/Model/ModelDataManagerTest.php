@@ -123,7 +123,7 @@ class ModelDataManagerTest extends \PHPUnit_Framework_TestCase {
         $model->fromSchematic($modelSchema);
         $model->set('id', 1);
         
-        $persistenceManager = new StdModelPersistenceManager;
+        $persistenceManager = new StandardModelPersistenceManager;
         $mdm->setPersistenceManager($persistenceManager->setQueryInterpreter($this->queryModule));
         $item = $mdm->persistenceManager->find($model);
         var_dump(json_encode($item));

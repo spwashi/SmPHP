@@ -34,16 +34,6 @@ abstract class DataSource implements Identifiable,
     #   Constructors/Initialization
     ####################################
     public function __construct() { $this->createSelfID(); }
-    /**
-     * Static constructor
-     *
-     * @param null $Authentication
-     *
-     * @return static
-     */
-    public static function init($Authentication = null) {
-        return new static(...func_get_args());
-    }
     
     ####################################
     #   Getters/Setters/Configuration

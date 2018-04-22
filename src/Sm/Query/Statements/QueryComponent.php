@@ -25,6 +25,9 @@ class QueryComponent {
     public static function init(...$arguments) {
         return new static(...func_get_args());
     }
+    public static function __callStatic($name, $arguments) {
+        return static::init()->{$name}(...$arguments);
+    }
     /**
      * This is what helps us figure out what the DataSource of whatever we're working with is
      *
