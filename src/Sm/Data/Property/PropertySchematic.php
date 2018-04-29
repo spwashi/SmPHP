@@ -130,16 +130,27 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
         $length                       = $this->getLength();
         $referenceDescriptorSchematic = $this->getReferenceDescriptor();
         $datatypes                    = $this->_getDatatypes();
-        $items                        = [
-            'smID'      => $this->getSmID(),
-            'name'      => $this->getName(),
-            'datatypes' => $datatypes,
-        ];
-        if (!in_array('null', $datatypes ?? [])) {
+        $defaultValue                 = $this->getDefaultValue();
+        $items                        = [ 'smID'      => $this->getSmID(),
+                                          'name'      => $this->getName(),
+                                          'datatypes' => $datatypes, ];
+        
+        //
+        if ($this->isGenerated) {
+            $items['isGenerated'] = $this->isGenerated;
+        }
+        if (!in_array('null', $datatypes ?? []) && !$this->isGenerated) {
             $items['isRequired'] = true;
         }
-        if (isset($length)) $items['length'] = $length;
-        if (isset($referenceDescriptorSchematic)) $items['reference'] = $referenceDescriptorSchematic;
+        if (isset($defaultValue)) {
+            $items['defaultValue'] = $defaultValue;
+        }
+        if (isset($length)) {
+            $items['length'] = $length;
+        }
+        if (isset($referenceDescriptorSchematic)) {
+            $items['reference'] = $referenceDescriptorSchematic;
+        }
         return $items;
     }
 }

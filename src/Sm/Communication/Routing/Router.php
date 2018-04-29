@@ -186,7 +186,6 @@ class Router implements Registry {
             $name       = $registrand['name'] ?? null;
             $resolution = $registrand['resolution'] ?? null;
             $pattern    = $registrand['pattern'] ?? null;
-            
         }
     }
     /**

@@ -240,7 +240,7 @@ class Property extends AbstractResolvable implements Readonly_able,
     public function resolve() {
         return $this->subject ? $this->subject->resolve() : null;
     }
-    public function isValueDefault() {
+    public function isValueNotDefault() {
         return $this->valueIsNotDefault;
     }
     
@@ -275,18 +275,13 @@ class Property extends AbstractResolvable implements Readonly_able,
     #
     ##  Debugging/Serialization
     public function jsonSerialize() {
-        $arr          = [ 'name' => $this->getName() ];
-        $rawDataTypes = $this->getRawDataTypes();
-        $smID         = $this->getSmID();
+        $arr  = [ 'name' => $this->getName() ];
+        $smID = $this->getSmID();
         
         if ($smID) $arr['smID'] = $smID;
-        if (count($rawDataTypes)) {
-            $arr['datatypes'] = $rawDataTypes;
-            if (in_array('null', $rawDataTypes)) {
-                $arr['isRequired'] = true;
-            }
+        if ($this->isValueNotDefault()) {
+            $arr['value'] = $this->resolve();
         }
-        if ($this->isValueDefault()) $arr['value'] = $this->resolve();
         return $arr;
     }
     public function __debugInfo() {

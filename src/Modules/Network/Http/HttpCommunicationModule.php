@@ -8,7 +8,7 @@
 namespace Sm\Modules\Network\Http;
 
 
-use Sm\Communication\Module\CommunicationModule;
+use Sm\Communication\Module\TwoWayCommunicationModule;
 use Sm\Communication\Request\Request;
 use Sm\Communication\Routing\Route;
 use Sm\Core\Exception\UnimplementedError;
@@ -26,7 +26,7 @@ use Sm\Modules\Network\Http\Response\HttpResponse;
  *
  * @package Sm\Communication\Module
  */
-class HttpCommunicationModule extends CommunicationModule {
+class HttpCommunicationModule extends TwoWayCommunicationModule {
     /**
      * @return array
      */

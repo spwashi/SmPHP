@@ -17,8 +17,8 @@ use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Util;
 
 class HttpRequestDescriptor extends RequestDescriptor {
-    protected $matching_context_classes = [ HttpRequest::class ];
     protected $url_path_pattern;
+    protected $matching_http_methods;
     protected $original_url_path;
     /** @var array These are the things that we want to identify as a parameter to the Route (made available to the route) */
     protected $argument_names = [];
@@ -27,10 +27,19 @@ class HttpRequestDescriptor extends RequestDescriptor {
     /**
      * HttpRequestDescriptor constructor.
      *
-     * @param string $url_path A regex that will be used to match Requests
+     * @param string $pattern A regex that will be used to match Requests
      */
-    public function __construct($url_path = null) {
-        if (isset($url_path)) $this->setMatchingUrlPattern($url_path);
+    public function __construct($pattern = null) {
+        $path        = false;
+        $http_method = null;
+        if (is_array($pattern)) {
+            $path        = $pattern['path'] ?? $path;
+            $http_method = $pattern['http_method'] ?? $http_method;
+        } else if (is_string($pattern)) {
+            $path = $pattern;
+        }
+        if (isset($path)) $this->setMatchingUrlPattern($path);
+        if (isset($http_method)) $this->setMatchingHttpMethodPattern($http_method);
     }
     
     /**
@@ -44,7 +53,7 @@ class HttpRequestDescriptor extends RequestDescriptor {
         if (!($request instanceof HttpRequest)) throw new InvalidContextException("Expected an HttpRequest");
         
         if (isset($this->url_path_pattern)) {
-            $this->check_matching_url_path($request);
+            $this->checkHttpRequestMatches($request);
         }
     }
     
@@ -59,6 +68,10 @@ class HttpRequestDescriptor extends RequestDescriptor {
     public function setMatchingUrlPattern($url_path_pattern) {
         $this->original_url_path = $url_path_pattern;
         $this->setStringPattern($url_path_pattern);
+        return $this;
+    }
+    public function setMatchingHttpMethodPattern(array $http_method_pattern) {
+        $this->matching_http_methods = $http_method_pattern;
         return $this;
     }
     
@@ -148,7 +161,7 @@ class HttpRequestDescriptor extends RequestDescriptor {
             $resultant_url_pattern .= $url_pattern_segment; # If it's the first one, set the resultant url pattern
             
             #match / or end of line
-            $resultant_url_pattern .= '(?:/|$)   ';
+            $resultant_url_pattern .= '(?:/|$)' . '';
         }
         return $this->url_path_pattern = $resultant_url_pattern;
     }
@@ -162,10 +175,14 @@ class HttpRequestDescriptor extends RequestDescriptor {
      * @throws \Sm\Core\Context\Exception\InvalidContextException
      * @throws \Sm\Core\Exception\InvalidArgumentException
      */
-    protected function check_matching_url_path(HttpRequest $request) {
+    protected function checkHttpRequestMatches(HttpRequest $request) {
         $request_path = $request->getUrlPath();
         if (!isset($this->url_path_pattern) || !is_string($request_path)) throw new InvalidArgumentException("Configured route is not a string");
         
+        $methods = $this->matching_http_methods;
+        if (is_array($methods) && !in_array(strtolower($request->getRequestMethod()), $methods)) {
+            throw new InvalidContextException("HTTP Method does not match");
+        }
         
         # exact matches work
         # todo don't exactly match regexes?
@@ -256,6 +273,11 @@ class HttpRequestDescriptor extends RequestDescriptor {
         return $this->jsonSerialize();
     }
     public function jsonSerialize() {
-        return get_object_vars($this);
+        return [
+            'pattern'      => $this->url_path_pattern,
+            'original'     => $this->original_url_path,
+            'arguments'    => $this->argument_names,
+            'http_methods' => $this->matching_http_methods,
+        ];
     }
 }

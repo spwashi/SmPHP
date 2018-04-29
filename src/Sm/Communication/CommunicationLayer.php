@@ -83,11 +83,11 @@ class CommunicationLayer extends StandardLayer {
         if (isset($item)) return $name;
         
         if ($name === 'routing') return $this->getRoutingModule();
-    
+        
         # todo bad error
         throw new UnimplementedError("Cannot access this portion of the communication layer");
     }
-    public function resolveRequest($name = null):? Request\Request {
+    public function resolveRequest($name = null): ?Request\Request {
         return $this->requestFactory->resolve($name ?? HttpRequestFromEnvironment::class);
     }
     
@@ -123,8 +123,8 @@ class CommunicationLayer extends StandardLayer {
         } else if (!is_array($routes)) {
             throw new InvalidArgumentException("Can only register JSON or arrays");
         }
-    
-    
+        
+        
         $routes = $this->normalizeRouteArray($routes);
         
         return $this->getRoutingModule()->registerRoutes($routes);
@@ -290,8 +290,8 @@ class CommunicationLayer extends StandardLayer {
             if (is_array($resolution) && isset($resolution['resolution'])) {
                 $resolution = $this->_normalizeArrayLikeRoute($resolution, $group_rule);
             }
-            $route_config['normalized_resoltion'] = $resolution;
-            $addRoute                             = AddRoute::init($route_config, null);
+            $route_config['normalized_resolution'] = $resolution;
+            $addRoute                              = AddRoute::init($route_config, null);
             
             $monitor->append($addRoute);
         }
@@ -315,6 +315,17 @@ class CommunicationLayer extends StandardLayer {
             }
             $resolution['pattern'] = $pattern_prefix . $resolution['pattern'];
         }
+        $http_method = $resolution['http_method'] ?? null;
+        if (!is_array($http_method)) {
+            $resolution['http_method'] = is_string($http_method) ? [ $http_method ] : null;
+        }
+        if (isset($http_method)) {
+            $resolution['pattern'] = [
+                'path'        => $resolution['pattern'],
+                'http_method' => $resolution['http_method'],
+            ];
+        }
+        
         $this->normalizeResolution($resolution['resolution'], $group_rule);
         return $resolution;
     }

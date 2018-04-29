@@ -86,7 +86,7 @@ abstract class AbstractResolvable implements Resolvable, \JsonSerializable {
         ];
     }
     public function jsonSerialize() {
-        return $this->__debugInfo();
+        return [];
     }
     #########################################################################
     

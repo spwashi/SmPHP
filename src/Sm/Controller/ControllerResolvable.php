@@ -13,7 +13,7 @@ class ControllerResolvable extends AbstractResolvable {
     public function resolveController_default() {
         throw new UnresolvableException("Can't get a controller without a controller layer!");
     }
-    public function getControllerLayer():?ControllerLayer {
+    public function getControllerLayer(): ?ControllerLayer {
         return $this->controllerLayer;
     }
     public function setControllerLayer(ControllerLayer $controllerLayer) {
@@ -27,5 +27,8 @@ class ControllerResolvable extends AbstractResolvable {
         } else {
             return $this->resolveController_default(...func_get_args());
         }
+    }
+    public function jsonSerialize() {
+        return $this->subject;
     }
 }

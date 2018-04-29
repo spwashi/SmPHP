@@ -40,7 +40,7 @@ class Route extends FunctionResolvable implements \JsonSerializable {
     public function __construct($resolution, $requestDescriptor = null, $backup = null) {
         if ($requestDescriptor instanceof RequestDescriptor) {
             $this->setRequestDescriptor($requestDescriptor);
-        } else if (class_exists(HttpRequestDescriptor::class) && is_scalar($requestDescriptor)) {
+        } else if (class_exists(HttpRequestDescriptor::class) && (is_scalar($requestDescriptor) || (is_array($requestDescriptor)))) {
             $this->setRequestDescriptor(new HttpRequestDescriptor($requestDescriptor));
         } else if (isset($requestDescriptor)) {
             # Trying to register something that isn't a string (when we have the Http module) and isn't a RequestDescriptor

@@ -21,8 +21,8 @@ class HttpRequestFromEnvironment extends HttpRequest {
      * @return string
      */
     public static function getEnvironmentRequestURL() {
-        $host        = $_SERVER['HTTP_HOST']??'';
-        $request_uri = $_SERVER['REQUEST_URI']??'';
+        $host        = $_SERVER['HTTP_HOST'] ?? '';
+        $request_uri = $_SERVER['REQUEST_URI'] ?? '';
         return "//{$host}{$request_uri}";
     }
     /**
@@ -33,11 +33,22 @@ class HttpRequestFromEnvironment extends HttpRequest {
     public static function getEnvironmentRequestMethod() {
         return strtolower($_SERVER['REQUEST_METHOD']);
     }
+    public static function getRequestData() {
+        $contentType = static::getEnvironmentRequestedContentType();
+        
+        $request_data = array_merge([], $_POST);
+        if ($contentType && explode(';', $contentType)[0] ?? '' === 'application/json') {
+            $rawData      = file_get_contents("php://input");
+            $request_data = array_merge($request_data, json_decode($rawData, true));
+        }
+        
+        return $request_data;
+    }
     /**
      * @return string
      */
     public static function getEnvironmentRequestedContentType() {
-        return static::getEnvironmentRequestMethod() === 'get' ? null : $_SERVER["CONTENT_TYPE"];
+        return static::getEnvironmentRequestMethod() === 'get' ? null : $_SERVER["CONTENT_TYPE"] ?? null;
     }
     /**
      * Initialize an HttpRequest from the Environment
