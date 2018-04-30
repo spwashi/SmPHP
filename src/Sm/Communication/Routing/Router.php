@@ -67,9 +67,9 @@ class Router implements Registry {
     public function register($name = null, $registrand = null) {
         $original = [ $name, $registrand ];
         $addition = AddRoute::init($original);
-    
+        
         $this->getMonitor(static::MONITOR__ROUTE_ADD)->append($addition);
-    
+        
         if (!isset($registrand)) {
             throw new InvalidArgumentException("Cannot register null routes");
         }
@@ -97,7 +97,7 @@ class Router implements Registry {
         } else {
             $this->routes[] = $route;
         }
-    
+        
         $addition->setSuccess(true)->setRoute($route);
         return $this;
     }
@@ -137,18 +137,19 @@ class Router implements Registry {
         if (isset($matching_route)) {
             return $matching_route;
         }
-    
+        
         $json_request           = json_encode($request);
         $routeNotFoundException = new RouteNotFoundException("No matching routes for {$json_request}");
         throw $routeNotFoundException->addMonitors($this->getRelevantMonitors());
     }
     
-    protected function _getRouteFromRequest(Request $request):?Route {
+    protected function _getRouteFromRequest(Request $request): ?Route {
         $matching_route = null;
         foreach ($this->routes as $index => $route) {
             $__does_match      = $route->matches($request);
-            $attemptMatchRoute = AttemptMatchRoute::init($request, $route);
-    
+            $attemptMatchRoute =
+                AttemptMatchRoute::init($request, $route);
+            
             $this->getMonitorContainer()
                  ->resolve(static::MONITOR__ROUTE_ATTEMPT_MATCH)
                  ->append($attemptMatchRoute);
@@ -193,7 +194,7 @@ class Router implements Registry {
      *
      * @return array
      */
-    protected function getRelevantMonitors(): array {
+    public function getRelevantMonitors(): array {
         return [
             static::MONITOR__ROUTE_ATTEMPT_MATCH => $this->getMonitor(static::MONITOR__ROUTE_ATTEMPT_MATCH),
             static::MONITOR__ROUTE_ADD           => $this->getMonitor(static::MONITOR__ROUTE_ADD),

@@ -119,4 +119,8 @@ class StandardRoutingModule extends LayerModule implements RoutingModule {
     protected function getRouter(Layer $layer): Router {
         return $this->getContextRegistry($layer)->resolve('router');
     }
+    public function getRelevantMonitors(Layer $layer = null): array {
+        $monitors = $this->getRouter($layer) ? $this->getRouter($layer)->getRelevantMonitors() : [];
+        return $monitors;
+    }
 }

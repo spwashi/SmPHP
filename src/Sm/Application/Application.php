@@ -20,6 +20,7 @@ use Sm\Core\Internal\Monitor\Monitored;
 use Sm\Core\Paths\Exception\PathNotFoundException;
 use Sm\Core\Util;
 use Sm\Data\DataLayer;
+use Sm\Logging\LoggingLayer;
 use Sm\Modules\Network\Http\HttpCommunicationModule;
 use Sm\Query\Module\QueryModule;
 use Sm\Query\QueryLayer;
@@ -31,6 +32,7 @@ use Sm\Representation\RepresentationLayer;
  * @property-read CommunicationLayer  $communication
  * @property-read ControllerLayer     $controller
  * @property-read DataLayer           $data
+ * @property-read LoggingLayer        $logging
  * @property-read QueryLayer          $query
  * @property-read RepresentationLayer $representation
  * @property-read string              $path
@@ -72,7 +74,12 @@ class Application implements \JsonSerializable, LayerRoot {
      * @param string $root_path   Where the application is located
      * @param null   $config_path Where all of the config info is
      */
-    protected function __construct($root_path, $config_path = null) {
+    protected function __construct($root_path, $config_path = null, $logging_dir = null) {
+        $this->layerContainer = LayerContainer::init();
+        $this->_registerLoggingLayer();
+        if (isset($logging_dir)) {
+            $this->logging->setLogPath($logging_dir);
+        }
         $this->initSettings()
              ->setRootPath($root_path);
         $this->config_path = $config_path ?? ($this->root_path . 'config/');
@@ -147,13 +154,18 @@ class Application implements \JsonSerializable, LayerRoot {
     #
     ##  Layer Management
     protected function initLayers() {
-        $this->layerContainer = LayerContainer::init();
-        
         $this->_registerDataLayer();
         $this->_registerRepresentationLayer();
         $this->_registerControllerLayer();
         $this->_registerCommunicationLayer();
         $this->_registerQueryLayer();
+    }
+    protected function _registerLoggingLayer() {
+        $loggingLayer = LoggingLayer::init()->setRoot($this);
+        $this->layerContainer->register(LoggingLayer::LAYER_NAME, $loggingLayer);
+        #--
+        
+        $this->addMonitoredItem($loggingLayer, LoggingLayer::LAYER_NAME);
     }
     protected function _registerDataLayer() {
         $dataLayer = DataLayer::init()->setRoot($this);
@@ -222,6 +234,7 @@ class Application implements \JsonSerializable, LayerRoot {
         switch ($name) {
             case CommunicationLayer::LAYER_NAME:
             case QueryLayer::LAYER_NAME:
+            case LoggingLayer::LAYER_NAME:
             case ControllerLayer::LAYER_NAME:
             case DataLayer::LAYER_NAME:
             case RepresentationLayer::LAYER_NAME:

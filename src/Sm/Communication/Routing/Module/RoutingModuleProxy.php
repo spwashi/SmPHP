@@ -40,11 +40,16 @@ class RoutingModuleProxy extends ModuleProxy implements RoutingModule {
      * @param \Sm\Communication\Routing\Route|string $route_or_name Either the route to describe or the
      *
      * @return null|\Sm\Communication\Request\RequestDescriptor
+     * @throws \Sm\Communication\Routing\Exception\RouteNotFoundException
+     * @throws \Sm\Core\Exception\InvalidArgumentException
      */
-    public function describe($route_or_name):?RequestDescriptor {
+    public function describe($route_or_name): ?RequestDescriptor {
         return $this->subject->describe($route_or_name, $this->getContext());
     }
     public function listRoutes(): iterable {
-        return $this->subject->listRoutes($this->context);
+        return $this->subject->listRoutes($this->getContext());
+    }
+    public function getRelevantMonitors(): array {
+        return $this->subject->getRelevantMonitors($this->getContext());
     }
 }

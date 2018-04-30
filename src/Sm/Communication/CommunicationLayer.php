@@ -42,7 +42,7 @@ class CommunicationLayer extends StandardLayer {
     
     # -- routing --
     const ROUTE_RESOLVE_REQUEST = 'ROUTE_RESOLVE_REQUEST';
-    const MONITOR__ADD_ROUTE    = 'MONIOTOR__ADD_ROUTE';
+    const MONITOR__ADD_ROUTE    = 'MONITOR__ADD_ROUTE';
     
     # -- name of the 'routing' module
     const MODULE_ROUTING = 'routing';
@@ -80,7 +80,7 @@ class CommunicationLayer extends StandardLayer {
     ####################################################
     public function __get($name) {
         $item = parent::__get($name);
-        if (isset($item)) return $name;
+        if (isset($item)) return $item;
         
         if ($name === 'routing') return $this->getRoutingModule();
         
@@ -102,7 +102,12 @@ class CommunicationLayer extends StandardLayer {
      * @return  $this
      * */
     public function registerRoutingModule(RoutingModule $routingModule) {
-        return $this->registerModule($routingModule, static::MODULE_ROUTING);
+        $result           = $this->registerModule($routingModule, static::MODULE_ROUTING);
+        $relevantMonitors = $routingModule->getRelevantMonitors($this);
+        foreach ($relevantMonitors as $index => $monitor) {
+            $this->monitors->register(static::MODULE_ROUTING . '--' . $index, $monitor);
+        }
+        return $result;
     }
     /**
      * Register a bunch of Routes on this Layer.

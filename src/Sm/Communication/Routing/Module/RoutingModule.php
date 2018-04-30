@@ -10,6 +10,7 @@ namespace Sm\Communication\Routing\Module;
 use Sm\Communication\Request\Request;
 use Sm\Communication\Request\RequestDescriptor;
 use Sm\Communication\Routing\Route;
+use Sm\Core\Context\Layer\Layer;
 
 
 /**
@@ -49,7 +50,9 @@ interface RoutingModule {
      *
      * @return null|\Sm\Communication\Request\RequestDescriptor
      */
-    public function describe($route_or_name):?RequestDescriptor;
+    public function describe($route_or_name): ?RequestDescriptor;
     
     public function listRoutes(): iterable;
+    
+    public function getRelevantMonitors(): array;
 }
