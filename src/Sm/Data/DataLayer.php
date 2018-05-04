@@ -14,6 +14,8 @@ use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Factory\Exception\FactoryCannotBuildException;
 use Sm\Core\Schema\Schematic;
 use Sm\Core\SmEntity\Exception\InvalidConfigurationException;
+use Sm\Data\Entity\Entity;
+use Sm\Data\Entity\EntityDataManager;
 use Sm\Data\Model\Model;
 use Sm\Data\Model\ModelDataManager;
 use Sm\Data\Property\Property;
@@ -28,6 +30,7 @@ use Sm\Data\Source\DataSourceDataManager;
  * @property-read PropertyDataManager   $properties
  * @property-read DataSourceDataManager $sources
  * @property-read ModelDataManager      $models
+ * @property-read EntityDataManager     $entities
  * @package Sm\Data
  */
 class DataLayer extends StandardLayer {
@@ -43,18 +46,28 @@ class DataLayer extends StandardLayer {
         throw new InvalidArgumentException("Cannot resolve {$name}");
     }
     
+    /**
+     * @param $name
+     *
+     * @return \Sm\Data\SmEntity\SmEntityDataManager
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     * @throws \Sm\Core\Exception\UnimplementedError
+     */
     public function getDataManager($name): SmEntityDataManager {
         switch ($name) {
             case 'models':
             case '[Model]':
             case Model::class:
                 return $this->initStdSmEntityManager(Model::class);
-    
+            
             case 'properties':
             case '[Property]':
             case Property::class:
                 return $this->initStdSmEntityManager(Property::class);
-    
+            case 'entities':
+            case '[Entity]':
+            case Entity::class:
+                return $this->initStdSmEntityManager(Entity::class);
             case 'sources':
             case '[DataSource]':
             case DataSource::class:
@@ -82,7 +95,7 @@ class DataLayer extends StandardLayer {
             
             $dataManager = $this->getDataManager($config_type);
             $schematic   = $dataManager->configure($configuration);
-    
+            
             if ($schematic instanceof Schematic) {
                 try {
                     $this->configuredSmEntities[ $smID ] = $schematic;
@@ -99,6 +112,7 @@ class DataLayer extends StandardLayer {
      *
      * @return \Sm\Core\SmEntity\SmEntityFactory
      * @throws \Sm\Core\Exception\UnimplementedError
+     * @throws \Sm\Core\Exception\InvalidArgumentException
      */
     public function initStdSmEntityManager(string $classname): SmEntityDataManager {
         if (!class_exists($classname)) throw new UnimplementedError("Cannot resolve objects of type {$classname}");
@@ -107,7 +121,14 @@ class DataLayer extends StandardLayer {
             return $this->managers[ DataSource::class ] = $this->managers[ DataSource::class ] ?? DataSourceDataManager::init($this);
         }
         if (is_a(Model::class, $classname, true)) {
-            return $this->managers[ Model::class ] = $this->managers[ Model::class ] ?? ModelDataManager::init($this);
+            return $this->managers[ Model::class ] = $this->managers[ Model::class ] ?? ModelDataManager::init($this,
+                                                                                                               null,
+                                                                                                               $this->getDataManager(Property::class));
+        }
+        if (is_a(Entity::class, $classname, true)) {
+            return $this->managers[ Entity::class ] = $this->managers[ Entity::class ] ?? EntityDataManager::init($this,
+                                                                                                                  null,
+                                                                                                                  $this->getDataManager(Model::class));
         }
         if (is_a(Property::class, $classname, true)) {
             return $this->managers[ Property::class ] = $this->managers[ Property::class ] ?? PropertyDataManager::init($this);

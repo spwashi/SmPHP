@@ -275,14 +275,10 @@ class Property extends AbstractResolvable implements Readonly_able,
     #
     ##  Debugging/Serialization
     public function jsonSerialize() {
-        $arr  = [ 'name' => $this->getName() ];
-        $smID = $this->getSmID();
-        
-        if ($smID) $arr['smID'] = $smID;
         if ($this->isValueNotDefault()) {
-            $arr['value'] = $this->resolve();
+            return $this->resolve();
         }
-        return $arr;
+        return null;
     }
     public function __debugInfo() {
         return $this->jsonSerialize();

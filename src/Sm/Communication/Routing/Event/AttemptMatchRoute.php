@@ -28,6 +28,7 @@ class AttemptMatchRoute extends Event {
         return array_merge(parent::jsonSerialize(), [
             'request' => $this->request,
             'route'   => $this->route,
+            'success' => $this->success,
         ]);
     }
     public function setSuccess(bool $success): AttemptMatchRoute {

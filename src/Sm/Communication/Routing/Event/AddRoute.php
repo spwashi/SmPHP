@@ -27,8 +27,9 @@ class AddRoute extends Event {
     
     function jsonSerialize() {
         return array_merge(parent::jsonSerialize(), [
-            'config' => $this->config,
-            'route'  => $this->route,
+            'success' => $this->success,
+            'config'  => $this->config,
+            'route'   => $this->route,
         ]);
     }
     public function setSuccess(bool $success): AddRoute {
