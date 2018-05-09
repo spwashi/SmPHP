@@ -9,13 +9,16 @@ namespace Sm\Data\Entity;
 
 
 use Sm\Core\SmEntity\SmEntitySchema;
+use Sm\Data\Model\ModelSchema;
+use Sm\Data\Property\PropertyHaverSchema;
 
 /**
  * Interface EntitySchema
  *
  * Something that describes a Entity
  */
-interface EntitySchema extends SmEntitySchema {
+interface EntitySchema extends SmEntitySchema, PropertyHaverSchema {
     public function getName();
     public function setName(string $name);
+    public function getPersistedIdentity(): ?ModelSchema;
 }

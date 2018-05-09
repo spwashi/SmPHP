@@ -9,7 +9,7 @@ namespace Sm\Data\Source\Database\Table;
 
 
 use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
-use Sm\Core\SmEntity\StdSmEntitySchematicTrait;
+use Sm\Core\SmEntity\Traits\Is_StdSmEntitySchematicTrait;
 use Sm\Data\Source\DataSourceSchematic;
 
 /**
@@ -20,8 +20,7 @@ use Sm\Data\Source\DataSourceSchematic;
  * @package Sm\Data\Source\Database\Table
  */
 class TableSourceSchematic implements TableSourceSchema, DataSourceSchematic, \JsonSerializable {
-    use HasObjectIdentityTrait;
-    use StdSmEntitySchematicTrait {
+    use Is_StdSmEntitySchematicTrait {
         load as protected _load_std;
     }
 

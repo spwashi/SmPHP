@@ -1,7 +1,10 @@
 <?php
 
 
-namespace Sm\Core\SmEntity;
+namespace Sm\Core\SmEntity\Traits;
+
+use Sm\Core\Schema\Schematicized;
+use Sm\Core\SmEntity\SmEntitySchema;
 
 /**
  * Trait StdSchematicizedSmEntity
@@ -9,6 +12,10 @@ namespace Sm\Core\SmEntity;
  * For SmEntities that we would identify as being Schematicized (schema,schematic,
  */
 trait Is_StdSchematicizedSmEntityTrait {
+    protected $effectiveSchematic;
+    public function getEffectiveSchematic() {
+        return $this->effectiveSchematic;
+    }
     /**
      *
      * @param $schematic
@@ -20,8 +27,12 @@ trait Is_StdSchematicizedSmEntityTrait {
         if (!$schematic) return $this;
         $this->checkCanUseSchematic($schematic);
         
-        if ($schematic instanceof SmEntitySchematic && property_exists($this, '_smID'))
+        if ($schematic instanceof SmEntitySchema) {
             $this->_smID = $this->_smID ?? $schematic->getSmID();
+        }
+        
+        
+        $this->effectiveSchematic = $schematic instanceof Schematicized ? $schematic->getEffectiveSchematic() : $schematic;
         
         return $this;
     }

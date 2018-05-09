@@ -11,4 +11,5 @@ namespace Sm\Core\Schema;
  */
 interface Schematicized {
     public function fromSchematic($schematic);
+    public function getEffectiveSchematic();
 }

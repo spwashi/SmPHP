@@ -14,6 +14,7 @@ use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Resolvable\NativeResolvable;
 use Sm\Core\Resolvable\Resolvable;
 use Sm\Data\Property\Exception\ReadonlyPropertyException;
+use Sm\Data\SmEntity\SmEntityDataManager;
 
 /**
  * Class PropertyContainer
@@ -38,6 +39,11 @@ class PropertySchemaContainer extends Container {
         return $item;
     }
     public function resolve($name = null): ?PropertySchema {
+        $parsed = SmEntityDataManager::parseSmID($name);
+        foreach ($this->getAll() as $propertyName => $property) {
+            if (!$parsed) continue;
+            if ($property->getSmID() === $name) return $property;
+        }
         return parent::resolve($name);
     }
     protected function getResolvedValue(Resolvable $item, $args): ?PropertySchema {
@@ -122,5 +128,8 @@ class PropertySchemaContainer extends Container {
     }
     public function jsonSerialize() {
         return $this->registry;
+    }
+    public function __debugInfo() {
+        return $this->jsonSerialize();
     }
 }

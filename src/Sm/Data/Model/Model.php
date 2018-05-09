@@ -10,12 +10,16 @@ namespace Sm\Data\Model;
 
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Schema\Schematicized;
-use Sm\Core\SmEntity\Is_StdSchematicizedSmEntityTrait;
-use Sm\Core\SmEntity\Is_StdSmEntityTrait;
 use Sm\Core\SmEntity\SmEntity;
+use Sm\Core\SmEntity\Traits\HasPropertiesTrait;
+use Sm\Core\SmEntity\Traits\Is_StdSchematicizedSmEntityTrait;
+use Sm\Core\SmEntity\Traits\Is_StdSmEntityTrait;
 use Sm\Data\Property\Exception\ReadonlyPropertyException;
 use Sm\Data\Property\Property;
 use Sm\Data\Property\PropertyContainer;
+use Sm\Data\Property\PropertyHaver;
+use Sm\Data\Property\PropertySchema;
+use Sm\Data\Property\PropertySchematicInstantiator;
 
 /**
  * Class Model
@@ -33,10 +37,12 @@ use Sm\Data\Property\PropertyContainer;
  * @property PropertyContainer $properties
  */
 class Model implements ModelSchema,
+                       PropertyHaver,
                        Schematicized,
                        SmEntity,
                        \JsonSerializable {
     use Is_StdSmEntityTrait;
+    use HasPropertiesTrait;
     use ModelTrait;
     use Is_StdSchematicizedSmEntityTrait {
         fromSchematic as protected _fromSchematic_std;
@@ -44,7 +50,12 @@ class Model implements ModelSchema,
     
     /** @var  PropertyContainer */
     protected $properties;
+    /** @var \Sm\Data\Model\ModelDataManager */
+    private $propertySchematicInstantiator;
     
+    public function __construct(PropertySchematicInstantiator $modelDataManager) {
+        $this->propertySchematicInstantiator = $modelDataManager;
+    }
     #
     ## Getters and Setters
     public function __get($name) {
@@ -54,6 +65,10 @@ class Model implements ModelSchema,
             default:
                 return null;
         }
+    }
+    public function __clone() {
+        $properties = $this->getProperties();
+        $this->setProperties(clone $properties);
     }
     /**
      * @param      $name
@@ -110,26 +125,18 @@ class Model implements ModelSchema,
     ##  Configuration/Initialization
     
     /**
-     * @param $modelSchematic
+     * @param $schematic
      *
      * @return $this
      * @throws \Sm\Core\Exception\InvalidArgumentException
      * @throws \Sm\Core\Exception\UnimplementedError
      * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException
      */
-    public function fromSchematic($modelSchematic) {
-        /** @var \Sm\Data\Model\ModelSchematic $modelSchematic */
-        $this->_fromSchematic_std($modelSchematic);
-        
-        $this->setName($this->getName() ?? $modelSchematic->getName());
-        $propertySchemas = $modelSchematic->getProperties();
-        $propertyArray   = [];
-        
-        foreach ($propertySchemas as $index => $propertySchema) {
-            $propertyArray[ $index ] = $modelSchematic->instantiateProperty($propertySchema);
-        }
-        
-        $this->getProperties()->register($propertyArray);
+    public function fromSchematic($schematic) {
+        /** @var \Sm\Data\Model\ModelSchematic $schematic */
+        $this->_fromSchematic_std($schematic);
+        $this->setName($this->getName() ?? $schematic->getName());
+        $this->registerSchematicProperties($schematic);
         return $this;
     }
     /**
@@ -138,18 +145,29 @@ class Model implements ModelSchema,
      * @throws \Sm\Core\Exception\InvalidArgumentException
      */
     public function checkCanUseSchematic($schematic) {
-        if (!($schematic instanceof ModelSchematic)) {
+        if (!($schematic instanceof ModelSchema)) {
             throw new InvalidArgumentException("Cannot use anything except for a Model Schema to initialize these");
         }
     }
-    
+    /**
+     *
+     * @param \Sm\Data\Property\PropertySchema $propertySchema
+     *
+     * @return \Sm\Data\Property\Property
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     * @throws \Sm\Core\Exception\UnimplementedError
+     */
+    public function instantiateProperty(PropertySchema $propertySchema): Property {
+        return $this->propertySchematicInstantiator->instantiate($propertySchema);
+    }
     
     #
     ##  Debugging/Serialization
     public function jsonSerialize() {
         $propertyContainer = $this->getProperties();
+        $smID              = $this->getSmID();
         return [
-            'smID'       => $this->getSmID(),
+            'smID'       => $smID,
             'name'       => $this->getName(),
             'properties' => $propertyContainer->count() ? $propertyContainer : null,
         ];

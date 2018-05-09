@@ -10,7 +10,8 @@ namespace Sm\Data\SmEntity;
 
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
-use Sm\Core\Schema\Schematic;
+use Sm\Core\Schema\Schema;
+use Sm\Core\Schema\SchematicInstantiator;
 use Sm\Core\Schema\Schematicized;
 use Sm\Core\SmEntity\SmEntityFactory;
 use Sm\Core\SmEntity\SmEntityManager;
@@ -23,7 +24,7 @@ use Sm\Data\DataLayer;
  * Handles the loading/configuration of SmEntities w/r to the Data Layer
  *
  */
-abstract class SmEntityDataManager implements SmEntityManager {
+abstract class SmEntityDataManager implements SmEntityManager, SchematicInstantiator {
     /** @var null The name of this class/object as it exists as an identity manager */
     protected static $identityManagerName = null;
     
@@ -73,13 +74,11 @@ abstract class SmEntityDataManager implements SmEntityManager {
             $schematic = $this->getSchematicByName($schematic);
         }
         
-        if ($schematic && !($schematic instanceof Schematic)) {
+        if ($schematic && !($schematic instanceof Schema)) {
             throw new InvalidArgumentException("Can only use Schematics to initialize DataManagers");
         }
-        
         $item = $this->smEntityFactory->resolve(null, $schematic);
-        
-        if (isset($schematic) && $item instanceof Schematicized) {
+        if ($item instanceof Schematicized) {
             return $item->fromSchematic($schematic);
         }
         
@@ -177,4 +176,19 @@ abstract class SmEntityDataManager implements SmEntityManager {
      * @return \Sm\Core\SmEntity\SmEntitySchematic
      */
     abstract protected function createSchematic(): SmEntitySchematic;
+    public static function parseSmID($smID) {
+        if (!is_string($smID)) return false;
+        if ($smID[0] !== '[') return false;
+        preg_match('/\[(?P<manager>[a-zA-Z_]+)\](?:\{(?P<owner>[\[a-zA-Z_]+\][a-zA-Z_]+)\})*\s?(?P<name>[a-zA-Z_]+)/', $smID, $matches);
+        $matches = $matches ? $matches : [];
+        return array_filter([
+                                'manager'  => $matches['manager'] ?? null,
+                                'owner'    => $matches['owner'] ?? null,
+                                'name'     => $matches['name'] ?? null,
+                                'identity' => $matches['identity'] ?? null,
+                            ]);
+    }
+    public function __debugInfo() {
+        return [ 'schematics' => $this->registeredSchematics ];
+    }
 }

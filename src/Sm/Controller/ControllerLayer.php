@@ -69,7 +69,6 @@ class ControllerLayer extends StandardLayer {
         
         
         return FunctionResolvable::init([ $instance, $method ]);
-        
     }
     /**
      * Make sure the method identifier that we use is normal
@@ -158,6 +157,7 @@ class ControllerLayer extends StandardLayer {
             if (isset($this->layerRoot)) {
                 $instance->setLayerRoot($this->layerRoot);
             }
+            return $instance->proxy();
         }
         return $instance;
     }

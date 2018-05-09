@@ -31,6 +31,8 @@ class StandardFactory extends AbstractContainer implements Factory {
     
     /** @var  \Sm\Core\Container\Mini\MiniCache $cache */
     protected $cache;
+    /** @var bool $do_shift_args_for_anonymous If false, we resolve each function with the name of the entity being resolved */
+    protected $do_shift_args_for_anonymous = true;
     /** @var Resolvable[] */
     protected $registry = [];
     /** @var array $class_registry */
@@ -138,10 +140,10 @@ class StandardFactory extends AbstractContainer implements Factory {
         #  being done
         foreach ($this->registry as $index => $method) {
             /*** @var Resolvable $method */
-            $result = $method->resolve(...$args);
+            $result = $method->resolve(...($this->do_shift_args_for_anonymous ? $args : $original_args));
             if ($result) return $result;
         }
-    
+        
         #
         # Could not find instance
         $arg_shape = self::__getArgShape($args);
@@ -163,7 +165,7 @@ class StandardFactory extends AbstractContainer implements Factory {
         #  are trying to create
         $class_handler = Util::getItemByClassAncestry($class_name, $this->class_registry);
         $instance      = null;
-    
+        
         if (in_array($class_handler, $this->searched_parents)) throw new RecursiveError("Recursively calling class handler for {$class_name}");
         $this->searched_parents[] = $class_handler;
         
@@ -173,7 +175,7 @@ class StandardFactory extends AbstractContainer implements Factory {
         if ($class_handler instanceof Resolvable) {
             $instance = $class_handler->resolve(...$args);
         }
-    
+        
         if (is_string($instance) && class_exists($instance)) {
             $class_name = $instance; # Assume we are dealing with a class name ... maybe do a check?
         }
@@ -183,11 +185,11 @@ class StandardFactory extends AbstractContainer implements Factory {
             $this->_checkCanInit($instance);
             return $instance;
         }
-    
+        
         if (!class_exists($class_name)) {
             throw new ClassNotFoundException("Class {$class_name} not found");
         }
-    
+        
         $this->_checkCanInit($class_name);
         $class = new $class_name(...$args);
         return $class;
@@ -207,7 +209,7 @@ class StandardFactory extends AbstractContainer implements Factory {
      *
      * @return null|\Sm\Core\Resolvable\Resolvable
      */
-    protected function standardizeRegistrand($registrand):? Resolvable {
+    protected function standardizeRegistrand($registrand): ?Resolvable {
         if (is_object($registrand) && (get_class($registrand) !== \Closure::class)) {
             $registrand = function () use ($registrand) {
                 return clone $registrand;
@@ -250,13 +252,15 @@ class StandardFactory extends AbstractContainer implements Factory {
     private static function __getArgShape($args): string {
         $_args     = count($args) === 1 ? $args[0] : $args;
         $arg_shape =
-            Util::canBeString($_args) ?
-                $_args :
+            Util::canBeString($_args)
+                ?
+                $_args
+                :
                 (Util::getShape($_args));
         
         if (is_array($_args) || ($_args instanceof \JsonSerializable)) {
             $arg_shape .= ' - ' . json_encode($_args);
         }
-        return $arg_shape;
+        return $arg_shape ?? 'null';
     }
 }

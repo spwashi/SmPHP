@@ -19,11 +19,14 @@ use Sm\Data\SmEntity\SmEntityDataManager;
  *
  * @method configure($configuration):PropertySchematic
  */
-class PropertyDataManager extends SmEntityDataManager {
+class PropertyDataManager extends SmEntityDataManager implements PropertySchematicInstantiator {
     public function createSchematic(): SmEntitySchematic {
         return PropertySchematic::init();
     }
     protected function createSmEntityFactory(): SmEntityFactory {
         return PropertyFactory::init();
+    }
+    public function instantiate($schematic = null): Property {
+        return parent::instantiate($schematic);
     }
 }

@@ -6,6 +6,7 @@
  */
 
 namespace Sm\Core\SmEntity;
+use Sm\Core\Schema\Schematicized;
 
 
 /**
@@ -16,5 +17,5 @@ namespace Sm\Core\SmEntity;
  *
  * Meant to be a concrete implementation of the SmEntitySchema  interface
  */
-interface SmEntity extends SmEntitySchema {
+interface SmEntity extends SmEntitySchema, Schematicized {
 }

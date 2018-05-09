@@ -8,12 +8,15 @@
 namespace Sm\Data\Type;
 
 
+use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Resolvable\AbstractResolvable;
 use Sm\Core\Resolvable\ResolvableFactory;
-use Sm\Core\SmEntity\Is_StdSmEntityTrait;
+use Sm\Core\SmEntity\Traits\Is_StdSchematicizedSmEntityTrait;
+use Sm\Core\SmEntity\Traits\Is_StdSmEntityTrait;
 
 abstract class StandardDatatype extends AbstractResolvable implements Datatype {
     use Is_StdSmEntityTrait;
+    use Is_StdSchematicizedSmEntityTrait;
     /** @var  \Sm\Core\Resolvable\Resolvable $subject */
     protected $subject;
     
@@ -21,7 +24,9 @@ abstract class StandardDatatype extends AbstractResolvable implements Datatype {
         $this->subject = static::resolveType($subject);
         return $this;
     }
-    
+    public function checkCanUseSchematic($schematic = null) {
+        if (isset($schematic)) throw new UnimplementedError("Cannot apply schematics to most datatypes");
+    }
     /**
      * @param null|mixed $_ ,..
      *
@@ -49,5 +54,8 @@ abstract class StandardDatatype extends AbstractResolvable implements Datatype {
      */
     public static function resolveType($subject) {
         return ResolvableFactory::init($subject)->resolve($subject);
+    }
+    public function fromSchematic($schematic = null) {
+        return $this;
     }
 }

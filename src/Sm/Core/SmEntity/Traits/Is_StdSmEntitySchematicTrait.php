@@ -1,12 +1,12 @@
 <?php
 
 
-namespace Sm\Core\SmEntity;
+namespace Sm\Core\SmEntity\Traits;
 
 
 use Sm\Core\Exception\UnimplementedError;
 
-trait StdSmEntitySchematicTrait {
+trait Is_StdSmEntitySchematicTrait {
     use Is_StdSmEntityTrait;
     public function load($configuration) {
         if (!is_array($configuration)) {

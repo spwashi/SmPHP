@@ -7,6 +7,8 @@
 
 namespace Sm\Data\Property;
 
+use Sm\Core\Internal\Identification\Identifiable;
+
 
 /**
  * Interface PropertyHaver
@@ -15,6 +17,6 @@ namespace Sm\Data\Property;
  *
  * @package Sm\Data\Property
  */
-interface PropertyHaver extends PropertyHaverSchema {
-    public function instantiateProperty(PropertySchema $propertySchema): Property;
+interface PropertyHaverSchema extends Identifiable {
+    public function getProperties();
 }

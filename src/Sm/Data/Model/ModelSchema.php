@@ -8,7 +8,9 @@
 namespace Sm\Data\Model;
 
 
+use Sm\Core\Schema\Schematicized;
 use Sm\Core\SmEntity\SmEntitySchema;
+use Sm\Data\Property\PropertyHaverSchema;
 use Sm\Data\Property\PropertySchemaContainer;
 use Sm\Data\Source\DiscretelySourced;
 
@@ -17,7 +19,7 @@ use Sm\Data\Source\DiscretelySourced;
  *
  * Something that describes a Model
  */
-interface ModelSchema extends SmEntitySchema, DiscretelySourced {
+interface ModelSchema extends SmEntitySchema,  PropertyHaverSchema, DiscretelySourced {
     public function getName();
     /**
      * @return PropertySchemaContainer

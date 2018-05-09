@@ -11,26 +11,24 @@ trait PropertyTrait {
     protected $_datatypes = [];
     
     public function getRawDataTypes() {
-        return $this->_getDatatypes();
+        return $this->_datatypes;
     }
     public function getDatatypes(): array {
-        return array_map(function ($item) {
-            return $this->_getDatatypeFactory()->resolve($item);
-        }, $this->_getDatatypes());
+        $resolveDataType = function ($item) {
+            return $this->getDatatypeFactory()->resolve($item);
+        };
+        return array_map($resolveDataType, $this->getRawDataTypes());
     }
     public function setDatatypes($datatypes) {
         if (!is_array($datatypes)) $datatypes = [ $datatypes ];
-        $this->_setDatatypes($datatypes);
+        $this->_datatypes = $datatypes;
         return $this;
     }
     protected function setDatatypeFactory(DatatypeFactory $datatypeFactory = null) {
-        $datatypeFactory = $datatypeFactory ?? $this->_getDatatypeFactory() ?? new DatatypeFactory;
-        $this->_setDatatypeFactory($datatypeFactory);
+        $datatypeFactory        = $datatypeFactory ?? $this->getDatatypeFactory() ?? new DatatypeFactory;
+        $this->_datatypeFactory = $datatypeFactory;
         return $this;
     }
     
-    protected function _getDatatypes(): array { return $this->_datatypes; }
-    protected function _setDatatypes(array $datatypes) { $this->_datatypes = $datatypes; }
-    protected function _getDatatypeFactory(): ?DatatypeFactory { return $this->_datatypeFactory; }
-    protected function _setDatatypeFactory(DatatypeFactory $datatypeFactory) { $this->_datatypeFactory = $datatypeFactory; }
+    protected function getDatatypeFactory(): ?DatatypeFactory { return $this->_datatypeFactory; }
 }

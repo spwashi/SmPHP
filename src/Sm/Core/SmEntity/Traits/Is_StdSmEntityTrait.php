@@ -5,7 +5,9 @@
  * Time: 10:08 AM
  */
 
-namespace Sm\Core\SmEntity;
+namespace Sm\Core\SmEntity\Traits;
+
+use Sm\Core\Internal\Identification\HasObjectIdentityTrait;
 
 /**
  * Trait SmEntityCanBeConfiguredTrait
@@ -16,6 +18,7 @@ namespace Sm\Core\SmEntity;
 trait Is_StdSmEntityTrait {
     protected $_smID;
     protected $_name;
+    use HasObjectIdentityTrait;
     
     protected function setSmID(string $smID = null) {
         $this->_smID = $smID ?? $this->_smID;

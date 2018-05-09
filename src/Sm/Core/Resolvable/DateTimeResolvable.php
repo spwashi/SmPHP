@@ -8,6 +8,7 @@
 namespace Sm\Core\Resolvable;
 
 use Sm\Core\Resolvable\Error\UnresolvableException;
+use Sm\Core\Util;
 
 /**
  * Class DateResolvable
@@ -16,7 +17,9 @@ use Sm\Core\Resolvable\Error\UnresolvableException;
  *
  * @package Sm\Core\Resolvable
  */
-class DateResolvable extends AbstractResolvable {
+class DateTimeResolvable extends AbstractResolvable {
+    /** @var \DateTime $subject */
+    protected $subject;
     /**
      *
      * @param $subject
@@ -27,8 +30,9 @@ class DateResolvable extends AbstractResolvable {
     public function setSubject($subject) {
         if (!isset($subject)) {
             $subject = \DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''));
-        } else {
-            throw new UnresolvableException("Cannot yet resolve dates from other types");
+        } else if (!($subject instanceof \DateTime)) {
+            $self = null;
+            throw new UnresolvableException("Cannot yet resolve dates from other types -- " . Util::getShape($subject) . (is_string($subject) ? ' -- ' . $subject : null) . ' -- given');
         }
         /** @var static $self */
         $self = parent::setSubject($subject);

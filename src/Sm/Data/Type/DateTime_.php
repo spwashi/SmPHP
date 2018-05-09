@@ -8,13 +8,13 @@
 namespace Sm\Data\Type;
 
 
-use Sm\Core\Resolvable\DateResolvable;
+use Sm\Core\Resolvable\DateTimeResolvable;
 
 class DateTime_ extends StandardDatatype {
     public function __toString() {
         return "" . $this->subject->resolve()->format('Y-m-d H:i:s.u');
     }
     public static function resolveType($subject) {
-        return DateResolvable::init($subject);
+        return DateTimeResolvable::init($subject);
     }
 }

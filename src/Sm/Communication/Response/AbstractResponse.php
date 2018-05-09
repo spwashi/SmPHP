@@ -8,7 +8,7 @@
 namespace Sm\Communication\Response;
 
 
-use Sm\Core\Resolvable\DateResolvable;
+use Sm\Core\Resolvable\DateTimeResolvable;
 
 /**
  * Class Response
@@ -20,7 +20,7 @@ use Sm\Core\Resolvable\DateResolvable;
 abstract class AbstractResponse implements Response {
     public function __construct() {
         # Update the creation/access dates
-        $this->creation_dt = DateResolvable::init();
+        $this->creation_dt = DateTimeResolvable::init();
         $this->access_dt   = null;
     }
     public static function init() {

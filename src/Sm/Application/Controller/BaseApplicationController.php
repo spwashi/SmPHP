@@ -6,6 +6,8 @@ namespace Sm\Application\Controller;
 
 use Sm\Application\Application;
 use Sm\Controller\BaseController;
+use Sm\Controller\Controller;
+use Sm\Controller\ControllerProxy;
 use Sm\Core\Context\Layer\LayerRoot;
 use Sm\Core\Exception\InvalidArgumentException;
 
@@ -32,5 +34,8 @@ class BaseApplicationController extends BaseController implements ApplicationCon
     }
     public function getApplication(): ?Application {
         return $this->layerRoot;
+    }
+    public function proxy(): Controller {
+        return new ControllerProxy($this);
     }
 }

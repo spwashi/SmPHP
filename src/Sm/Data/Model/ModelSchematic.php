@@ -5,9 +5,10 @@ namespace Sm\Data\Model;
 
 
 use Sm\Core\SmEntity\SmEntitySchematic;
-use Sm\Core\SmEntity\StdSmEntitySchematicTrait;
+use Sm\Core\SmEntity\Traits\Is_StdSmEntitySchematicTrait;
 use Sm\Data\Property\Property;
 use Sm\Data\Property\PropertyDataManager;
+use Sm\Data\Property\PropertyHaver;
 use Sm\Data\Property\PropertySchema;
 use Sm\Data\Property\PropertySchemaContainer;
 
@@ -22,7 +23,7 @@ class ModelSchematic implements ModelSchema,
                                 SmEntitySchematic,
                                 \JsonSerializable {
     use ModelTrait;
-    use StdSmEntitySchematicTrait {
+    use Is_StdSmEntitySchematicTrait {
         load as protected _load_std;
     }
     
@@ -140,5 +141,11 @@ class ModelSchematic implements ModelSchema,
             'properties'   => $this->properties,
             'propertyMeta' => $this->propertyMeta,
         ];
+    }
+    public function getObjectId() {
+        // TODO: Implement getObjectId() method.
+    }
+    public function __debugInfo() {
+        return $this->jsonSerialize();
     }
 }

@@ -17,9 +17,9 @@ use Sm\Core\Resolvable\NativeResolvable;
 use Sm\Core\Resolvable\Resolvable;
 use Sm\Core\Resolvable\ResolvableFactory;
 use Sm\Core\Schema\Schematicized;
-use Sm\Core\SmEntity\Is_StdSchematicizedSmEntityTrait;
-use Sm\Core\SmEntity\Is_StdSmEntityTrait;
 use Sm\Core\SmEntity\SmEntity;
+use Sm\Core\SmEntity\Traits\Is_StdSchematicizedSmEntityTrait;
+use Sm\Core\SmEntity\Traits\Is_StdSmEntityTrait;
 use Sm\Core\Util;
 use Sm\Data\Property\Event\PropertyValueChange;
 use Sm\Data\Property\Exception\ReadonlyPropertyException;
@@ -250,8 +250,11 @@ class Property extends AbstractResolvable implements Readonly_able,
         /** @var \Sm\Data\Property\PropertySchematic $schematic */
         $this->_fromSchematic_std($schematic);
         
-        $rawDataTypes        = $this->getRawDataTypes();
-        $name                = $this->getName() ?? ($schematic ? $schematic->getName() : null);
+        $rawDataTypes = $this->getRawDataTypes();
+        $name         = $this->getName() ?? ($schematic ? $schematic->getName() : null);
+        if ($schematic instanceof Property) {
+            $this->setValue($schematic->raw_value);
+        }
         $referenceDescriptor = $this->getReferenceDescriptor() ?? ($schematic ? $schematic->getReferenceDescriptor() : null);
         $datatypes           = count($rawDataTypes) ? $rawDataTypes : ($schematic ? $schematic->getRawDataTypes() : null);
         
@@ -279,8 +282,5 @@ class Property extends AbstractResolvable implements Readonly_able,
             return $this->resolve();
         }
         return null;
-    }
-    public function __debugInfo() {
-        return $this->jsonSerialize();
     }
 }

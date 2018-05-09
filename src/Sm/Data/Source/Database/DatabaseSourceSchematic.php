@@ -5,11 +5,11 @@ namespace Sm\Data\Source\Database;
 
 
 use Sm\Core\Exception\UnimplementedError;
-use Sm\Core\SmEntity\StdSmEntitySchematicTrait;
+use Sm\Core\SmEntity\Traits\Is_StdSmEntitySchematicTrait;
 use Sm\Data\Source\DataSourceSchematic;
 
 class DatabaseSourceSchematic implements DatabaseSourceSchema, DataSourceSchematic, \JsonSerializable {
-    use StdSmEntitySchematicTrait;
+    use Is_StdSmEntitySchematicTrait;
     protected $name;
     public static function init() { return new static(...func_get_args()); }
     public function getName() {

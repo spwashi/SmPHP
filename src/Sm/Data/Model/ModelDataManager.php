@@ -29,20 +29,20 @@ class ModelDataManager extends SmEntityDataManager {
     protected static $identityManagerName = 'Model';
     /** @var  ModelPersistenceManager $persistenceManager */
     protected $persistenceManager;
-    /** @var \Sm\Data\Property\PropertyDataManager */
+    /** @var PropertyDataManager */
     private $propertyDataManager;
     /**
      * ModelDataManager constructor.
      *
-     * @param \Sm\Data\DataLayer                         $dataLayer
-     * @param SmEntityFactory                            $smEntityFactory
-     * @param \Sm\Data\Property\PropertyDataManager|null $datatypeFactory
+     * @param \Sm\Data\DataLayer       $dataLayer
+     * @param SmEntityFactory          $smEntityFactory
+     * @param PropertyDataManager|null $datatypeFactory
      */
     public function __construct(DataLayer $dataLayer = null,
                                 SmEntityFactory $smEntityFactory = null,
                                 PropertyDataManager $datatypeFactory = null) {
-        parent::__construct($dataLayer, $smEntityFactory);
         $this->propertyDataManager = $datatypeFactory ?? PropertyDataManager::init();
+        parent::__construct($dataLayer, $smEntityFactory);
     }
     
     public function __get($name) {
@@ -53,7 +53,7 @@ class ModelDataManager extends SmEntityDataManager {
     }
     
     protected function createSmEntityFactory(): SmEntityFactory {
-        return ModelFactory::init();
+        return ModelFactory::init()->setPropertyInstantiatior($this->propertyDataManager);
     }
     protected function createSchematic(): SmEntitySchematic {
         return ModelSchematic::init($this->propertyDataManager);
@@ -61,5 +61,8 @@ class ModelDataManager extends SmEntityDataManager {
     public function setPersistenceManager(ModelPersistenceManager $persistenceManager) {
         $this->persistenceManager = $persistenceManager;
         return $this;
+    }
+    public function getPropertyDataManager(): PropertyDataManager {
+        return $this->propertyDataManager;
     }
 }

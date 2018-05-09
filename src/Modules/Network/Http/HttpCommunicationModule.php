@@ -12,7 +12,6 @@ use Sm\Communication\Module\TwoWayCommunicationModule;
 use Sm\Communication\Request\Request;
 use Sm\Communication\Routing\Route;
 use Sm\Core\Exception\UnimplementedError;
-use Sm\Core\Resolvable\Error\UnresolvableException;
 use Sm\Core\Resolvable\StringResolvable;
 use Sm\Modules\Network\Http\Request\HttpRequest;
 use Sm\Modules\Network\Http\Request\HttpRequestDescriptor;
@@ -48,49 +47,44 @@ class HttpCommunicationModule extends TwoWayCommunicationModule {
                     if ($result instanceof Request) {
                         throw new UnimplementedError("Can't do this kind of request yet!");
                     }
-    
+                    
                     if ($result instanceof Route) {
                         throw new UnimplementedError("Not sure how to handle this use case");
                     }
                     
                     if (!($result instanceof HttpResponse)) {
-                        try {
-                            if (is_array($result) || $result instanceof \JsonSerializable) {
-                                $result = HttpResponse::init()
-                                                      ->setBody(json_encode($result))
-                                                      ->setContentType('application/json');
-                            } else {
-                                $body   = StringResolvable::init($result);
-                                $result = HttpResponse::init()
-                                                      ->setBody($body);
-                            }
-                            
-                        } catch (UnresolvableException $exception) {
-                            var_dump($result);
+                        if (is_array($result) || $result instanceof \JsonSerializable) {
+                            $result = HttpResponse::init()
+                                                  ->setBody(json_encode($result))
+                                                  ->setContentType('application/json');
+                        } else {
+                            $body   = StringResolvable::init($result);
+                            $result = HttpResponse::init()
+                                                  ->setBody($body);
                         }
                     }
-    
+                    
                     $result->makeHeaders();
-    
+                    
                     echo $result->getBody();
                 },
-
+            
             Http::REDIRECT =>
                 function ($route_or_request) {
                     if (!($route_or_request instanceof Route)) {
                         throw new UnimplementedError("Can only dispatch routes");
                     }
-    
+                    
                     $route = $route_or_request;
-    
+                    
                     unset($route_or_request);
-    
+                    
                     $description = $route->getRequestDescriptor();
-    
+                    
                     if (!($description instanceof HttpRequestDescriptor)) {
                         throw new UnimplementedError("HTTP Module can only dispatch HTTP routes");
                     }
-    
+                    
                     $arguments = $route->getPrimedArguments();
                     $url       = $description->asUrlPath($arguments);
                     header("Location: {$url}");

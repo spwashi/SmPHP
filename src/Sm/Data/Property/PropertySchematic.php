@@ -6,7 +6,7 @@ namespace Sm\Data\Property;
 
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\SmEntity\SmEntitySchematic;
-use Sm\Core\SmEntity\StdSmEntitySchematicTrait;
+use Sm\Core\SmEntity\Traits\Is_StdSmEntitySchematicTrait;
 use Sm\Data\Type\DatatypeFactory;
 
 /**
@@ -28,7 +28,7 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
     public static function init() { return new static(...func_get_args()); }
     
     use PropertyTrait;
-    use StdSmEntitySchematicTrait {
+    use Is_StdSmEntitySchematicTrait {
         load as protected _load_std;
     }
     
@@ -129,7 +129,7 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
     public function jsonSerialize() {
         $length                       = $this->getLength();
         $referenceDescriptorSchematic = $this->getReferenceDescriptor();
-        $datatypes                    = $this->_getDatatypes();
+        $datatypes                    = $this->getRawDataTypes();
         $defaultValue                 = $this->getDefaultValue();
         $items                        = [ 'smID'      => $this->getSmID(),
                                           'name'      => $this->getName(),
@@ -152,5 +152,8 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
             $items['reference'] = $referenceDescriptorSchematic;
         }
         return $items;
+    }
+    public function __debugInfo() {
+        return $this->jsonSerialize();
     }
 }

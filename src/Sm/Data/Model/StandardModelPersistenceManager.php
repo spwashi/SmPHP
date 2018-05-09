@@ -24,6 +24,12 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
     use HasMonitorTrait;
     /** @var  QueryInterpreter $queryInterpreter */
     protected $queryInterpreter;
+    protected $do_safe_finds = true;
+    /** @var \Sm\Core\Container\Container|\Sm\Data\Model\ModelFactory */
+    protected $modelFactory;
+    public function __construct(ModelFactory $modelFactory = null) {
+        $this->modelFactory = $modelFactory ?? ModelFactory::init();
+    }
     public function setQueryInterpreter(QueryInterpreter $queryInterpreter) {
         $this->queryInterpreter = $queryInterpreter;
         
@@ -32,27 +38,28 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
     /**
      * Retrieve and instantiate a Model
      *
-     * @param \Sm\Data\Model\Model $model
+     * @param \Sm\Data\Model\ModelSchema $schematic
      *
-     * @param bool                 $do_hydrate
+     * @param bool                       $do_hydrate
      *
-     * @return \Sm\Data\Model\Model
+     * @return Model
      * @throws \Sm\Core\Exception\InvalidArgumentException
      * @throws \Sm\Core\Exception\UnimplementedError
      * @throws \Sm\Core\Resolvable\Error\UnresolvableException
-     * @throws \Sm\Data\Property\Exception\NonexistentPropertyException
+     * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException
      */
-    public function find(Model $model, $do_hydrate = false): Model {
-        $result = $this->selectFind($model, $do_hydrate);
-        $model  = (clone $model)->set($result[0] ?? []);
-        return $model;
+    public function find(ModelSchema $schematic, $do_hydrate = false): ModelSchema {
+        $result    = $this->selectFind($schematic, $do_hydrate);
+        $schematic = (clone $schematic)->set($result[0] ?? []);
+        $item      = $this->modelFactory->resolve(null, $schematic);
+        return $item->fromSchematic($schematic);
     }
     /**
      * Find multiple models that match this one
      *
-     * @param \Sm\Data\Model\Model $model
+     * @param Model $model
      *
-     * @return \Sm\Data\Model\Model[]
+     * @return Model[]
      * @throws \Sm\Core\Exception\InvalidArgumentException
      * @throws \Sm\Core\Exception\UnimplementedError
      * @throws \Sm\Core\Resolvable\Error\UnresolvableException
@@ -69,7 +76,7 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
     /**
      * Save a Model in whichever source maintains the association of its identity and its properties
      *
-     * @param \Sm\Data\Model\Model $model
+     * @param Model $model
      *
      * @return mixed
      * @throws \Sm\Core\Exception\InvalidArgumentException
@@ -85,7 +92,7 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
     /**
      * Create the Model in whichever source maintains its identity
      *
-     * @param \Sm\Data\Model\Model $model
+     * @param Model $model
      *
      * @return mixed
      * @throws \Sm\Core\Exception\InvalidArgumentException
@@ -105,7 +112,7 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
     /**
      * Instead of Deleting something, mark a flag that either queues it for deletion or removes it from the pool of valid models
      *
-     * @param \Sm\Data\Model\Model $model
+     * @param Model $model
      *
      * @return mixed
      * @throws \Sm\Core\Exception\InvalidArgumentException
@@ -123,7 +130,7 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
     /**
      * Remove a model from its maintainer-of-identity
      *
-     * @param \Sm\Data\Model\Model $model
+     * @param Model $model
      *
      * @return mixed
      * @throws \Sm\Core\Exception\InvalidArgumentException
@@ -161,14 +168,14 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
     /**
      * Get the result of a Select query searching for a Model
      *
-     * @param \Sm\Data\Model\Model $model
+     * @param Model $model
      *
      * @return array
      * @throws \Sm\Core\Exception\InvalidArgumentException
      * @throws \Sm\Core\Resolvable\Error\UnresolvableException
      * @throws \Sm\Core\Exception\UnimplementedError
      */
-    protected function selectFind(Model $model, $do_hydrate = false) {
+    protected function selectFind(ModelSchema $model, $do_hydrate = false) {
         $properties = $model->properties;
         $conditions = [];
         
@@ -179,7 +186,7 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
             }
         }
         
-        if (empty($conditions)) {
+        if (empty($conditions) && $this->do_safe_finds) {
             throw (new ModelNotSoughtException("Cannot search without conditions"))->setModel($model);
             
         }
@@ -231,5 +238,13 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
         $query_interpreter_monitors = $this->queryInterpreter->getMonitorContainer()->getAll();
         $monitors                   = array_merge_recursive($these_monitors, $query_interpreter_monitors);
         return $monitors;
+    }
+    public function setFindSafety($do_safe_finds = true) {
+        $this->do_safe_finds = $do_safe_finds;
+        return $this;
+    }
+    public function setModelFactory(ModelFactory $modelFactory) {
+        $this->modelFactory = $modelFactory;
+        return $this;
     }
 }

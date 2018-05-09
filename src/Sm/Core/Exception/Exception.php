@@ -54,6 +54,7 @@ class Exception extends \Exception implements Monitored, \JsonSerializable {
                 'class'    => $trace['class'] ?? 0,
                 'args'     => $trace['args'] ?? 0,
             ],
+            'full'     => $this->getTrace(),
             'line'     => $this->line,
             'monitors' => $this->relevant_monitors,
         ];
