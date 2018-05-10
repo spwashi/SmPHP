@@ -41,7 +41,7 @@ class ModelDataManager extends SmEntityDataManager {
     public function __construct(DataLayer $dataLayer = null,
                                 SmEntityFactory $smEntityFactory = null,
                                 PropertyDataManager $datatypeFactory = null) {
-        $this->propertyDataManager = $datatypeFactory ?? PropertyDataManager::init();
+        $this->propertyDataManager = $datatypeFactory;
         parent::__construct($dataLayer, $smEntityFactory);
     }
     

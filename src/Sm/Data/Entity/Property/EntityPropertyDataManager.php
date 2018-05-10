@@ -13,6 +13,6 @@ class EntityPropertyDataManager extends PropertyDataManager {
         return EntityPropertySchematic::init();
     }
     public function createSmEntityFactory(): SmEntityFactory {
-        return EntityPropertyFactory::init();
+        return EntityPropertyFactory::init()->setDatatypeFactory($this->datatypeFactory);
     }
 }

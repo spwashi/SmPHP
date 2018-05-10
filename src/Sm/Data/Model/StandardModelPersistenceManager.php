@@ -7,7 +7,9 @@ namespace Sm\Data\Model;
 use ICanBoogie\Inflector;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Internal\Monitor\HasMonitorTrait;
+use Sm\Core\Resolvable\Error\UnresolvableException;
 use Sm\Data\Evaluation\Comparison\EqualToCondition;
+use Sm\Data\Model\Exception\ModelLayerConfigurationError;
 use Sm\Data\Model\Exception\ModelNotFoundException;
 use Sm\Data\Model\Exception\ModelNotSoughtException;
 use Sm\Data\Source\Database\Table\TableSource;
@@ -38,7 +40,7 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
     /**
      * Retrieve and instantiate a Model
      *
-     * @param \Sm\Data\Model\ModelSchema $schematic
+     * @param \Sm\Data\Model\ModelSchema $search
      *
      * @param bool                       $do_hydrate
      *
@@ -48,11 +50,19 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
      * @throws \Sm\Core\Resolvable\Error\UnresolvableException
      * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException
      */
-    public function find(ModelSchema $schematic, $do_hydrate = false): ModelSchema {
-        $result    = $this->selectFind($schematic, $do_hydrate);
-        $schematic = (clone $schematic)->set($result[0] ?? []);
-        $item      = $this->modelFactory->resolve(null, $schematic);
-        return $item->fromSchematic($schematic);
+    public function find(ModelSchema $search, $do_hydrate = false): ModelSchema {
+        $result = $this->selectFind($search, $do_hydrate);
+        /** @var \Sm\Data\Model\ModelSchema $schematic */
+        $schematic = (clone $search)->set($result[0] ?? []);
+        try {
+            $smID = $schematic->getSmID();
+            $item = $this->modelFactory->resolve($smID ?? null, $schematic);
+            $item->fromSchematic($schematic);
+            return $item;
+        } catch (UnresolvableException $exception) {
+            $error = (new ModelLayerConfigurationError("Could not resolve from"))->setModel($schematic);
+            throw $error;
+        }
     }
     /**
      * Find multiple models that match this one

@@ -3,6 +3,7 @@
 
 namespace Sm\Data\Entity;
 
+use Sm\Core\Context\Context;
 use Sm\Core\Event\GenericEvent;
 use Sm\Core\Internal\Monitor\Monitor;
 use Sm\Data\Entity\Exception\EntityModelNotFoundException;
@@ -29,7 +30,7 @@ trait EntityHasPrimaryModelTrait {
      * @throws \Sm\Data\Entity\Exception\EntityModelNotFoundException
      * @throws \Sm\Data\Property\Exception\NonexistentPropertyException
      */
-    public function find($attributes = [], $context = 0) {
+    public function find($attributes = [], Context $context = null) {
         /** @var \Sm\Data\Entity\Entity|\Sm\Data\Entity\EntityHasPrimaryModelTrait $entity */
         $entity           = $this;
         $modelDataManager = $entity->entityDataManager->getModelDataManager();

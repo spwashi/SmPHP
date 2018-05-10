@@ -19,6 +19,10 @@ use Sm\Data\Property\PropertySchemaContainer;
  */
 class EntitySchematic implements EntitySchema, SmEntitySchematic, \JsonSerializable {
     use HasPropertiesTrait;
+    use EntityTrait;
+    use Is_StdSmEntitySchematicTrait {
+        load as protected _load_std;
+    }
     protected $datatypeFactory;
     protected $length;
     protected $onModelUpdateValue;
@@ -42,10 +46,7 @@ class EntitySchematic implements EntitySchema, SmEntitySchematic, \JsonSerializa
         $entity->properties          = PropertySchemaContainer::init();
         return $entity;
     }
-    use EntityTrait;
-    use Is_StdSmEntitySchematicTrait {
-        load as protected _load_std;
-    }
+    
     
     #
     ##  Configuration

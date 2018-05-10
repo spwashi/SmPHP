@@ -11,6 +11,7 @@ namespace Sm\Data\Property;
 use Sm\Core\Abstraction\Readonly_able;
 use Sm\Core\Abstraction\ReadonlyTrait;
 use Sm\Core\Exception\InvalidArgumentException;
+use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Internal\Monitor\Monitor;
 use Sm\Core\Resolvable\AbstractResolvable;
 use Sm\Core\Resolvable\NativeResolvable;
@@ -23,6 +24,7 @@ use Sm\Core\SmEntity\Traits\Is_StdSmEntityTrait;
 use Sm\Core\Util;
 use Sm\Data\Property\Event\PropertyValueChange;
 use Sm\Data\Property\Exception\ReadonlyPropertyException;
+use Sm\Data\Type\Datatype;
 use Sm\Data\Type\Undefined_;
 
 /**
@@ -67,6 +69,8 @@ class Property extends AbstractResolvable implements Readonly_able,
     protected $valueIsNotDefault;
     /** @var ReferenceDescriptorSchematic $referenceDescriptor */
     protected $referenceDescriptor;
+    /** @var bool $doStrictResolve Should we throw an error when we try to resolve datatypes we don't "know" about? */
+    protected $doStrictResolve = false;
     
     public function __construct($name = null) {
         $this->valueHistory = new Monitor;
@@ -236,10 +240,27 @@ class Property extends AbstractResolvable implements Readonly_able,
      *
      *
      * @return Resolvable
+     * @throws \Sm\Core\Exception\UnimplementedError
      */
     public function resolve() {
-        return $this->subject ? $this->subject->resolve() : null;
+        $resolved        = $this->subject ? $this->subject->resolve() : null;
+        $primaryDatatype = $this->getPrimaryDatatype();
+        
+        if ($primaryDatatype instanceof Datatype) {
+            $primaryDatatype->setSubject($resolved);
+            return $primaryDatatype->resolve();
+        }
+        
+        if ($this->doStrictResolve) {
+            throw new UnimplementedError("Cannot resolve value for " . Util::getShape($primaryDatatype));
+        } else {
+            return $resolved;
+        }
     }
+    public function getPrimaryDatatype() {
+        return $this->getDatatypes()[0] ?? null;
+    }
+    
     public function isValueNotDefault() {
         return $this->valueIsNotDefault;
     }

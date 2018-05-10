@@ -30,9 +30,11 @@ class DateTimeResolvable extends AbstractResolvable {
     public function setSubject($subject) {
         if (!isset($subject)) {
             $subject = \DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''));
+        } else if ($subject === false) {
+            $subject = null;
         } else if (!($subject instanceof \DateTime)) {
             $self = null;
-            throw new UnresolvableException("Cannot yet resolve dates from other types -- " . Util::getShape($subject) . (is_string($subject) ? ' -- ' . $subject : null) . ' -- given');
+            throw new UnresolvableException("Cannot yet resolve dates from other types -- " . Util::getShape($subject) . (is_scalar($subject) ? ' -- ' . $subject : null) . ' -- given');
         }
         /** @var static $self */
         $self = parent::setSubject($subject);

@@ -4,6 +4,7 @@
 namespace Sm\Data\Property;
 
 
+use Sm\Core\Resolvable\Error\UnresolvableException;
 use Sm\Data\Type\DatatypeFactory;
 
 trait PropertyTrait {
@@ -15,7 +16,9 @@ trait PropertyTrait {
     }
     public function getDatatypes(): array {
         $resolveDataType = function ($item) {
-            return $this->getDatatypeFactory()->resolve($item);
+            $datatypeFactory = $this->getDatatypeFactory();
+            if (!isset($datatypeFactory)) throw new UnresolvableException("Missing DataTypeFactory");
+            return $datatypeFactory->resolve($item);
         };
         return array_map($resolveDataType, $this->getRawDataTypes());
     }
@@ -24,7 +27,7 @@ trait PropertyTrait {
         $this->_datatypes = $datatypes;
         return $this;
     }
-    protected function setDatatypeFactory(DatatypeFactory $datatypeFactory = null) {
+    public function setDatatypeFactory(DatatypeFactory $datatypeFactory = null) {
         $datatypeFactory        = $datatypeFactory ?? $this->getDatatypeFactory() ?? new DatatypeFactory;
         $this->_datatypeFactory = $datatypeFactory;
         return $this;

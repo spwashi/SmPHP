@@ -50,9 +50,18 @@ class MiniContainer implements Registry, \Iterator {
     /**
      * Function to return everything from the registry.
      *
+     * @param bool $resolve
+     *
      * @return array
      */
-    public function getAll() {
+    public function getAll($resolve = false) {
+        if ($resolve) {
+            $resolved = [];
+            foreach ($this->registry as $key => $value) {
+                $resolved[ $key ] = $this->resolve($key);
+            }
+            return $resolved;
+        }
         return $this->registry;
     }
     /**

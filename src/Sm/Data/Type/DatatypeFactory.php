@@ -7,6 +7,8 @@ namespace Sm\Data\Type;
 use Sm\Core\SmEntity\SmEntityFactory;
 
 class DatatypeFactory extends SmEntityFactory {
+    protected $do_shift_args_for_anonymous = false;
+    
     public function __construct() {
         parent::__construct();
         $this->register([

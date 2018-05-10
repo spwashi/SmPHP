@@ -29,7 +29,14 @@ class TwigViewModule extends RepresentationModule {
         if (isset($defaultEnvironment)) $this->setDefaultTwigEnvironment($defaultEnvironment);
         $this->registerDefaultRepresentationResolvers();
     }
-    
+    protected function twigToViewProxy($string, $vars = []): ViewProxy {
+        $twigEnvironment = $this->getTwigEnvironment();
+        $view            = TwigView::init()
+                                   ->setTwigTemplate($string)
+                                   ->setItem($vars)
+                                   ->setTwigEnvironment($twigEnvironment);
+        return ViewProxy::init($view);
+    }
     /**
      * The
      *
@@ -43,18 +50,19 @@ class TwigViewModule extends RepresentationModule {
                  * @param string $string The name of the template. Just to get very basic templating going
                  * @param array  $vars   An object/array of variables that are going to go into the View as variables
                  */
-                function ($string = null, $vars = []) {
+                function ($template_name = null, $vars = []) {
                     # Only for function calls that are like 'twig_template_name.twig', $vars
-                    if (!(is_string($string) && Util::endsWith($string, '.twig'))) return null;
-                    
-                    $twigEnvironment = $this->getTwigEnvironment();
-                    $view            = TwigView::init()
-                                               ->setTwigTemplate($string)
-                                               ->setItem($vars)
-                                               ->setTwigEnvironment($twigEnvironment);
-    
-    
-                    return ViewProxy::init($view);
+                    if (!(is_string($template_name) && Util::endsWith($template_name, '.twig'))) return null;
+                    return $this->twigToViewProxy($template_name, $vars);
+                },
+                /**
+                 * @param string $string The name of the template. Just to get very basic templating going
+                 * @param array  $vars   An object/array of variables that are going to go into the View as variables
+                 */
+                function ($use_twig_identifier = null, $template_name = null, $vars = []) {
+                    # Only for function calls that are like 'twig_template_name.twig', $vars
+                    if (!($use_twig_identifier === TwigView::class && is_string($template_name))) return null;
+                    return $this->twigToViewProxy($template_name, $vars);
                 },
             ]);
         

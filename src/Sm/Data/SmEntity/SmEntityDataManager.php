@@ -40,7 +40,8 @@ abstract class SmEntityDataManager implements SmEntityManager, SchematicInstanti
     ##   Constructors/Initialization
     public function __construct(DataLayer $dataLayer = null, SmEntityFactory $smEntityFactory = null) {
         $this->dataLayer = $dataLayer;
-        $this->setSmEntityFactory($smEntityFactory);
+        if (isset($this->smEntityFactory)) $this->setSmEntityFactory($smEntityFactory);
+        else $this->getSmEntityFactory();
     }
     /**
      * Static constructor for SmEntityManagers
@@ -93,16 +94,12 @@ abstract class SmEntityDataManager implements SmEntityManager, SchematicInstanti
      *
      * @return SmEntityDataManager
      */
-    public function setSmEntityFactory(SmEntityFactory $smEntityFactory = null): SmEntityDataManager {
-        if (!isset($smEntityFactory)) {
-            if (isset($this->smEntityFactory)) return $this;
-            $smEntityFactory = $this->createSmEntityFactory();
-        }
+    public function setSmEntityFactory(SmEntityFactory $smEntityFactory): SmEntityDataManager {
         $this->smEntityFactory = $smEntityFactory;
         return $this;
     }
     public function getSmEntityFactory(): SmEntityFactory {
-        return $this->smEntityFactory;
+        return $this->smEntityFactory = $this->smEntityFactory ?? $this->createSmEntityFactory();
     }
     /**
      * Register a classname to instantiate based on the SmID provided

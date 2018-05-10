@@ -8,6 +8,7 @@
 namespace Sm\Data\Entity;
 
 
+use Sm\Core\Context\Context;
 use Sm\Core\SmEntity\SmEntitySchema;
 use Sm\Data\Model\ModelSchema;
 use Sm\Data\Property\PropertyHaverSchema;
@@ -21,4 +22,5 @@ interface EntitySchema extends SmEntitySchema, PropertyHaverSchema {
     public function getName();
     public function setName(string $name);
     public function getPersistedIdentity(): ?ModelSchema;
+    public function proxyInContext(Context $context):? ContextualizedEntityProxy;
 }

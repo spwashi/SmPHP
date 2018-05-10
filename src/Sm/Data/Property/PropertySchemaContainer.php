@@ -40,7 +40,7 @@ class PropertySchemaContainer extends Container {
     }
     public function resolve($name = null): ?PropertySchema {
         $parsed = SmEntityDataManager::parseSmID($name);
-        foreach ($this->getAll() as $propertyName => $property) {
+        foreach ($this as $propertyName => $property) {
             if (!$parsed) continue;
             if ($property->getSmID() === $name) return $property;
         }

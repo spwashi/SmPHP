@@ -43,20 +43,80 @@ class Exception extends \Exception implements Monitored, \JsonSerializable {
         }
     }
     public function jsonSerialize() {
-        $trace = $this->getTrace()[0] ?? [];
+        $all_trace_arr    = $this->getTrace();
+        $message          = $this->resolveMessage();
+        $relevantMonitors = $this->getRelevantMonitors();
+        $fullTrace        = $this->getAbbreviatedTrace($all_trace_arr);
+        $previous         = $this->getPreviousException();
+        $trace            = $all_trace_arr[0] ?? [];
+        
         return [
-            'message'  => $this->getMessage(),
-            'previous' => $this->getPrevious(),
-            'trace'    => [
-                'file'     => $trace['file'] ?? 0,
-                'line'     => $trace['line'] ?? 0,
-                'function' => $trace['function'] ?? 0,
-                'class'    => $trace['class'] ?? 0,
-                'args'     => $trace['args'] ?? 0,
-            ],
-            'full'     => $this->getTrace(),
+            'message'  => $message,
+            'file'     => $this->getFile(),
             'line'     => $this->line,
-            'monitors' => $this->relevant_monitors,
+            'previous' => $previous,
+            'trace'    => $fullTrace,
+            'monitors' => $relevantMonitors,
         ];
+    }
+    /**
+     * @return \Sm\Core\Internal\Monitor\MonitorContainer|string
+     */
+    protected function getRelevantMonitors() {
+        try {
+            $relevantMonitors = $this->relevant_monitors;
+        } catch (\Exception $e) {
+            $relevantMonitors = 'Unresolvable relevantMonitors';
+        }
+        return $relevantMonitors;
+    }
+    /**
+     * @return string
+     */
+    protected function resolveMessage(): string {
+        try {
+            $message = parent::getMessage();
+        } catch (\Exception $e) {
+            $message = 'Unresolvable message';
+        }
+        return $message;
+    }
+    /**
+     * @return \Exception|string
+     */
+    protected function getPreviousException() {
+        try {
+            $previous = parent::getPrevious();
+        } catch (\Exception $e) {
+            $previous = 'Unresolvable previous';
+        }
+        return $previous;
+    }
+    /**
+     * @param $all_trace_arr
+     *
+     * @return array|string
+     */
+    protected function getAbbreviatedTrace($all_trace_arr) {
+        try {
+            $fullTrace = [];
+            foreach ($all_trace_arr as $item) {
+                try {
+                    $fullTrace[] = json_decode(json_encode($item), 1);
+                } catch (\Exception $exception) {
+                    $fullTrace[] = [
+                        'EXCEPTION_IN_EXCEPTION',
+                        [ $item['file'] ?? 0,
+                          $item['line'] ?? 0, ],
+                        $exception->getMessage(),
+                        $exception->getLine(),
+                        $exception->getFile(),
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            $fullTrace = 'Unresolvable trace';
+        }
+        return $fullTrace;
     }
 }

@@ -11,4 +11,5 @@ use Sm\Core\Resolvable\Resolvable;
 use Sm\Core\SmEntity\SmEntity;
 
 interface Datatype extends \JsonSerializable, SmEntity, Resolvable {
+    function setSubject($subject);
 }

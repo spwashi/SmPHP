@@ -8,6 +8,7 @@
 namespace Sm\Data\Model;
 
 
+use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\SmEntity\SmEntityFactory;
 use Sm\Data\Property\PropertySchematicInstantiator;
 
@@ -25,8 +26,24 @@ class ModelFactory extends SmEntityFactory {
     protected function canCreateClass($object_type) {
         return parent::canCreateClass($object_type) && is_a($object_type, Model::class);
     }
-    public function resolveDefault($parameters = null) {
-        return !isset($parameters) ? new Model($this->propertySchematicInstantiator) : null;
+    /**
+     * @param null $model
+     *
+     * @return $this|\Sm\Data\Model\Model
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     * @throws \Sm\Core\Exception\UnimplementedError
+     * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException
+     */
+    public function resolveDefault($model = null) {
+        if (!isset($model)) {
+            return new Model($this->propertySchematicInstantiator);
+        } else {
+            if ($model instanceof ModelSchema) {
+                if ($model instanceof Model) return clone $model;
+                else return (new Model($this->propertySchematicInstantiator))->fromSchematic($model);
+            }
+            throw new InvalidArgumentException("Cannot instantiate model with parameters");
+        }
     }
     public function setPropertyInstantiatior(PropertySchematicInstantiator $propertySchematicInstantiator) {
         $this->propertySchematicInstantiator = $propertySchematicInstantiator;

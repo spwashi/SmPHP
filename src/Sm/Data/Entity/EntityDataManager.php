@@ -22,6 +22,7 @@ use Sm\Data\SmEntity\SmEntityDataManager;
  * Handles the loading/configuration of Properties
  *
  * @method configure($configuration):EntitySchematic
+ * @method instantiate($schematic = null):\Sm\Data\Entity\Entity
  */
 class EntityDataManager extends SmEntityDataManager {
     protected static $identityManagerName = 'Entity';
@@ -34,8 +35,8 @@ class EntityDataManager extends SmEntityDataManager {
                                 ModelDataManager $modelDataManager = null,
                                 EntityPropertyDataManager $propertyDataManager = null) {
         parent::__construct($dataLayer, $smEntityFactory);
-        $this->modelDataManager    = $modelDataManager ?? ModelDataManager::init();
-        $this->propertyDataManager = $propertyDataManager ?? EntityPropertyDataManager::init();
+        $this->modelDataManager    = $modelDataManager;
+        $this->propertyDataManager = $propertyDataManager;
     }
     public function createSchematic(): SmEntitySchematic {
         return EntitySchematic::init($this->modelDataManager, $this->propertyDataManager);

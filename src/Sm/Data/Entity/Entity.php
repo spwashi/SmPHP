@@ -4,6 +4,7 @@
 namespace Sm\Data\Entity;
 
 
+use Sm\Core\Context\Context;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Internal\Monitor\HasMonitorTrait;
@@ -34,6 +35,7 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
     use Is_StdSmEntityTrait;
     use HasPropertiesTrait;
     use HasMonitorTrait;
+    use EntityTrait;
     use Is_StdSchematicizedSmEntityTrait {
         fromSchematic as protected _fromSchematic_std;
     }
@@ -161,7 +163,7 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
      *
      * @return mixed
      */
-    abstract public function find($attributes = [], $context = 0);
+    abstract public function find($attributes = [], Context $context = null);
     
     /**
      * Save the Entity
@@ -189,6 +191,7 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
     }
     public function jsonSerialize() {
         return [
+            'smID'       => $this->getSmID(),
             'properties' => $this->getProperties()->getAll(),
         ];
     }
