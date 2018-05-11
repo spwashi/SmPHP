@@ -12,6 +12,7 @@ use Sm\Core\Proxy\Proxy;
 use Sm\Core\Schema\Schematic;
 use Sm\Data\Entity\Property\EntityPropertySchematic;
 use Sm\Data\Model\ModelSchema;
+use Sm\Data\Property\Exception\ReadonlyPropertyException;
 use Sm\Data\Property\Property;
 use Sm\Data\Property\PropertySchemaContainer;
 use Sm\Data\Property\PropertySchematic;
@@ -30,11 +31,12 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
      *
      * @throws \Sm\Core\Exception\InvalidArgumentException
      */
-    public function __construct(EntitySchema $entitySchema, EntityContext $context = null) {
+    public function __construct(EntitySchema $entitySchema = null, EntityContext $context = null) {
         parent::__construct($entitySchema, $context);
         if ($entitySchema instanceof EntitySchematic) $context->registerEntitySchematic($entitySchema);
     }
     public function getName() {
+        if (!$this->subject) return null;
         return $this->subject->getName();
     }
     public function setName(string $name) {
@@ -46,10 +48,10 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
     /**
      * @return \Sm\Data\Property\PropertySchemaContainer
      * @throws \Sm\Core\Exception\InvalidArgumentException
-     * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException
      */
     public function getProperties(): PropertySchemaContainer {
-        $context                  = $this->context;
+        $context = $this->context;
+        if (!$this->subject) return new PropertySchemaContainer;
         $properties               = $this->subject->getProperties();
         $contextualizedProperties = [];
         /**
@@ -65,7 +67,13 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
             if (!$contextNames || in_array($contextName, $contextNames))
                 $contextualizedProperties[ $propertyName ] = $property;
         }
-        return (new PropertySchemaContainer)->register($contextualizedProperties);
+        $propertySchemaContainer = new PropertySchemaContainer;
+        try {
+            $propertySchemaContainer->register($contextualizedProperties);
+        } catch (ReadonlyPropertyException $e) {
+        } finally {
+            return $propertySchemaContainer;
+        }
     }
     /**
      * Get an Identifier that will remain consistent for this particular
@@ -74,6 +82,7 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
      * @return null|string
      */
     public function getSmID(): ?string {
+        if (!$this->subject) return null;
         return $this->subject->getSmID();
     }
     /**
@@ -112,7 +121,7 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
         }
         
         return [
-            'smID'       => $this->subject->getSmID(),
+            'smID'       => $this->subject ? $this->subject->getSmID() : null,
             'properties' => $serialized_properties,
         ];
     }

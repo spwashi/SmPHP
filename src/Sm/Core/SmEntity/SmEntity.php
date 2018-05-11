@@ -17,5 +17,5 @@ use Sm\Core\Schema\Schematicized;
  *
  * Meant to be a concrete implementation of the SmEntitySchema  interface
  */
-interface SmEntity extends SmEntitySchema, Schematicized {
+interface SmEntity extends SmEntitySchema{
 }

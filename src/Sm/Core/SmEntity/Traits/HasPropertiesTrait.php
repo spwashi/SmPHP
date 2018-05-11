@@ -5,6 +5,7 @@ namespace Sm\Core\SmEntity\Traits;
 
 
 use Sm\Core\Exception\InvalidArgumentException;
+use Sm\Data\Property\Exception\ReadonlyPropertyException;
 use Sm\Data\Property\Property;
 use Sm\Data\Property\PropertyHaver;
 use Sm\Data\Property\PropertyHaverSchema;
@@ -16,8 +17,6 @@ trait HasPropertiesTrait {
      * @param \Sm\Data\Property\PropertyHaverSchema $schematic
      *
      * @throws \Sm\Core\Exception\InvalidArgumentException
-     * @throws \Sm\Core\Exception\UnimplementedError
-     * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException
      */
     protected function registerSchematicProperties(PropertyHaverSchema $schematic): void {
         $propertySchemas = $schematic->getProperties();
@@ -31,8 +30,11 @@ trait HasPropertiesTrait {
         foreach ($propertySchemas as $index => $propertySchema) {
             $propertyArray[ $index ] = $this->instantiateProperty($propertySchema);
         }
-        
-        $this->getProperties()->register($propertyArray);
+    
+        try {
+            $this->getProperties()->register($propertyArray);
+        } catch (ReadonlyPropertyException $e) {
+        }
     }
     public function getProperties(): PropertySchemaContainer {
         return $this->properties ?? new PropertySchemaContainer();

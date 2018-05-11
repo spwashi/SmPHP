@@ -8,7 +8,7 @@ use Sm\Core\Context\StandardContext;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Data\Property\PropertySchemaContainer;
 
-class EntityContext extends StandardContext {
+class EntityContext extends StandardContext implements \JsonSerializable {
     protected $context_name;
     /** @var \Sm\Data\Entity\EntitySchematic[] */
     protected $entitySchematics;
@@ -69,5 +69,23 @@ class EntityContext extends StandardContext {
      */
     public function getRegisteredEntitySchematics(): PropertySchemaContainer {
         return new PropertySchemaContainer($this->entitySchematics);
+    }
+    /**
+     * Specify data which should be serialized to JSON
+     *
+     * @link  http://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4.0
+     */
+    public function jsonSerialize() {
+        $schematics = [];
+        foreach ($this->entitySchematics as $index => $schematic) {
+            $schematics[ $index ] = $this->getSchematic($index);
+        }
+        return [
+            'name'       => $this->getContextName(),
+            'schematics' => $schematics,
+        ];
     }
 }

@@ -86,7 +86,7 @@ class HttpRequestDescriptor extends RequestDescriptor {
         $this->checkHttpRequestArguments($arguments);
         $argument_names = $this->argument_names;
         $expl           = explode('/',
-                                  ltrim(trim($this->original_url_path, '/'), '/'));
+                                  ltrim(trim($this->original_url_path, '/$'), '/'));
         $end_url_arr    = [];
         foreach ($expl as $url_part) {
             if (($url_part[0] ?? 0) === '{') { #  This is an argument to the URL
