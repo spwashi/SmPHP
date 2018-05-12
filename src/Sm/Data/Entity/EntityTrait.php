@@ -14,7 +14,7 @@ trait EntityTrait {
      * @return \Sm\Data\Entity\ContextualizedEntityProxy
      * @throws \Sm\Core\Exception\InvalidArgumentException
      */
-    public function proxyInContext(Context $context): ?ContextualizedEntityProxy {
+    public function proxyInContext(Context $context): ?EntitySchema {
         $contextualizedEntityProxy = new ContextualizedEntityProxy($this, $context);
         return $contextualizedEntityProxy;
     }

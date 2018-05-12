@@ -91,7 +91,7 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
      * @return \Sm\Data\Entity\ContextualizedEntityProxy
      * @throws \Sm\Core\Context\Exception\InvalidContextException
      */
-    public function proxyInContext(Context $context): ContextualizedEntityProxy {
+    public function proxyInContext(Context $context): EntitySchema {
         throw new InvalidContextException("Cannot proxy in any other contexts");
     }
     /**
@@ -110,8 +110,9 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
         foreach ($properties as $name => $property) {
             if ($property instanceof PropertySchematic)
                 $serialized_properties[ $name ] = [
-                    'smID'      => $property->getSmID(),
-                    'datatypes' => $property->getRawDatatypes(),
+                    'smID'       => $property->getSmID(),
+                    'datatypes'  => $property->getRawDatatypes(),
+                    'isRequired' => $property->isRequired(),
                 ];
             else if ($property instanceof Property) {
                 $value = $property->resolve();

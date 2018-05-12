@@ -139,7 +139,7 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
         if ($this->isGenerated) {
             $items['isGenerated'] = $this->isGenerated;
         }
-        if (!in_array('null', $datatypes ?? []) && !$this->isGenerated) {
+        if ($this->isRequired()) {
             $items['isRequired'] = true;
         }
         if (isset($defaultValue)) {
@@ -155,5 +155,8 @@ class PropertySchematic implements PropertySchema, SmEntitySchematic, \JsonSeria
     }
     public function __debugInfo() {
         return $this->jsonSerialize();
+    }
+    public function isRequired(): bool {
+        return !in_array('null', $this->getRawDataTypes() ?? []) && !$this->isGenerated;
     }
 }

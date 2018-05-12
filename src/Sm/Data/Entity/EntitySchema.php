@@ -22,5 +22,5 @@ interface EntitySchema extends SmEntitySchema, PropertyHaverSchema {
     public function getName();
     public function setName(string $name);
     public function getPersistedIdentity(): ?ModelSchema;
-    public function proxyInContext(Context $context):? ContextualizedEntityProxy;
+    public function proxyInContext(Context $context): ?EntitySchema;
 }

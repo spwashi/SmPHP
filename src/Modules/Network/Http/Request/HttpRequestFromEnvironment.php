@@ -36,10 +36,12 @@ class HttpRequestFromEnvironment extends HttpRequest {
     public static function getRequestData() {
         $contentType = static::getEnvironmentRequestedContentType();
         
-        $request_data = array_merge([], $_POST);
-        if ($contentType && explode(';', $contentType)[0] ?? '' === 'application/json') {
-            $rawData      = file_get_contents("php://input");
-            $request_data = array_merge($request_data, json_decode($rawData, true));
+        $request_data    = array_merge([], $_POST);
+        $contentType_arr = $contentType ? (explode(';', $contentType)) : [];
+        if (($contentType_arr[0] ?? '') === 'application/json') {
+            $rawData = file_get_contents("php://input");
+            $decode       = json_decode($rawData, true) ?: [];
+            $request_data = array_merge($request_data, $decode);
         }
         
         return $request_data;
