@@ -10,6 +10,7 @@ namespace Sm\Modules\Query\MySql;
 
 use Sm\Core\Context\Context;
 use Sm\Core\Context\Layer\Layer;
+use Sm\Core\Exception\Exception;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Internal\Monitor\HasMonitorTrait;
 use Sm\Core\Internal\Monitor\Monitored;
@@ -39,7 +40,8 @@ class MySqlQueryModule extends QueryModule implements Monitored {
     protected $config_path = '_config/mysql.query.module.sm.php';
     /** @var  SqlQueryFormatterManager $queryFormatter */
     protected $queryFormatter;
-    private   $authentication;
+    /** @var MySqlAuthentication $mySqlAuthentication */
+    private $authentication;
     
     
     /**
@@ -50,6 +52,13 @@ class MySqlQueryModule extends QueryModule implements Monitored {
     public function registerAuthentication(MySqlAuthentication $mySqlAuthentication) {
         $this->authentication = $mySqlAuthentication;
         return $this;
+    }
+    public function canConnect(): bool {
+        try {
+            return isset($this->authentication) && $this->authentication->connect();
+        } catch (Exception $exception) {
+            return false;
+        }
     }
     /**
      * Interpret a mysql query

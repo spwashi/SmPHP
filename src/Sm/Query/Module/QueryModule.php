@@ -40,6 +40,7 @@ abstract class QueryModule extends LayerModule implements QueryInterpreter {
      * @return mixed
      */
     abstract public function interpret($query);
+    abstract public function canConnect(): bool;
     /**
      * @param QueryLayer|Layer $context
      *
