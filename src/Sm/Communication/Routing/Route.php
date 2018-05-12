@@ -11,6 +11,7 @@ namespace Sm\Communication\Routing;
 use Sm\Communication\Request\InternalRequest;
 use Sm\Communication\Request\Request;
 use Sm\Communication\Request\RequestDescriptor;
+use Sm\Communication\Routing\Exception\RouteDoesNotMatchException;
 use Sm\Core\Exception\Exception;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
@@ -115,7 +116,7 @@ class Route extends FunctionResolvable implements \JsonSerializable {
             return $this->subject->resolve(...$merged_arguments_2);
         }
         
-        throw new UnresolvableException("Cannot match route with this request");
+        throw new RouteDoesNotMatchException("Cannot match route with this request");
     }
     ####################################################
     #   Setters/Getters
