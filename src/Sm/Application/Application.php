@@ -36,6 +36,7 @@ use Sm\Representation\RepresentationLayer;
  * @property-read QueryLayer          $query
  * @property-read RepresentationLayer $representation
  * @property-read string              $path
+ * @property-read string              $config_path
  */
 class Application implements \JsonSerializable, LayerRoot {
     use HasObjectIdentityTrait;
@@ -241,6 +242,8 @@ class Application implements \JsonSerializable, LayerRoot {
                 return $this->layerContainer->resolve($name);
             case'path':
                 return $this->root_path;
+            case'config_path':
+                return $this->getConfigPath();
         }
         throw new InvalidArgumentException("Cannot resolve {$name}");
     }
@@ -302,5 +305,8 @@ class Application implements \JsonSerializable, LayerRoot {
     protected function addMonitoredItem(Monitored $queryModule, string $name): void {
         $monitors                         = $queryModule->getMonitorContainer();
         $this->monitorContainers[ $name ] = $monitors;
+    }
+    public function getConfigPath(): ?string {
+        return $this->config_path;
     }
 }

@@ -1,11 +1,12 @@
 <?php
 
 
-namespace Sm\Data\Entity;
+namespace Sm\Data\Entity\Context;
 
 
 use Sm\Core\Context\StandardContext;
 use Sm\Core\Exception\InvalidArgumentException;
+use Sm\Data\Entity\EntitySchematic;
 use Sm\Data\Property\PropertySchemaContainer;
 
 class EntityContext extends StandardContext implements \JsonSerializable {
@@ -54,7 +55,7 @@ class EntityContext extends StandardContext implements \JsonSerializable {
     /**
      * @param string $name
      *
-     * @return null|\Sm\Data\Entity\ContextualizedEntityProxy
+     * @return null|\Sm\Data\Entity\Context\ContextualizedEntityProxy
      * @throws \Sm\Core\Exception\InvalidArgumentException
      */
     public function getSchematic(string $name): ?ContextualizedEntityProxy {

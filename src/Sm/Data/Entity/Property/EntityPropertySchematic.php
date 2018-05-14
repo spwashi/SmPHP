@@ -6,7 +6,7 @@ namespace Sm\Data\Entity\Property;
 
 use Sm\Data\Property\PropertySchematic;
 
-class EntityPropertySchematic extends PropertySchematic {
+class EntityPropertySchematic extends PropertySchematic implements EntityPropertySchema {
     const ROLE__VALUE = 'value';
     protected $derivedFrom;
     protected $role;
@@ -34,7 +34,16 @@ class EntityPropertySchematic extends PropertySchematic {
         $this->derivedFrom = $derivedFrom;
         return $this;
     }
-    public function jsonSerialize() {
+    public function jsonSerialize($context = null) {
+        if (!isset($context)) {
+            return [
+                'smID'       => $this->getSmID(),
+                'datatypes'  => $this->getRawDatatypes(),
+                'isRequired' => $this->isRequired(),
+                'role'       => $this->getRole(),
+            ];
+        }
+        
         $properties   = parent::jsonSerialize();
         $contextNames = $this->getContextNames();
         

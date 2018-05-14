@@ -42,7 +42,11 @@ class PropertySchemaContainer extends Container {
         $parsed = SmEntityDataManager::parseSmID($name);
         foreach ($this as $propertyName => $property) {
             if (!$parsed) continue;
-            if ($property->getSmID() === $name) return $property;
+            $smID = $property->getSmID();
+            if ($smID === $name) return $property;
+            if (static::normalizePropertySmID($smID) === static::normalizePropertySmID($name)) {
+                return $property;
+            }
         }
         return parent::resolve($name);
     }
@@ -131,5 +135,13 @@ class PropertySchemaContainer extends Container {
     }
     public function __debugInfo() {
         return $this->jsonSerialize();
+    }
+    /**
+     * @param $smID
+     *
+     * @return mixed
+     */
+    protected static function normalizePropertySmID($smID): string {
+        return str_replace(' ', '', $smID);
     }
 }

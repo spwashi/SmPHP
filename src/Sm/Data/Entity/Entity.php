@@ -164,6 +164,7 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
      * @return mixed
      */
     abstract public function find($attributes = [], Context $context = null);
+    abstract public function validate(Context $context = null): Validation\EntityValidationResult;
     
     /**
      * Save the Entity

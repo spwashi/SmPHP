@@ -22,6 +22,7 @@ use Sm\Data\Type\DatatypeFactory;
  * @method configure($configuration):PropertySchematic
  */
 class PropertyDataManager extends SmEntityDataManager implements PropertySchematicInstantiator {
+    protected static $identityManagerName = 'Property';
     protected $datatypeFactory;
     
     public function __construct(DataLayer $dataLayer = null,

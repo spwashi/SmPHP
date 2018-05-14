@@ -10,7 +10,6 @@ namespace Sm\Communication\Routing;
 
 use Sm\Communication\Request\NamedRequest;
 use Sm\Communication\Routing\Exception\RouteNotFoundException;
-use Sm\Core\Resolvable\FunctionResolvable;
 use Sm\Core\Resolvable\NullResolvable;
 use Sm\Core\Resolvable\StringResolvable;
 use Sm\Modules\Network\Http\Request\HttpRequest;
@@ -46,9 +45,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase {
             Route::init(StringResolvable::init('hello'), 'hello/1'),
             [ 'api/(?:sections|dimensions|collections)' => StringResolvable::init('API example'), ],
             [ 'test' => 'TEST' ],
-            [ '$' => function () { return 'Nothing'; },
-            ],
-            [ '11' => FunctionResolvable::init('\\' . Example::class . '::returnEleven'), ],
+            [ '$' => function () { return 'Nothing'; }, ],
+            [ '11' => function () { return 'Nothing'; }, ],
         ];
         $router->registerBatch($route_config);
         $this->assertTrue(Route::init(NullResolvable::init(), 'hello/1')->matches(HttpRequest::init('hello/1')));
@@ -56,10 +54,13 @@ class RouterTest extends \PHPUnit_Framework_TestCase {
         $hello_1__request      = HttpRequest::init('hello/1');
         $eleven__request       = HttpRequest::init('11');
         $api_sections__request = HttpRequest::init('api/sections');
-        
         $this->assertEquals('hello',
                             $router->resolve($hello_1__request)
                                    ->prime($hello_1__request)
+                                   ->resolve());
+        $this->assertEquals('Nothing',
+                            $router->resolve(HttpRequest::init(''))
+                                   ->prime(HttpRequest::init(''))
                                    ->resolve());
         $this->assertEquals('eleven', $router->resolve($eleven__request)
                                              ->prime($eleven__request)

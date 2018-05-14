@@ -9,7 +9,7 @@ use Sm\Data\Entity\Entity;
 use Sm\Data\Property\Property;
 use Sm\Data\Type\Undefined_;
 
-class EntityAsProperty extends Property {
+class EntityAsProperty extends EntityProperty {
     /**
      * @var bool Have we "found" the entity?
      */
@@ -36,7 +36,9 @@ class EntityAsProperty extends Property {
      */
     public function setSubject($subject) {
         if ($subject instanceof Undefined_) return parent::setSubject($subject);
+        
         $effectiveSchematic = $this->entity->getEffectiveSchematic();
+        
         if (!$effectiveSchematic) throw new UnimplementedError("Cannot set subject of entities without Schematics");
         
         /** @var \Sm\Data\Property\PropertySchemaContainer $propertySchematics */

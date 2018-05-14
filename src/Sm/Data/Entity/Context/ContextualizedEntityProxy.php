@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Sm\Data\Entity;
+namespace Sm\Data\Entity\Context;
 
 
 use Sm\Core\Context\Context;
@@ -10,6 +10,9 @@ use Sm\Core\Context\Proxy\ContextualizedProxy;
 use Sm\Core\Context\Proxy\StandardContextualizedProxy;
 use Sm\Core\Proxy\Proxy;
 use Sm\Core\Schema\Schematic;
+use Sm\Data\Entity\Entity;
+use Sm\Data\Entity\EntitySchema;
+use Sm\Data\Entity\EntitySchematic;
 use Sm\Data\Entity\Property\EntityPropertySchematic;
 use Sm\Data\Model\ModelSchema;
 use Sm\Data\Property\Exception\ReadonlyPropertyException;
@@ -21,7 +24,7 @@ use Sm\Data\Property\PropertySchematic;
 class ContextualizedEntityProxy extends StandardContextualizedProxy implements Proxy, ContextualizedProxy, \JsonSerializable, EntitySchema {
     /** @var \Sm\Data\Entity\EntitySchema */
     protected $subject;
-    /** @var \Sm\Data\Entity\EntityContext $context */
+    /** @var \Sm\Data\Entity\Context\EntityContext $context */
     protected $context;
     /**
      * ContextualizedEntityProxy constructor.
@@ -88,7 +91,7 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
     /**
      * @param \Sm\Core\Context\Context $context
      *
-     * @return \Sm\Data\Entity\ContextualizedEntityProxy
+     * @return \Sm\Data\Entity\EntitySchema
      * @throws \Sm\Core\Context\Exception\InvalidContextException
      */
     public function proxyInContext(Context $context): EntitySchema {
@@ -109,11 +112,7 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
          */
         foreach ($properties as $name => $property) {
             if ($property instanceof PropertySchematic)
-                $serialized_properties[ $name ] = [
-                    'smID'       => $property->getSmID(),
-                    'datatypes'  => $property->getRawDatatypes(),
-                    'isRequired' => $property->isRequired(),
-                ];
+                $serialized_properties[ $name ] = $property;
             else if ($property instanceof Property) {
                 $value = $property->resolve();
                 if ($value instanceof Entity) $value = $value->proxyInContext($this->getContext());
