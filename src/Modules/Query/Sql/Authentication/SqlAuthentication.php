@@ -15,6 +15,6 @@ namespace Sm\Modules\Query\Sql\Authentication;
  * @package Sm\Modules\Query\Sql\Authentication
  */
 interface SqlAuthentication {
-    /** @return */
     public function getConnection();
+    public function canConnect(): bool;
 }

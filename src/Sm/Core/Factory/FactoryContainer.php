@@ -9,7 +9,7 @@ namespace Sm\Core\Factory;
 
 
 use Sm\Core\Container\Container;
-use Sm\Core\Resolvable\Error\UnresolvableException;
+use Sm\Core\Resolvable\Exception\UnresolvableException;
 
 /**
  * Class FactoryContainer

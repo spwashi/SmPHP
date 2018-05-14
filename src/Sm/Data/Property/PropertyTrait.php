@@ -4,7 +4,7 @@
 namespace Sm\Data\Property;
 
 
-use Sm\Core\Resolvable\Error\UnresolvableException;
+use Sm\Core\Resolvable\Exception\UnresolvableException;
 use Sm\Data\Type\DatatypeFactory;
 
 trait PropertyTrait {

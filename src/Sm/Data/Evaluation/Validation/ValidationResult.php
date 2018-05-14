@@ -8,16 +8,16 @@ abstract class ValidationResult implements \JsonSerializable {
     /** @var bool */
     protected $success;
     /** @var null|string */
-    protected $error;
+    protected $message;
     public function __construct($success = false, $error = null) {
         $this->success = $success;
-        $this->error   = $error;
+        $this->message = $error;
     }
     
     public function jsonSerialize() {
         return [
             'success' => $this->success,
-            'error'   => $this->error,
+            'message' => $this->message,
         ];
     }
     /**
@@ -29,7 +29,7 @@ abstract class ValidationResult implements \JsonSerializable {
     /**
      * @return null|string
      */
-    public function getError(): ?string {
-        return $this->error;
+    public function getMessage(): ?string {
+        return $this->message;
     }
 }

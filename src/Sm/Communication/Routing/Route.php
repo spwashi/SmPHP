@@ -16,7 +16,7 @@ use Sm\Core\Exception\Exception;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Resolvable\AbstractResolvable;
-use Sm\Core\Resolvable\Error\UnresolvableException;
+use Sm\Core\Resolvable\Exception\UnresolvableException;
 use Sm\Core\Resolvable\FunctionResolvable;
 use Sm\Core\Resolvable\Resolvable;
 use Sm\Core\Resolvable\ResolvableFactory;
@@ -100,7 +100,7 @@ class Route extends FunctionResolvable implements \JsonSerializable {
      * @return mixed
      * @throws \Sm\Core\Exception\InvalidArgumentException
      * @throws \Sm\Core\Exception\TypeMismatchException
-     * @throws \Sm\Core\Resolvable\Error\UnresolvableException
+     * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
      */
     public function resolve($_ = null) {
         if (!($this->subject instanceof Resolvable)) throw new UnresolvableException("No way to resolve request.");

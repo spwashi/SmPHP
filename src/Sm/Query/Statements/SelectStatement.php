@@ -10,7 +10,7 @@ namespace Sm\Query\Statements;
 
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Factory\Exception\WrongFactoryException;
-use Sm\Core\Resolvable\Error\UnresolvableException;
+use Sm\Core\Resolvable\Exception\UnresolvableException;
 use Sm\Data\Source\Schema\DataSourceSchema;
 use Sm\Query\Statements\Clauses\HasWhereClauseTrait;
 

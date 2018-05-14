@@ -9,7 +9,7 @@ namespace Sm\Communication\Routing\Exception;
 
 
 use Sm\Core\Internal\Monitor\Monitor;
-use Sm\Core\Resolvable\Error\UnresolvableException;
+use Sm\Core\Resolvable\Exception\UnresolvableException;
 
 class RouteNotFoundException extends UnresolvableException {
     public function addAttemptedRouteMonitor(Monitor $monitor) {

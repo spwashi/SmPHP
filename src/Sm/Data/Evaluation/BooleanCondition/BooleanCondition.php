@@ -8,7 +8,7 @@
 namespace Sm\Data\Evaluation\BooleanCondition;
 
 
-use Sm\Core\Resolvable\Error\UnresolvableException;
+use Sm\Core\Resolvable\Exception\UnresolvableException;
 use Sm\Core\Resolvable\Resolvable;
 use Sm\Data\Evaluation\StandardEvaluableStatement;
 

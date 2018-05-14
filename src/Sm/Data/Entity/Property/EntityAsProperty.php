@@ -4,9 +4,11 @@
 namespace Sm\Data\Entity\Property;
 
 
+use Sm\Core\Context\Context;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Data\Entity\Entity;
-use Sm\Data\Property\Property;
+use Sm\Data\Entity\Property\Validation\EntityPropertyValidationResult;
+use Sm\Data\Evaluation\Validation\ValidationResult;
 use Sm\Data\Type\Undefined_;
 
 class EntityAsProperty extends EntityProperty {
@@ -27,6 +29,11 @@ class EntityAsProperty extends EntityProperty {
             return $this->entity->find($this->identity);
         }
     }
+    public function validate(Context $context = null): ?ValidationResult {
+        if ($this->entity) return $this->entity->validate($context);
+        new EntityPropertyValidationResult(true, 'lookin good');
+    }
+    
     /**
      * @param $subject
      *

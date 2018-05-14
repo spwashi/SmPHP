@@ -10,9 +10,11 @@ namespace Sm\Data\Type;
 
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Resolvable\AbstractResolvable;
+use Sm\Core\Resolvable\Exception\InvalidResolvableSubjectException;
 use Sm\Core\Resolvable\ResolvableFactory;
 use Sm\Core\SmEntity\Traits\Is_StdSchematicizedSmEntityTrait;
 use Sm\Core\SmEntity\Traits\Is_StdSmEntityTrait;
+use Sm\Data\Type\Exception\CannotCastException;
 
 abstract class StandardDatatype extends AbstractResolvable implements Datatype {
     use Is_StdSmEntityTrait;
@@ -21,7 +23,7 @@ abstract class StandardDatatype extends AbstractResolvable implements Datatype {
     protected $subject;
     
     public function setSubject($subject) {
-        $this->subject = static::resolveType($subject);
+        $this->subject = $subject;
         return $this;
     }
     public function checkCanUseSchematic($schematic = null) {
@@ -31,9 +33,16 @@ abstract class StandardDatatype extends AbstractResolvable implements Datatype {
      * @param null|mixed $_ ,..
      *
      * @return mixed
+     * @throws \Sm\Data\Type\Exception\CannotCastException
      */
     public function resolve($_ = null) {
-        return $this->subject->resolve();
+        try {
+            $subject = $this->subject;
+            $subject = static::resolveType($subject);
+            return $subject->resolve();
+        } catch (InvalidResolvableSubjectException $exception) {
+            throw new CannotCastException("Cannot set value -- invalid type", 0, $exception);
+        }
     }
     function jsonSerialize() {
         $subject = "$this->subject";

@@ -55,7 +55,7 @@ class MySqlQueryModule extends QueryModule implements Monitored {
     }
     public function canConnect(): bool {
         try {
-            return isset($this->authentication) && $this->authentication->connect();
+            return isset($this->authentication) && $this->authentication->canConnect();
         } catch (Exception $exception) {
             return false;
         }

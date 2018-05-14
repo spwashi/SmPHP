@@ -76,4 +76,12 @@ class MySqlAuthentication extends AbstractAuthentication implements SqlAuthentic
     public function getConnection(): \PDO {
         return $this->connection;
     }
+    public function canConnect(): bool {
+        try {
+            $this->connect();
+            return true;
+        } catch (\PDOException $e) {
+            return false;
+        }
+    }
 }

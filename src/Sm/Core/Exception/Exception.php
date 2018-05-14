@@ -46,7 +46,7 @@ class Exception extends \Exception implements Monitored, \JsonSerializable {
         $all_trace_arr    = $this->getTrace();
         $message          = $this->resolveMessage();
         $relevantMonitors = $this->getRelevantMonitors();
-        $fullTrace        = $this->getAbbreviatedTrace($all_trace_arr);
+        $fullTrace        = Exception::getAbbreviatedTrace($all_trace_arr);
         $previous         = $this->getPreviousException();
         $trace            = $all_trace_arr[0] ?? [];
         
@@ -97,7 +97,7 @@ class Exception extends \Exception implements Monitored, \JsonSerializable {
      *
      * @return array|string
      */
-    protected function getAbbreviatedTrace($all_trace_arr) {
+    public static function getAbbreviatedTrace($all_trace_arr) {
         try {
             $fullTrace = [];
             foreach ($all_trace_arr as $item) {

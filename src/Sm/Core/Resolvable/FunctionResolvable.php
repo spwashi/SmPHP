@@ -8,7 +8,7 @@
 namespace Sm\Core\Resolvable;
 
 
-use Sm\Core\Resolvable\Error\UnresolvableException;
+use Sm\Data\Type\Exception\CannotCastException;
 
 /**
  * Class FunctionResolvable
@@ -30,7 +30,7 @@ class FunctionResolvable extends AbstractResolvable {
      *                appended to the arguments set via the setArguments function
      *
      * @return mixed
-     * @throws \Sm\Core\Resolvable\Error\UnresolvableException
+     * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
      */
     public function resolve($_ = null) {
         $arguments = array_merge($this->arguments, func_get_args());
@@ -41,7 +41,7 @@ class FunctionResolvable extends AbstractResolvable {
         }
         
         if (!is_callable($subject)) {
-            throw  new UnresolvableException("Must be a callable function");
+            throw new CannotCastException("Cannot resolve function");
         }
         
         return call_user_func_array($this->subject, $arguments);

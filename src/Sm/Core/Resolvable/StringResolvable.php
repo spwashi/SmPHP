@@ -8,7 +8,7 @@
 namespace Sm\Core\Resolvable;
 
 
-use Sm\Core\Resolvable\Error\UnresolvableException;
+use Sm\Data\Type\Exception\CannotCastException;
 
 /**
  * Class StringResolvable
@@ -20,9 +20,16 @@ use Sm\Core\Resolvable\Error\UnresolvableException;
 class StringResolvable extends NativeResolvable implements \JsonSerializable {
     /** @var */
     protected $subject;
+    /**
+     * StringResolvable constructor.
+     *
+     * @param null $subject
+     *
+     * @throws \Sm\Data\Type\Exception\CannotCastException
+     */
     public function __construct($subject = null) {
         if (!static::itemCanBeString($subject)) {
-            throw new UnresolvableException("Could not resolve subject");
+            throw new CannotCastException("Cannot determine intended value");
         }
         parent::__construct($subject);
     }

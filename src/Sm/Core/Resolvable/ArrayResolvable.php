@@ -8,7 +8,7 @@
 namespace Sm\Core\Resolvable;
 
 
-use Sm\Core\Resolvable\Error\UnresolvableException;
+use Sm\Data\Type\Exception\CannotCastException;
 
 /**
  * Class ArrayResolvable
@@ -18,9 +18,15 @@ use Sm\Core\Resolvable\Error\UnresolvableException;
  * @package Sm\Core\Resolvable
  */
 class ArrayResolvable extends NativeResolvable implements \JsonSerializable {
+    /**
+     * @param null $subject
+     *
+     * @return \Sm\Core\Resolvable\ArrayResolvable|\Sm\Core\Resolvable\NativeResolvable
+     * @throws \Sm\Data\Type\Exception\CannotCastException
+     */
     public function setSubject($subject = null) {
         if (!is_array($subject)) {
-            throw new UnresolvableException("Not sure how to resolve subjects that aren't arrays");
+            throw new CannotCastException("Value should be an array");
         }
         return parent::setSubject($subject);
     }

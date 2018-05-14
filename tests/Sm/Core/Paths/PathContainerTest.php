@@ -8,7 +8,7 @@
 namespace Sm\Core\Paths;
 
 
-use Sm\Core\Resolvable\Error\UnresolvableException;
+use Sm\Core\Resolvable\Exception\UnresolvableException;
 
 class PathContainerTest extends \PHPUnit_Framework_TestCase {
     public function testCanResolvePaths() {

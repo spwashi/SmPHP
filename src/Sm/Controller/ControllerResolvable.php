@@ -5,7 +5,7 @@ namespace Sm\Controller;
 
 
 use Sm\Core\Resolvable\AbstractResolvable;
-use Sm\Core\Resolvable\Error\UnresolvableException;
+use Sm\Core\Resolvable\Exception\UnresolvableException;
 
 class ControllerResolvable extends AbstractResolvable {
     /** @var  ControllerLayer $controllerLayer */

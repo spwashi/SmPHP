@@ -4,7 +4,6 @@
 namespace Sm\Data\Entity\Property;
 
 
-use Sm\Core\Resolvable\FunctionResolvable;
 use Sm\Core\SmEntity\SmEntityFactory;
 use Sm\Core\SmEntity\SmEntitySchematic;
 use Sm\Data\Property\PropertyDataManager;
@@ -15,18 +14,21 @@ class EntityPropertyDataManager extends PropertyDataManager {
         parent::__construct($dataLayer, $smEntityFactory, $datatypeFactory);
     }
     
-    public function defaultResolver(string $smID, $schematic = null) {
+    public function defaultResolver(string $smID = null, $schematic = null) {
         if (!($schematic instanceof EntityPropertySchematic)) return null;
         
         $primaryDataType = $schematic->getRawDataTypes();
         $parsed          = SmEntityDataManager::parseSmID($primaryDataType[0] ?? null);
         
+        
         if (!$parsed) return null;
         if (($parsed['manager'] ?? null) !== 'Entity') return null;
         
+        
         $entityAsProperty = new EntityAsProperty;
         /** @var \Sm\Data\Entity\Entity $entity */
-        $entity = $this->instantiate($primaryDataType[0]);
+        $entityDataManager = $this;
+        $entity            = $this->datatypeFactory->build($primaryDataType[0]);
         $entityAsProperty->setEntity($entity);
         
         return $entityAsProperty;
@@ -36,7 +38,7 @@ class EntityPropertyDataManager extends PropertyDataManager {
     }
     public function createSmEntityFactory(): SmEntityFactory {
         return EntityPropertyFactory::init()
-                                    ->register(FunctionResolvable::init([ $this, 'defaultResolver' ]))
+                                    ->register(null, ([ $this, 'defaultResolver' ]))
                                     ->setDatatypeFactory($this->datatypeFactory);
     }
 }

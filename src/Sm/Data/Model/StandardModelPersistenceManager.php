@@ -7,7 +7,7 @@ namespace Sm\Data\Model;
 use ICanBoogie\Inflector;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Internal\Monitor\HasMonitorTrait;
-use Sm\Core\Resolvable\Error\UnresolvableException;
+use Sm\Core\Resolvable\Exception\UnresolvableException;
 use Sm\Data\Evaluation\Comparison\EqualToCondition;
 use Sm\Data\Model\Exception\ModelLayerConfigurationError;
 use Sm\Data\Model\Exception\ModelNotFoundException;
@@ -47,7 +47,7 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
      * @return Model
      * @throws \Sm\Core\Exception\InvalidArgumentException
      * @throws \Sm\Core\Exception\UnimplementedError
-     * @throws \Sm\Core\Resolvable\Error\UnresolvableException
+     * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
      * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException
      */
     public function find(ModelSchema $search, $do_hydrate = false): ModelSchema {
@@ -72,7 +72,7 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
      * @return Model[]
      * @throws \Sm\Core\Exception\InvalidArgumentException
      * @throws \Sm\Core\Exception\UnimplementedError
-     * @throws \Sm\Core\Resolvable\Error\UnresolvableException
+     * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
      * @throws \Sm\Data\Property\Exception\NonexistentPropertyException
      */
     public function findAll(Model $model) {
@@ -182,7 +182,7 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
      *
      * @return array
      * @throws \Sm\Core\Exception\InvalidArgumentException
-     * @throws \Sm\Core\Resolvable\Error\UnresolvableException
+     * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
      * @throws \Sm\Core\Exception\UnimplementedError
      */
     protected function selectFind(ModelSchema $model, $do_hydrate = false) {

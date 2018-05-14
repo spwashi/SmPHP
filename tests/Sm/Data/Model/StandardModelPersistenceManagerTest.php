@@ -34,7 +34,7 @@ class StandardModelPersistenceManagerTest extends \PHPUnit_Framework_TestCase {
     /**
      * @throws \Sm\Core\Exception\InvalidArgumentException
      * @throws \Sm\Core\Exception\UnimplementedError
-     * @throws \Sm\Core\Resolvable\Error\UnresolvableException
+     * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
      * @throws \Sm\Data\Model\Exception\ModelNotFoundException
      * @throws \Sm\Data\Property\Exception\NonexistentPropertyException
      * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException
@@ -74,7 +74,7 @@ class StandardModelPersistenceManagerTest extends \PHPUnit_Framework_TestCase {
     /**
      * @throws \Sm\Core\Exception\InvalidArgumentException
      * @throws \Sm\Core\Exception\UnimplementedError
-     * @throws \Sm\Core\Resolvable\Error\UnresolvableException
+     * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
      * @throws \Sm\Data\Model\Exception\ModelNotFoundException
      * @throws \Sm\Data\Property\Exception\NonexistentPropertyException
      */

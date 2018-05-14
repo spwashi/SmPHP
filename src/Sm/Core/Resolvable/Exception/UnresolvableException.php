@@ -5,7 +5,7 @@
  * Time: 9:20 PM
  */
 
-namespace Sm\Core\Resolvable\Error;
+namespace Sm\Core\Resolvable\Exception;
 
 
 use Sm\Core\Exception\Exception;

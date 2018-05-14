@@ -9,7 +9,7 @@ namespace Sm\Data\Source\Schema;
 
 use Sm\Core\Abstraction\Registry;
 use Sm\Core\Exception\InvalidArgumentException;
-use Sm\Core\Resolvable\Error\UnresolvableException;
+use Sm\Core\Resolvable\Exception\UnresolvableException;
 use Sm\Data\Source\DataSourceContainer;
 
 /**
@@ -46,7 +46,7 @@ class DataSourceSchemaGarage implements Registry {
      * @return mixed|null|\Sm\Data\Source\Schema\DataSourceSchema
      * @throws \Sm\Core\Exception\InvalidArgumentException
      * @throws \Sm\Core\Factory\Exception\WrongFactoryException
-     * @throws \Sm\Core\Resolvable\Error\UnresolvableException
+     * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
      */
     public function resolve($item = null) {
         if (!$item) throw new InvalidArgumentException("Cannot resolve Null");

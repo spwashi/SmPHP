@@ -8,7 +8,7 @@ use Sm\Core\Context\Context;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Internal\Monitor\HasMonitorTrait;
-use Sm\Core\Resolvable\Error\UnresolvableException;
+use Sm\Core\Resolvable\Exception\UnresolvableException;
 use Sm\Core\Schema\Schematicized;
 use Sm\Core\SmEntity\SmEntity;
 use Sm\Core\SmEntity\Traits\HasPropertiesTrait;
@@ -16,6 +16,7 @@ use Sm\Core\SmEntity\Traits\Is_StdSchematicizedSmEntityTrait;
 use Sm\Core\SmEntity\Traits\Is_StdSmEntityTrait;
 use Sm\Data\Entity\Property\EntityAsProperty;
 use Sm\Data\Entity\Property\EntityPropertySchematic;
+use Sm\Data\Evaluation\Validation\ValidationResult;
 use Sm\Data\Model\Model;
 use Sm\Data\Model\ModelSchema;
 use Sm\Data\Property\Property;
@@ -23,6 +24,7 @@ use Sm\Data\Property\PropertyContainer;
 use Sm\Data\Property\PropertyHaver;
 use Sm\Data\Property\PropertyHaverSchema;
 use Sm\Data\Property\PropertySchema;
+use Sm\Data\Type\Undefined_;
 
 /**
  * Class Entity
@@ -87,6 +89,7 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
      *
      * @return $this
      * @throws \Sm\Core\Exception\UnimplementedError
+     * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
      */
     public function set($name, $value = null) {
         if (is_array($name) && isset($value)) {
@@ -98,7 +101,9 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
                 $this->set($key, $val);
             }
         } else {
-            $this->properties->$name = $value;
+            if ($this->properties->$name) {
+                $this->fillPropertyValue($this->properties->$name, $value);
+            }
         }
         return $this;
     }
@@ -126,20 +131,25 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
     /**
      * @param \Sm\Data\Property\Property $property
      *
-     * @throws \Sm\Core\Resolvable\Error\UnresolvableException
-     * @throws \Sm\Core\Exception\UnimplementedError
+     * @param string                     $value
+     *
+     * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
      */
-    protected function fillPropertyValue(Property $property): void {
+    protected function fillPropertyValue(Property $property, $value = Undefined_::class): void {
         /** @var \Sm\Data\Entity\Property\EntityPropertySchematic $propertySchematic */
         $propertySchematic = $property->getEffectiveSchematic();
         if (!($propertySchematic instanceof EntityPropertySchematic)) {
             return;
         }
+        
+        
         /** @var Model $primaryModel */
         $primaryModel = $this->getPersistedIdentity();
         $derivedFrom  = $propertySchematic->getDerivedFrom();
         
-        if (is_string($derivedFrom)) {
+        if ($value !== Undefined_::class) {
+            $property->value = $value;
+        } else if (is_string($derivedFrom)) {
             $property->value = $this->properties->{$derivedFrom} ?? $primaryModel->properties->{$derivedFrom};
         } else if (!is_array($derivedFrom)) {
             throw new UnresolvableException("Cannot resolve anything but an association of properties");
@@ -148,6 +158,8 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
         if (!($property instanceof EntityAsProperty)) {
             return;
         }
+        
+        if ($value !== Undefined_::class) $property->setSubject($value);
         
         $identity = [];
         foreach ($derivedFrom as $find_property_name => $value_property_smID) {
@@ -164,7 +176,7 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
      * @return mixed
      */
     abstract public function find($attributes = [], Context $context = null);
-    abstract public function validate(Context $context = null): Validation\EntityValidationResult;
+    abstract public function validate(Context $context = null): ValidationResult;
     
     /**
      * Save the Entity

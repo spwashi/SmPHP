@@ -8,7 +8,7 @@
 namespace Sm\Core\Paths;
 
 use Sm\Core\Container\Container;
-use Sm\Core\Resolvable\Error\UnresolvableException;
+use Sm\Core\Resolvable\Exception\UnresolvableException;
 
 
 /**
@@ -23,7 +23,7 @@ class PathContainer extends Container {
      * @param null $name
      *
      * @return null|string
-     * @throws \Sm\Core\Resolvable\Error\UnresolvableException
+     * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
      */
     public function resolve($name = null) {
         # Resolve with the name of the path we want and the PathContainer

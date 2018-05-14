@@ -8,7 +8,7 @@
 namespace Sm\Core\Factory;
 
 
-use Sm\Core\Resolvable\Error\UnresolvableException;
+use Sm\Core\Resolvable\Exception\UnresolvableException;
 
 class FactoryContainerTest extends \PHPUnit_Framework_TestCase {
     public function testCanResolveFactory() {

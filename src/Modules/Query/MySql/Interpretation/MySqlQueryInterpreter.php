@@ -8,8 +8,8 @@
 namespace Sm\Modules\Query\MySql\Interpretation;
 
 
+use Modules\Query\MySql\Authentication\Exception\InvalidMysqlAuthenticationException;
 use Sm\Authentication\Authentication;
-use Sm\Authentication\Exception\InvalidAuthenticationException;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\TypeMismatchException;
 use Sm\Core\Exception\UnimplementedError;
@@ -52,8 +52,7 @@ class MySqlQueryInterpreter extends SqlQueryInterpreter {
     public function checkAuthenticationValidity(Authentication $authentication) {
         # This should actually probably be a part of the execution context...
         if (!($authentication instanceof MySqlAuthentication)) throw new TypeMismatchException("Can only connect with a MySqlAuthentication");
-        $authentication->connect();
-        if (!$authentication->isValid()) throw new InvalidAuthenticationException("The Authentication for this");
+        if (!$authentication->canConnect()) throw new InvalidMysqlAuthenticationException("Cannot connect to the database with this authentication");
     }
     
     /**
