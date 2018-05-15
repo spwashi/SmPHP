@@ -67,14 +67,20 @@ class MySqlQueryInterpreter extends SqlQueryInterpreter {
         $bound_variables   = $this->getBoundVariables($formattingContext);
         $connection        = $this->authentication->getConnection();
         $sth               = $connection->prepare("$formatted_query");
-        $executionSuccess  = $sth->execute($bound_variables);
-        $executionEvent    = MySqlQueryExecutionEvent::init()
-                                                     ->setQuery($query_or_statement)
-                                                     ->setFormattedQuery($formatted_query)
-                                                     ->setQueryVariables($bound_variables)
-                                                     ->setDatabaseHandle($connection)
-                                                     ->setStatementHandle($sth)
-                                                     ->setExecutionSuccess($executionSuccess);
+        $executionEvent    = MySqlQueryExecutionEvent::init();
+        try {
+            $executionSuccess = $sth->execute($bound_variables);
+        } catch (\PDOException $e) {
+            $executionSuccess = false;
+            $executionEvent->setException($e);
+        }
+        
+        $executionEvent->setQuery($query_or_statement)
+                       ->setFormattedQuery($formatted_query)
+                       ->setQueryVariables($bound_variables)
+                       ->setDatabaseHandle($connection)
+                       ->setStatementHandle($sth)
+                       ->setExecutionSuccess($executionSuccess);
         
         if ($this->logQueries) {
             $this->getMonitor(static::MONITOR__QUERY_EXECUTED)->append($executionEvent);

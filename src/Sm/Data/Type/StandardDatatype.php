@@ -45,10 +45,6 @@ abstract class StandardDatatype extends AbstractResolvable implements Datatype {
         }
     }
     function jsonSerialize() {
-        $subject = "$this->subject";
-        if (strlen($subject)) {
-            return $subject;
-        }
         $class = static::class;
         $expl  = explode('\\', $class);
         end($expl);

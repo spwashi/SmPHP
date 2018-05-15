@@ -243,6 +243,10 @@ class Property extends AbstractResolvable implements Readonly_able,
      * @throws \Sm\Core\Exception\UnimplementedError
      */
     public function resolve() {
+        if ($this->subject instanceof Undefined_) {
+            return $this->subject;
+        }
+        
         $resolved        = $this->subject ? $this->subject->resolve() : null;
         $primaryDatatype = $this->getPrimaryDatatype();
         
@@ -303,5 +307,9 @@ class Property extends AbstractResolvable implements Readonly_able,
             return $this->resolve();
         }
         return null;
+    }
+    public function setDoStrictResolve(bool $doStrictResolve) {
+        $this->doStrictResolve = $doStrictResolve;
+        return $this;
     }
 }

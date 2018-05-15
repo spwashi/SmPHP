@@ -21,8 +21,10 @@ use Sm\Data\Source\DiscretelySourced;
 interface ModelSchema extends SmEntitySchema, PropertyHaverSchema, DiscretelySourced {
     public function getName();
     /**
+     * @param array $property_names
+     *
      * @return PropertySchemaContainer
      */
-    public function getProperties();
+    public function getProperties($property_names = []);
     public function set($name, $value = null);
 }

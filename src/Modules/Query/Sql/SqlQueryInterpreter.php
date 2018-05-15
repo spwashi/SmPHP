@@ -7,8 +7,8 @@
 
 namespace Sm\Modules\Query\Sql;
 
+use Modules\Query\Sql\Exception\CannotExecuteQueryException;
 use Sm\Authentication\Authentication;
-use Sm\Core\Exception\UnimplementedError;
 use Sm\Modules\Query\Sql\Event\SqlQueryExecutionEvent;
 use Sm\Modules\Query\Sql\Formatting\SqlFormattingContext;
 use Sm\Modules\Query\Sql\Formatting\SqlQueryFormatter;
@@ -59,7 +59,10 @@ abstract class SqlQueryInterpreter implements QueryInterpreter {
         }
         
         if (!$executionEvent->getExecutionSuccess()) {
-            throw new UnimplementedError("Could not execute query (better error should be here)");
+            $exception      = $executionEvent->getException();
+            $queryException = new CannotExecuteQueryException("Could not execute query - ", null, $exception);
+            $queryException->addMonitors($this->getMonitorContainer()->getAll());
+            throw $queryException;
         }
         
         return $this->interpretResult($executionEvent, $return_type);

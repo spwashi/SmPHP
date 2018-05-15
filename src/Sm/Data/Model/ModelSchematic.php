@@ -8,7 +8,6 @@ use Sm\Core\SmEntity\SmEntitySchematic;
 use Sm\Core\SmEntity\Traits\Is_StdSmEntitySchematicTrait;
 use Sm\Data\Property\Property;
 use Sm\Data\Property\PropertyDataManager;
-use Sm\Data\Property\PropertyHaver;
 use Sm\Data\Property\PropertySchema;
 use Sm\Data\Property\PropertySchemaContainer;
 
@@ -57,8 +56,18 @@ class ModelSchematic implements ModelSchema,
     }
     #
     ##  Getters and Setters
-    public function getProperties(): PropertySchemaContainer {
-        return $this->properties;
+    public function getProperties($property_names = []): PropertySchemaContainer {
+        $properties = $this->properties = $this->properties ?? PropertySchemaContainer::init();
+        
+        if (count($property_names)) {
+            $return_properties = [];
+            foreach ($property_names as $name) {
+                $return_properties[ $name ] = $properties->{$name};
+            }
+            return PropertyContainer::init()->register($return_properties);
+        }
+        
+        return $properties;
     }
     /**
      * @param mixed $properties

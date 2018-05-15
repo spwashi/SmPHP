@@ -7,7 +7,6 @@
 
 namespace Sm\Core\Resolvable;
 
-use Sm\Core\Resolvable\Exception\UnresolvableException;
 use Sm\Core\Util;
 use Sm\Data\Type\Exception\CannotCastException;
 
@@ -29,10 +28,10 @@ class DateTimeResolvable extends AbstractResolvable {
      * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
      */
     public function setSubject($subject) {
-        if (!isset($subject)) {
-            $subject = \DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''));
-        } else if ($subject === false) {
+        if ($subject === false) {
             $subject = null;
+        } else if (empty($subject)) {
+            $subject = \DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''));
         } else if (!($subject instanceof \DateTime)) {
             $self = null;
             throw new CannotCastException("Cannot yet resolve dates from other types -- " . Util::getShape($subject) . (is_scalar($subject) ? ' -- ' . $subject : null) . ' -- given');

@@ -10,12 +10,14 @@ class EntityPropertySchematic extends PropertySchematic implements EntityPropert
     const ROLE__VALUE = 'value';
     protected $derivedFrom;
     protected $role;
+    protected $minLength;
     protected $contextNames;
     public function load($configuration) {
         parent::load($configuration);
         $this->_configArraySet__derivedFrom($configuration);
         $this->_configArraySet__role($configuration);
         $this->_configArraySet__contextNames($configuration);
+        $this->_configArraySet__minLength($configuration);
         return $this;
     }
     protected function _configArraySet__derivedFrom($configuration) {
@@ -29,6 +31,10 @@ class EntityPropertySchematic extends PropertySchematic implements EntityPropert
     protected function _configArraySet__role($configuration) {
         $role = $configuration['role'] ?? null;
         if (isset($role)) $this->setRole($role);
+    }
+    protected function _configArraySet__minLength($configuration) {
+        $minLength = $configuration['minLength'] ?? null;
+        if (isset($minLength)) $this->setMinLength($minLength);
     }
     public function setDerivedFrom($derivedFrom) {
         $this->derivedFrom = $derivedFrom;
@@ -68,6 +74,13 @@ class EntityPropertySchematic extends PropertySchematic implements EntityPropert
     }
     public function getRole(): ?string {
         return $this->role;
+    }
+    public function setMinLength($minLength) {
+        $this->minLength = $minLength;
+        return $this;
+    }
+    public function getMinLength(): ?int {
+        return $this->minLength;
     }
     public function getContextNames(): ?array {
         return count($this->contextNames) ? $this->contextNames : null;

@@ -235,9 +235,8 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
     protected function getModelNon_IdentityProperties(ModelSchema $model, array $properties = null) {
         $id_properties = $this->getModelIdentityProperties($model);
         $properties    = count($properties) ? $properties : $model->properties->getAll();
-        $array_diff    = array_diff($properties, $id_properties);
-        return $array_diff;
-        
+        $array_diff    = array_diff(array_keys($properties), array_keys($id_properties));
+        return $model->getProperties($array_diff);
     }
     protected function getModelIdentityProperties(ModelSchema $model): array {
         $id = $model->getProperties()->id;

@@ -91,8 +91,18 @@ class Model implements ModelSchema,
             $property->resetValueHistory();
         }
     }
-    public function getProperties(): PropertyContainer {
-        return $this->properties = $this->properties ?? PropertyContainer::init();
+    public function getProperties($property_names = []): PropertyContainer {
+        $properties = $this->properties = $this->properties ?? PropertyContainer::init();
+        
+        if (count($property_names)) {
+            $return_properties = [];
+            foreach ($property_names as $name) {
+                $return_properties[ $name ] = $properties->{$name};
+            }
+            return PropertyContainer::init()->register($return_properties);
+        }
+        
+        return $properties;
     }
     public function setProperties(PropertyContainer $properties) {
         $this->properties = $properties;

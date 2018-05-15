@@ -10,8 +10,10 @@ namespace Sm\Query\Statements;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Factory\Exception\WrongFactoryException;
 use Sm\Core\Util;
+use Sm\Data\Property\Property;
 use Sm\Data\Property\PropertyContainer;
 use Sm\Data\Source\DataSource;
+use Sm\Data\Type\Undefined_;
 
 /**
  * Class InsertStatement
@@ -50,7 +52,7 @@ class InsertStatement extends QueryComponent {
             try {
                 $this->into_sources[] = $this->getSourceGarage()->resolve($item);
             } catch (WrongFactoryException $exception) {
-        
+            
             }
         }
         $this->inserted_items = array_merge($this->inserted_items, $inserted_items);
@@ -83,6 +85,12 @@ class InsertStatement extends QueryComponent {
      * @return array
      */
     public function getInsertedItems(): array {
-        return $this->inserted_items;
+        return array_map(
+            function ($arr) {
+                return array_filter($arr,
+                    function ($item) {
+                        return $item instanceof Property ? !($item->value instanceof Undefined_) : !($item instanceof Undefined_);
+                    });
+            }, $this->inserted_items);
     }
 }

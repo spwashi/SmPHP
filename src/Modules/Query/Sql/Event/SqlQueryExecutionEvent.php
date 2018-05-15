@@ -11,8 +11,10 @@ class SqlQueryExecutionEvent extends Event {
     protected $query_variables;
     protected $formatted_query;
     protected $executionSuccess;
+    protected $exception;
     private   $statementHandle;
     private   $databaseHandle;
+    
     public function __construct($query = null,
     
                                 $statementHandler = null,
@@ -73,6 +75,13 @@ class SqlQueryExecutionEvent extends Event {
         $this->statementHandle = $statementHandle;
         return $this;
     }
+    public function getException(): \Throwable {
+        return $this->exception;
+    }
+    public function setException(\Throwable $exception) {
+        $this->exception = $exception;
+        return $this;
+    }
     public function jsonSerialize() {
         return array_merge(parent::jsonSerialize(),
                            [
@@ -80,6 +89,7 @@ class SqlQueryExecutionEvent extends Event {
                                'result'          => $this->executionSuccess,
                                'formatted_query' => $this->formatted_query,
                                'query_variables' => $this->query_variables,
+                               'exception'       => $this->exception,
                            ]);
     }
     public function getDatabaseHandle() {
