@@ -10,6 +10,7 @@ namespace Sm\Data\Property;
 
 use Sm\Core\Abstraction\Readonly_able;
 use Sm\Core\Abstraction\ReadonlyTrait;
+use Sm\Core\Context\Context;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
 use Sm\Core\Internal\Monitor\Monitor;
@@ -22,9 +23,14 @@ use Sm\Core\SmEntity\SmEntity;
 use Sm\Core\SmEntity\Traits\Is_StdSchematicizedSmEntityTrait;
 use Sm\Core\SmEntity\Traits\Is_StdSmEntityTrait;
 use Sm\Core\Util;
+use Sm\Data\Evaluation\Validation\Validatable;
+use Sm\Data\Evaluation\Validation\ValidationResult;
 use Sm\Data\Property\Event\PropertyValueChange;
 use Sm\Data\Property\Exception\ReadonlyPropertyException;
+use Sm\Data\Property\Validation\PropertyValidationResult;
 use Sm\Data\Type\Datatype;
+use Sm\Data\Type\Exception\CannotCastException;
+use Sm\Data\Type\String_;
 use Sm\Data\Type\Undefined_;
 
 /**
@@ -49,6 +55,7 @@ class Property extends AbstractResolvable implements Readonly_able,
                                                      PropertySchema,
                                                      Schematicized,
                                                      SmEntity,
+                                                     Validatable,
                                                      \JsonSerializable {
     /** @var  Resolvable $subject */
     protected $subject;
@@ -236,13 +243,12 @@ class Property extends AbstractResolvable implements Readonly_able,
         return $this->resolve();
     }
     /**
-     * Return the Value of this subject or null if the subject doesn't exist
+     * This returns a resolvable that we could use in the future to get the actual value of the Property
+     * For things like serialization or saving, we might want ot use this to "lazily" determine the value of
      *
-     *
-     * @return Resolvable
-     * @throws \Sm\Core\Exception\UnimplementedError
+     * @return null|\Sm\Core\Resolvable\Resolvable
      */
-    public function resolve() {
+    protected function getResolvableValue(): ?Resolvable {
         if ($this->subject instanceof Undefined_) {
             return $this->subject;
         }
@@ -252,12 +258,25 @@ class Property extends AbstractResolvable implements Readonly_able,
         
         if ($primaryDatatype instanceof Datatype) {
             $primaryDatatype->setSubject($resolved);
-            return $primaryDatatype->resolve();
+            return $primaryDatatype;
         }
         
-        if ($this->doStrictResolve) {
-            throw new UnimplementedError("Cannot resolve value for " . Util::getShape($primaryDatatype));
+        return $this->subject;
+    }
+    /**
+     * Return the Value of this subject or null if the subject doesn't exist
+     *
+     *
+     * @return Resolvable
+     * @throws \Sm\Core\Exception\UnimplementedError
+     */
+    public function resolve() {
+        $resolvable = $this->getResolvableValue();
+        
+        if ($this->doStrictResolve && !($resolvable instanceof Datatype)) {
+            throw new UnimplementedError("Cannot resolve value for " . Util::getShape($resolvable));
         } else {
+            $resolved = $resolvable instanceof Undefined_ ? $resolvable : $resolvable->resolve();
             return $resolved;
         }
     }
@@ -268,6 +287,31 @@ class Property extends AbstractResolvable implements Readonly_able,
     public function isValueNotDefault() {
         return $this->valueIsNotDefault;
     }
+    public function validate(Context $context = null): ?ValidationResult {
+        
+        try {
+            
+            $resolved_value = $this->resolve();
+            $datatype       = $this->getPrimaryDatatype();
+            
+            /** @var \Sm\Data\Entity\Property\EntityPropertySchematic $schematic */
+            $schematic = $this->getEffectiveSchematic();
+            $maxLength = $schematic ? $schematic->getLength() : null;
+            
+            if (isset($maxLength) && $datatype instanceof String_ && strlen($resolved_value) > $maxLength) {
+                return $this->getValidationResult(false, 'Too long - can only be ' . $maxLength . ' characters');
+            }
+            
+        } catch (CannotCastException|\Exception $e) {
+            return $this->getValidationResult(false, $e->getMessage());
+        }
+        
+        return null;
+    }
+    protected function getValidationResult(...$arguments): PropertyValidationResult {
+        return new PropertyValidationResult(...$arguments);
+    }
+    
     
     #
     ##  Initialization

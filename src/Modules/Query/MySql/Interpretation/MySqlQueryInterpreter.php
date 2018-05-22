@@ -9,6 +9,7 @@ namespace Sm\Modules\Query\MySql\Interpretation;
 
 
 use Modules\Query\MySql\Authentication\Exception\InvalidMysqlAuthenticationException;
+use Modules\Query\Sql\Exception\CannotDuplicateEntryException;
 use Sm\Authentication\Authentication;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\TypeMismatchException;
@@ -72,7 +73,12 @@ class MySqlQueryInterpreter extends SqlQueryInterpreter {
             $executionSuccess = $sth->execute($bound_variables);
         } catch (\PDOException $e) {
             $executionSuccess = false;
-            $executionEvent->setException($e);
+            if (intval($e->getCode()) === 23000) {
+                $cannotDuplicateEntryException = new CannotDuplicateEntryException('duplicated message', null, $e);
+                $executionEvent->setException($cannotDuplicateEntryException);
+            } else {
+                $executionEvent->setException($e);
+            }
         }
         
         $executionEvent->setQuery($query_or_statement)

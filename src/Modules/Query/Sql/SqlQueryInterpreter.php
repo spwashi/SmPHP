@@ -14,6 +14,7 @@ use Sm\Modules\Query\Sql\Formatting\SqlFormattingContext;
 use Sm\Modules\Query\Sql\Formatting\SqlQueryFormatter;
 use Sm\Modules\Query\Sql\Formatting\SqlQueryFormatterManager;
 use Sm\Modules\Query\Sql\Statements\CreateTableStatement;
+use Sm\Query\Exception\CannotQueryException;
 use Sm\Query\Interpretation\QueryInterpreter;
 use Sm\Query\Statements\InsertStatement;
 
@@ -59,8 +60,14 @@ abstract class SqlQueryInterpreter implements QueryInterpreter {
         }
         
         if (!$executionEvent->getExecutionSuccess()) {
-            $exception      = $executionEvent->getException();
-            $queryException = new CannotExecuteQueryException("Could not execute query - ", null, $exception);
+            $exception = $executionEvent->getException();
+            
+            if ($exception instanceof CannotQueryException) {
+                $queryException = $exception;
+            } else {
+                $queryException = new CannotExecuteQueryException("Could not execute query - ", null, $exception);
+            }
+            
             $queryException->addMonitors($this->getMonitorContainer()->getAll());
             throw $queryException;
         }

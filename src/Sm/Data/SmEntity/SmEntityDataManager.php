@@ -176,8 +176,13 @@ abstract class SmEntityDataManager implements SmEntityManager, SchematicInstanti
     public static function parseSmID($smID) {
         if (!is_string($smID)) return false;
         if ($smID[0] !== '[') return false;
-        preg_match('/\[(?P<manager>[a-zA-Z_]+)\](?:\{(?P<owner>[\[a-zA-Z_]+\][a-zA-Z_]+)\})*\s?(?P<name>[a-zA-Z_]+)/', $smID, $matches);
+        
+        preg_match('/\[(?P<manager>[a-zA-Z_]+)\](?:\{(?P<owner>[\[a-zA-Z_]+\][a-zA-Z_]+)\})?\s?(?P<name>[a-zA-Z_]+)/',
+                   $smID,
+                   $matches);
+        
         $matches = $matches ? $matches : [];
+        
         return array_filter([
                                 'manager'  => $matches['manager'] ?? null,
                                 'owner'    => $matches['owner'] ?? null,

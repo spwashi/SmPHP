@@ -4,8 +4,8 @@
 namespace Sm\Data\Entity\Property\Validation;
 
 
-use Sm\Data\Evaluation\Validation\ValidationResult;
+use Sm\Data\Property\Validation\PropertyValidationResult;
 
-class EntityPropertyValidationResult extends ValidationResult {
+class EntityPropertyValidationResult extends PropertyValidationResult {
 
 }

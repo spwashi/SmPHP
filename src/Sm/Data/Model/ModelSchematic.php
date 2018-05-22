@@ -37,6 +37,7 @@ class ModelSchematic implements ModelSchema,
     
     #
     ##  Constructors/Initialization
+    
     public static function init(PropertyDataManager $propertyDataManager): ModelSchematic {
         $model                      = new static;
         $model->propertyDataManager = $propertyDataManager;
@@ -150,9 +151,6 @@ class ModelSchematic implements ModelSchema,
             'properties'   => $this->properties,
             'propertyMeta' => $this->propertyMeta,
         ];
-    }
-    public function getObjectId() {
-        // TODO: Implement getObjectId() method.
     }
     public function __debugInfo() {
         return $this->jsonSerialize();

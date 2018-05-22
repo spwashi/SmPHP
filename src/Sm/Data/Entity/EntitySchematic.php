@@ -9,7 +9,9 @@ use Sm\Core\SmEntity\Traits\HasPropertiesTrait;
 use Sm\Core\SmEntity\Traits\Is_StdSmEntitySchematicTrait;
 use Sm\Data\Model\ModelDataManager;
 use Sm\Data\Model\ModelSchema;
+use Sm\Data\Property\Property;
 use Sm\Data\Property\PropertyDataManager;
+use Sm\Data\Property\PropertySchema;
 use Sm\Data\Property\PropertySchemaContainer;
 
 /**
@@ -86,6 +88,16 @@ class EntitySchematic implements EntitySchema, SmEntitySchematic, \JsonSerializa
         }
         
         $this->setPersistedIdentity($persistedIdentity);
+    }
+    /**
+     * @param \Sm\Data\Property\PropertySchema $propertySchema
+     *
+     * @return \Sm\Data\Property\Property
+     * @throws \Sm\Core\Exception\InvalidArgumentException
+     * @throws \Sm\Core\Exception\UnimplementedError
+     */
+    public function instantiateProperty(PropertySchema $propertySchema): Property {
+        return $this->propertyDataManager->instantiate($propertySchema);
     }
     #
     ##  Getters and Setters

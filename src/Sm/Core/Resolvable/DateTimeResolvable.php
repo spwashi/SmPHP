@@ -18,6 +18,7 @@ use Sm\Data\Type\Exception\CannotCastException;
  * @package Sm\Core\Resolvable
  */
 class DateTimeResolvable extends AbstractResolvable {
+    const NOW = 'now';
     /** @var \DateTime $subject */
     protected $subject;
     /**
@@ -28,9 +29,9 @@ class DateTimeResolvable extends AbstractResolvable {
      * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
      */
     public function setSubject($subject) {
-        if ($subject === false) {
+        if ($subject === false || !isset($subject)) {
             $subject = null;
-        } else if (empty($subject)) {
+        } else if (is_string($subject) && strtolower($subject) === 'now') {
             $subject = \DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''));
         } else if (!($subject instanceof \DateTime)) {
             $self = null;
@@ -43,5 +44,8 @@ class DateTimeResolvable extends AbstractResolvable {
     
     public function resolve($arguments = null) {
         return $this->subject;
+    }
+    public function jsonSerialize() {
+        return $this->subject->format('Y-m-d H:i:s.u');
     }
 }

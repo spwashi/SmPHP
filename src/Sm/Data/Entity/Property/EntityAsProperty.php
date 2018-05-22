@@ -6,8 +6,8 @@ namespace Sm\Data\Entity\Property;
 
 use Sm\Core\Context\Context;
 use Sm\Core\Exception\UnimplementedError;
+use Sm\Core\Resolvable\Resolvable;
 use Sm\Data\Entity\Entity;
-use Sm\Data\Entity\Property\Validation\EntityPropertyValidationResult;
 use Sm\Data\Evaluation\Validation\ValidationResult;
 use Sm\Data\Type\Undefined_;
 
@@ -16,11 +16,13 @@ class EntityAsProperty extends EntityProperty {
      * @var bool Have we "found" the entity?
      */
     protected $found = false;
-    /** @var Entity $subject */
     protected $subject;
     protected $identity;
     /** @var Entity $entity */
     protected $entity;
+    
+    protected $attempted_validation_contexts = [];
+    
     public function find() {
         if ($this->found) {
             return $this->entity;
@@ -30,8 +32,22 @@ class EntityAsProperty extends EntityProperty {
         }
     }
     public function validate(Context $context = null): ?ValidationResult {
-        if ($this->entity) return $this->entity->validate($context);
-        new EntityPropertyValidationResult(true, 'lookin good');
+        if ($this->entity) {
+            $context_id = $context->getObjectId();
+            
+            if (isset($this->attempted_validation_contexts[ $context_id ])) {
+                return $this->attempted_validation_contexts[ $context_id ];
+            }
+            
+            return $this->attempted_validation_contexts[ $context_id ] = $this->entity->validate($context);
+        }
+        
+        return null;
+    }
+    
+    public function clearValidationAttempts() {
+        $this->attempted_validation_contexts = [];
+        return $this;
     }
     
     /**
@@ -42,11 +58,15 @@ class EntityAsProperty extends EntityProperty {
      * @throws \Sm\Core\Exception\UnimplementedError
      */
     public function setSubject($subject) {
-        if ($subject instanceof Undefined_) return parent::setSubject($subject);
+        if ($subject instanceof Undefined_) {
+            return parent::setSubject($subject);
+        }
         
         $effectiveSchematic = $this->entity->getEffectiveSchematic();
         
-        if (!$effectiveSchematic) throw new UnimplementedError("Cannot set subject of entities without Schematics");
+        if (!$effectiveSchematic) {
+            throw new UnimplementedError("Cannot set subject of entities without Schematics");
+        }
         
         /** @var \Sm\Data\Property\PropertySchemaContainer $propertySchematics */
         $propertySchematics = $effectiveSchematic->properties;
@@ -63,6 +83,7 @@ class EntityAsProperty extends EntityProperty {
         }
         throw new UnimplementedError("Can only set subjects of entities that have a property with a 'value' role");
     }
+    
     public function setEntity(Entity $entity) {
         $this->entity = $entity;
         return $this;

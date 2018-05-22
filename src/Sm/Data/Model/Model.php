@@ -8,18 +8,24 @@
 namespace Sm\Data\Model;
 
 
+use Sm\Core\Context\Context;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Schema\Schematicized;
 use Sm\Core\SmEntity\SmEntity;
 use Sm\Core\SmEntity\Traits\HasPropertiesTrait;
 use Sm\Core\SmEntity\Traits\Is_StdSchematicizedSmEntityTrait;
 use Sm\Core\SmEntity\Traits\Is_StdSmEntityTrait;
+use Sm\Data\Evaluation\Validation\Validatable;
+use Sm\Data\Evaluation\Validation\ValidationResult;
+use Sm\Data\Model\Validation\ModelValidationResult;
+use Sm\Data\Property\Exception\NonexistentPropertyException;
 use Sm\Data\Property\Exception\ReadonlyPropertyException;
 use Sm\Data\Property\Property;
 use Sm\Data\Property\PropertyContainer;
 use Sm\Data\Property\PropertyHaver;
 use Sm\Data\Property\PropertySchema;
 use Sm\Data\Property\PropertySchematicInstantiator;
+use Sm\Data\Property\Validation\PropertyValidationResult;
 
 /**
  * Class Model
@@ -40,6 +46,7 @@ class Model implements ModelSchema,
                        PropertyHaver,
                        Schematicized,
                        SmEntity,
+                       Validatable,
                        \JsonSerializable {
     use Is_StdSmEntityTrait;
     use HasPropertiesTrait;
@@ -50,12 +57,15 @@ class Model implements ModelSchema,
     
     /** @var  PropertyContainer */
     protected $properties;
-    /** @var \Sm\Data\Model\ModelDataManager */
-    private $propertySchematicInstantiator;
+    /** @var \Sm\Data\Property\PropertySchematicInstantiator $propertySchematicInstantiator When we interact with properties, we need to know how to instantiate them */
+    protected $propertySchematicInstantiator;
     
-    public function __construct(PropertySchematicInstantiator $modelDataManager) {
-        $this->propertySchematicInstantiator = $modelDataManager;
+    #
+    ## Constructor
+    public function __construct(PropertySchematicInstantiator $propertySchematicInstantiator) {
+        $this->setPropertySchematicInstantiator($propertySchematicInstantiator);
     }
+    
     #
     ## Getters and Setters
     public function __get($name) {
@@ -71,6 +81,8 @@ class Model implements ModelSchema,
         $this->setProperties(clone $properties);
     }
     
+    #
+    ## Interact with Properties
     public function getChanged() {
         $changed_properties = [];
         
@@ -110,13 +122,29 @@ class Model implements ModelSchema,
     }
     public function registerProperty(string $name, Property $property = null) {
         try {
-            $this->getProperties()->register($name, $property ?? new Property);
+            $this->getProperties()->register($name, $property ?? $this->propertySchematicInstantiator->instantiate($name));
         } catch (InvalidArgumentException|ReadonlyPropertyException $e) {
         }
     }
+    
+    #
+    ## Validation
+    /**
+     * @param \Sm\Core\Context\Context|null $context
+     *
+     * @return null|ModelValidationResult
+     * @throws \Sm\Core\Exception\UnimplementedError
+     */
+    public function validate(Context $context = null): ?ValidationResult {
+        $property_errors = $this->getPropertyValidationErrors($context);
+        
+        return new ModelValidationResult(count($property_errors) < 1,
+                                         'model properties checked',
+                                         $property_errors);
+    }
+    
     #
     ##  Configuration/Initialization
-    
     /**
      * @param $schematic
      *
@@ -143,15 +171,14 @@ class Model implements ModelSchema,
         }
     }
     /**
-     *
      * @param \Sm\Data\Property\PropertySchema $propertySchema
      *
      * @return \Sm\Data\Property\Property
-     * @throws \Sm\Core\Exception\InvalidArgumentException
-     * @throws \Sm\Core\Exception\UnimplementedError
      */
     public function instantiateProperty(PropertySchema $propertySchema): Property {
-        return $this->propertySchematicInstantiator->instantiate($propertySchema);
+        $property = $this->propertySchematicInstantiator->instantiate($propertySchema);
+        
+        return $property;
     }
     
     #
@@ -167,5 +194,14 @@ class Model implements ModelSchema,
     }
     public function __debugInfo() {
         return $this->jsonSerialize();
+    }
+    /**
+     * @param \Sm\Data\Property\PropertySchematicInstantiator $propertySchematicInstantiator
+     *
+     * @return  $this
+     */
+    protected function setPropertySchematicInstantiator(PropertySchematicInstantiator $propertySchematicInstantiator) {
+        $this->propertySchematicInstantiator = $propertySchematicInstantiator;
+        return $this;
     }
 }
