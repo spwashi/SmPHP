@@ -106,7 +106,7 @@ class EntitySchematic implements EntitySchema, SmEntitySchematic, \JsonSerializa
             'smID'              => $this->getSmID(),
             'name'              => $this->getName(),
             'properties'        => $this->getProperties()->getAll(),
-            'persistedIdentity' => $this->getPersistedIdentity(),
+            'persistedIdentity' => $this->getPersistedIdentity()->getSmID(),
         ];
         return $items;
     }
