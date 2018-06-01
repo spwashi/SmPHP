@@ -43,10 +43,12 @@ class EntityPropertySchematic extends PropertySchematic implements EntityPropert
     public function jsonSerialize($context = null) {
         if (!isset($context)) {
             return [
-                'smID'       => $this->getSmID(),
-                'datatypes'  => $this->getRawDatatypes(),
-                'isRequired' => $this->isRequired(),
-                'role'       => $this->getRole(),
+                'smID'        => $this->getSmID(),
+                'datatypes'   => $this->getRawDatatypes(),
+                'isRequired'  => $this->isRequired(),
+                'role'        => $this->getRole(),
+                'derivedFrom' => $this->getDerivedFrom(),
+                'reference'   => $this->getReferenceDescriptor(),
             ];
         }
         

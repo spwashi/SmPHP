@@ -15,9 +15,7 @@ class EntityValidationResult extends ValidationResult {
         $this->propertyValidationResults = $propertyValidationResults;
     }
     public function jsonSerialize() {
-        return parent::jsonSerialize() + [
-                'properties' => $this->getPropertyValidationResults(),
-            ];
+        return array_merge_recursive(parent::jsonSerialize(), [ 'messages' => $this->propertyValidationResults ]);
     }
     /**
      * @return array|\Sm\Data\Entity\Property\Validation\EntityPropertyValidationResult[]

@@ -11,7 +11,7 @@ use Sm\Core\Proxy\Proxy;
 
 class ControllerProxy implements Proxy, Controller {
     /** @var \Sm\Controller\Controller $subject */
-    private $subject;
+    protected $subject;
     #
     public function __construct($subject) {
         $this->subject = $subject;

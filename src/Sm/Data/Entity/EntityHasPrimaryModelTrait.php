@@ -195,7 +195,7 @@ trait EntityHasPrimaryModelTrait {
      * @return mixed
      * @throws \Sm\Data\Entity\Exception\Persistence\CannotCreateEntityException
      */
-    protected static function validateEntityOnContext(Context $context, $entity) {
+    protected static function validateEntityOnContext(Context $context, Entity $entity) {
         $entityValidationResult = $entity->validate($context);
         
         #
@@ -220,7 +220,8 @@ trait EntityHasPrimaryModelTrait {
     public function setModelPropertiesFromEntity(Entity $entity, Model $model): void {
 #
         ## Set the relevant properties on the model
-        foreach ($entity->getProperties() as $key => $value) {
+        $properties = $this->getPropertiesForModel($entity);
+        foreach ($properties as $key => $value) {
             
             if ($value instanceof Property) $value = $value->getSubject();
             
@@ -232,4 +233,12 @@ trait EntityHasPrimaryModelTrait {
             $property->value = $value;
         }
     }
+    /**
+     * @param \Sm\Data\Entity\Entity $entity
+     *
+     * @return array
+     */
+    protected function getPropertiesForModel(Entity $entity): array {
+        return array_merge_recursive($entity->getProperties()->getAll(), $entity->getInternal());
+}
 }

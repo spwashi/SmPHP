@@ -5,10 +5,11 @@ namespace Sm\Data\Entity\Property;
 
 
 use Sm\Core\Context\Context;
+use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
-use Sm\Core\Resolvable\Resolvable;
 use Sm\Data\Entity\Entity;
 use Sm\Data\Evaluation\Validation\ValidationResult;
+use Sm\Data\SmEntity\SmEntityDataManager;
 use Sm\Data\Type\Undefined_;
 
 class EntityAsProperty extends EntityProperty {
@@ -68,6 +69,16 @@ class EntityAsProperty extends EntityProperty {
             throw new UnimplementedError("Cannot set subject of entities without Schematics");
         }
         
+        
+        if (is_array($subject) && isset($subject['smID'])) {
+            if (SmEntityDataManager::parseSmID($subject['smID']) == SmEntityDataManager::parseSmID($this->entity->getSmID())) {
+                $this->entity->set($subject['properties'] ?? []);
+                return;
+            } else {
+                throw new InvalidArgumentException('Wrong Entity Type! Whatchu doin here');
+            }
+        }
+        
         /** @var \Sm\Data\Property\PropertySchemaContainer $propertySchematics */
         $propertySchematics = $effectiveSchematic->properties;
         foreach ($propertySchematics as $propertySchematic) {
@@ -91,6 +102,14 @@ class EntityAsProperty extends EntityProperty {
     public function resolve() {
         return $this->entity;
     }
+    public function create(Context $context) {
+        if ($this->entity && $this->entity->getPersistedIdentity()) {
+            $this->entity->set($this->identity ?? []);
+            $this->entity->updateComponentProperties();
+            return $this->entity->create($context);
+        }
+    }
+    
     public function jsonSerialize() {
         return $this->entity;
     }

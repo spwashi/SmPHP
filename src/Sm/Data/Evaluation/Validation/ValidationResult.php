@@ -17,7 +17,7 @@ abstract class ValidationResult implements \JsonSerializable {
     public function jsonSerialize() {
         return [
             'success' => $this->success,
-            'message' => $this->message,
+            'message' => [ '_message' => $this->message ],
         ];
     }
     /**

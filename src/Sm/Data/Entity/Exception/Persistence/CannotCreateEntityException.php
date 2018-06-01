@@ -10,7 +10,7 @@ class CannotCreateEntityException extends EntityPersistenceException {
     protected $message           = 'Could not save model';
     protected $failed_properties = [];
     public function setFailedProperties(array $properties = []) {
-        $this->failed_properties = $properties;
+        $this->failed_properties = array_filter($properties);
         return $this;
     }
     public function jsonSerialize() {

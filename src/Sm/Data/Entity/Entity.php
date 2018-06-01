@@ -43,6 +43,7 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
     use Is_StdSchematicizedSmEntityTrait {
         fromSchematic as protected _fromSchematic_std;
     }
+    protected $internal = [];
     /** @var \Sm\Data\Entity\EntitySchematic */
     protected $effectiveSchematic;
     /** @var \Sm\Data\Entity\EntityDataManager */
@@ -100,6 +101,32 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
         }
         return null;
     }
+    public function updateComponentProperties() {
+        /**
+         * @var Property $property
+         */
+        foreach ($this->properties as $property) {
+            $effectiveSchematic = $property->getEffectiveSchematic();
+            if (!($effectiveSchematic instanceof EntityPropertySchematic)) continue;
+            $derivedFrom = $effectiveSchematic->getDerivedFrom();
+            
+            if (is_array($derivedFrom)) {
+                foreach ($derivedFrom as $propertyName => $smID) {
+                    $this->setInternalProperty($smID, $this->internal[ $propertyName ] ?? null);
+                }
+            }
+        }
+    }
+    protected function setInternalProperty(string $property_name_or_smID, $value) {
+        $property = $this->properties->$property_name_or_smID;
+        if (!isset($property)) {
+            $modelSchema = $this->getPersistedIdentity();
+            $properties  = $modelSchema->getProperties();
+            $property    = $properties->{$property_name_or_smID};
+        }
+        $property->value = $value;
+        return $property;
+    }
     /**
      * @param      $name
      * @param null $value
@@ -118,6 +145,10 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
                 $this->set($key, $val);
             }
         } else {
+            $persistedIdentity = $this->getPersistedIdentity();
+            if ($this->properties->$name === null && $persistedIdentity && $persistedIdentity->getProperties()->$name) {
+                $this->internal[ $name ] = $value;
+            }
             if ($this->properties->$name) {
                 $this->fillPropertyValue($this->properties->$name, $value);
             }
@@ -184,11 +215,11 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
         
         // Don't do anything if we're trying to set a value to itself
         if ($property === $value) return;
-    
+        
         // If we are trying to set the value to an entity property, use the value as the value
         if ($value instanceof EntityProperty) $value = $value->value;
-    
-    
+        
+        
         if ($value !== Undefined_::class) {
             $property->value = $value;
         } else if (is_string($derivedFrom)) {
@@ -266,5 +297,11 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
             'smID'       => $this->getSmID(),
             'properties' => $this->getProperties()->getAll(),
         ];
+    }
+    /**
+     * @return array
+     */
+    public function getInternal(): array {
+        return $this->internal;
     }
 }
