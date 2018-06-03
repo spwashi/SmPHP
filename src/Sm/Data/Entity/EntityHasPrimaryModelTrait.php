@@ -27,26 +27,37 @@ trait EntityHasPrimaryModelTrait {
     private $foundModel;
     
     /**
-     * @param array $attributes
+     * @param array                         $attributes
+     *
+     * @param \Sm\Core\Context\Context|null $context
      *
      * @return \Sm\Data\Entity\Entity
      * @throws \Sm\Core\Exception\InvalidArgumentException
      * @throws \Sm\Core\Exception\UnimplementedError
-     * @throws \Sm\Data\Entity\Exception\EntityNotFoundException
-     * @throws \Sm\Data\Property\Exception\NonexistentPropertyException
      * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
+     * @throws \Sm\Data\Entity\Exception\EntityNotFoundException
      */
-    public function find($attributes = [], Context $context = null) {
+    public function findPrimaryModel($attributes = [], Context $context = null) {
         /** @var \Sm\Data\Entity\Entity|\Sm\Data\Entity\EntityHasPrimaryModelTrait $entity */
         $entity           = $this;
         $modelDataManager = $entity->entityDataManager->getModelDataManager();
-        $primaryModel     = $entity->findPersistedIdentity($modelDataManager, $attributes);
+        
+        $model = $this->getPersistedIdentitySchema($modelDataManager);
+        try {
+            $model->set($attributes);
+            $primaryModel = $this->_searchForPersistedIdentity($modelDataManager, $model);
+        } catch (ModelNotFoundException $modelNotFoundException) {
+            throw new EntityNotFoundException("Could not find the primaryModel associated with this Entity", null, $modelNotFoundException);
+        }
+        
         $entity->getMonitor(Monitor::INFO)->append(GenericEvent::init('FOUND PRIMARY MODEL -- ',
                                                                       [
                                                                           $primaryModel,
                                                                           $primaryModel->jsonSerialize(),
                                                                       ]));
+        
         $allProperties = $entity->getProperties()->getAll();
+        
         /**
          * @var                            $name
          * @var \Sm\Data\Property\Property $property
@@ -72,7 +83,7 @@ trait EntityHasPrimaryModelTrait {
      * @throws \Sm\Data\Entity\Exception\Persistence\CannotCreateEntityException
      * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
      */
-    public function create(Context $context, $attributes = []): EntityValidationResult {
+    public function createPrimaryModel(Context $context, $attributes = []): EntityValidationResult {
         /** @var \Sm\Data\Entity\Entity|\Sm\Data\Entity\EntityHasPrimaryModelTrait $entity */
         $entity = $this;
         
@@ -84,10 +95,8 @@ trait EntityHasPrimaryModelTrait {
         
         $entity->set($attributes);
         $entityValidationResult = static::validateEntityOnContext($context, $entity);
-        
-        
-        $model = $modelDataManager->instantiate($schematic);
-        $this->setModelPropertiesFromEntity($entity, $model);
+        $model                  = $modelDataManager->instantiate($schematic);
+        $this->setModelPropertiesFromEntity($entity, $model, $context);
         
         #
         ## Throws an error if there was one
@@ -106,7 +115,7 @@ trait EntityHasPrimaryModelTrait {
      * @throws \Sm\Core\Exception\InvalidArgumentException
      * @throws \Sm\Core\Exception\UnimplementedError
      */
-    protected static function getAttributesForCreation(Entity $entity, $attributes): array {
+    private static function getAttributesForCreation(Entity $entity, $attributes): array {
 #
         ## Check the arguments
         if ($attributes instanceof ModelSchema) {
@@ -141,6 +150,16 @@ trait EntityHasPrimaryModelTrait {
     #
     ## Finding/Hydraying
     /**
+     * @param \Sm\Data\Entity\Entity   $entity
+     *
+     * @param \Sm\Core\Context\Context $context
+     *
+     * @return array
+     */
+    protected function getPropertiesForModel(Entity $entity, Context $context = null): array {
+        return array_merge_recursive($entity->getProperties()->getAll(), $entity->getInternal());
+    }
+    /**
      * Search for the Model that this Entity is based
      *
      * @param \Sm\Data\Model\ModelDataManager $modelDataManager
@@ -153,20 +172,34 @@ trait EntityHasPrimaryModelTrait {
      * @throws \Sm\Data\Property\Exception\NonexistentPropertyException
      */
     protected function findPersistedIdentity(ModelDataManager $modelDataManager, $attributes = []) {
-        $model = $this->getPersistedIdentitySchema($modelDataManager);
-        try {
-            $model->set($attributes);
-            return $this->_searchForPersistedIdentity($modelDataManager, $model);
-        } catch (ModelNotFoundException $modelNotFoundException) {
-            throw new EntityNotFoundException("Could not find the primaryModel associated with this Entity", null, $modelNotFoundException);
-        }
+    
     }
-    protected function _searchForPersistedIdentity(ModelDataManager $modelDataManager, ModelSchema $model) {
+    private function _searchForPersistedIdentity(ModelDataManager $modelDataManager, ModelSchema $model): Model {
         return $modelDataManager->persistenceManager->find($model);
+    }
+    private function setModelPropertiesFromEntity(Entity $entity, Model $model, Context $context = null): void {
+#
+        ## Set the relevant properties on the model
+        $properties = $this->getPropertiesForModel($entity, $context);
+        
+        foreach ($properties as $key => $value) {
+            
+            if ($value instanceof Property) $value = $value->getSubject();
+            
+            /** @var \WANGHORN\Model\Property $property */
+            $property = $model->properties->{$key};
+            if (!isset($property)) continue;
+            
+            $property->setDoStrictResolve(true);
+            $property->value = $value;
+        }
     }
     
     #
     ## PersistedIdentity
+    protected function getPersistedIdentityIdentifyingProperties(): PropertyContainer {
+        return PropertyContainer::init();
+    }
     /**
      * @param \Sm\Data\Model\ModelDataManager $modelDataManager
      *
@@ -174,16 +207,13 @@ trait EntityHasPrimaryModelTrait {
      * @throws \Sm\Core\Exception\InvalidArgumentException
      * @throws \Sm\Core\Exception\UnimplementedError
      */
-    protected function getPersistedIdentitySchema(ModelDataManager $modelDataManager): ModelSchema {
+    private function getPersistedIdentitySchema(ModelDataManager $modelDataManager): ModelSchema {
         /** @var \Sm\Data\Entity\Entity|\Sm\Data\Entity\EntityHasPrimaryModelTrait $self */
         $self             = $this;
         $modelSchema      = $self->getPersistedIdentity();
         $model            = $modelDataManager->instantiate($modelSchema);
         $searchProperties = $self->getPersistedIdentityIdentifyingProperties();
         return $model->set($searchProperties);
-    }
-    protected function getPersistedIdentityIdentifyingProperties(): PropertyContainer {
-        return PropertyContainer::init();
     }
     
     #
@@ -213,32 +243,4 @@ trait EntityHasPrimaryModelTrait {
         }
         return $entityValidationResult;
     }
-    /**
-     * @param \Sm\Data\Entity\Entity $entity
-     * @param                        $model
-     */
-    public function setModelPropertiesFromEntity(Entity $entity, Model $model): void {
-#
-        ## Set the relevant properties on the model
-        $properties = $this->getPropertiesForModel($entity);
-        foreach ($properties as $key => $value) {
-            
-            if ($value instanceof Property) $value = $value->getSubject();
-            
-            /** @var \WANGHORN\Model\Property $property */
-            $property = $model->properties->{$key};
-            if (!isset($property)) continue;
-            
-            $property->setDoStrictResolve(true);
-            $property->value = $value;
-        }
-    }
-    /**
-     * @param \Sm\Data\Entity\Entity $entity
-     *
-     * @return array
-     */
-    protected function getPropertiesForModel(Entity $entity): array {
-        return array_merge_recursive($entity->getProperties()->getAll(), $entity->getInternal());
-}
 }

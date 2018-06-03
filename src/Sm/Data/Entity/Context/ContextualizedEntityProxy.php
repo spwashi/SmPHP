@@ -4,11 +4,14 @@
 namespace Sm\Data\Entity\Context;
 
 
+use ReflectionMethod;
 use Sm\Core\Context\Context;
 use Sm\Core\Context\Exception\InvalidContextException;
 use Sm\Core\Context\Proxy\ContextualizedProxy;
 use Sm\Core\Context\Proxy\StandardContextualizedProxy;
+use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Proxy\Proxy;
+use Sm\Core\Resolvable\Exception\UnresolvableException;
 use Sm\Core\Schema\Schematic;
 use Sm\Data\Entity\Entity;
 use Sm\Data\Entity\EntitySchema;
@@ -17,7 +20,7 @@ use Sm\Data\Entity\Property\EntityPropertySchematic;
 use Sm\Data\Model\ModelSchema;
 use Sm\Data\Property\Exception\ReadonlyPropertyException;
 use Sm\Data\Property\Property;
-use Sm\Data\Property\PropertySchemaContainer;
+use Sm\Data\Property\PropertyContainer;
 use Sm\Data\Property\PropertySchematic;
 
 
@@ -29,8 +32,8 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
     /**
      * ContextualizedEntityProxy constructor.
      *
-     * @param \Sm\Data\Entity\EntitySchema $entitySchema
-     * @param null                         $context
+     * @param \Sm\Data\Entity\EntitySchema               $entitySchema
+     * @param \Sm\Data\Entity\Context\EntityContext|null $context
      *
      * @throws \Sm\Core\Exception\InvalidArgumentException
      */
@@ -38,6 +41,31 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
         parent::__construct($entitySchema, $context);
         if ($entitySchema instanceof EntitySchematic) $context->registerEntitySchematic($entitySchema);
     }
+    
+    /**
+     * @param $name
+     *
+     * @return mixed
+     * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
+     */
+    public function __get($name) {
+        if (!isset($this->subject)) throw new UnresolvableException("Cannot resolve ${name}");
+        return $this->subject->$name;
+    }
+    public function __call($name, $args = []) {
+        try {
+            $check = new ReflectionMethod($this->subject, $name);
+            
+            if ($check->isPrivate() || $check->isProtected()) {
+                throw new InvalidArgumentException("Cannot access method");
+            }
+            
+            return $this->subject->{$name}(...$args);
+        } catch (\ReflectionException $e) {
+            throw new InvalidArgumentException("Cannot access method");
+        }
+    }
+    
     public function getName() {
         if (!$this->subject) return null;
         return $this->subject->getName();
@@ -48,13 +76,9 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
     public function getPersistedIdentity(): ?ModelSchema {
         return null;
     }
-    /**
-     * @return \Sm\Data\Property\PropertySchemaContainer
-     * @throws \Sm\Core\Exception\InvalidArgumentException
-     */
-    public function getProperties(): PropertySchemaContainer {
+    public function getProperties(): PropertyContainer {
         $context = $this->context;
-        if (!$this->subject) return new PropertySchemaContainer;
+        if (!$this->subject) return new PropertyContainer();
         $properties               = $this->subject->getProperties();
         $contextualizedProperties = [];
         /**
@@ -70,7 +94,7 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
             if (!$contextNames || in_array($contextName, $contextNames))
                 $contextualizedProperties[ $propertyName ] = $property;
         }
-        $propertySchemaContainer = new PropertySchemaContainer;
+        $propertySchemaContainer = new PropertyContainer;
         try {
             $propertySchemaContainer->register($contextualizedProperties);
         } catch (ReadonlyPropertyException $e) {
@@ -78,31 +102,13 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
             return $propertySchemaContainer;
         }
     }
-    /**
-     * Get an Identifier that will remain consistent for this particular
-     * chunk of data across each SmFramework implementation
-     *
-     * @return null|string
-     */
     public function getSmID(): ?string {
         if (!$this->subject) return null;
         return $this->subject->getSmID();
     }
-    /**
-     * @param \Sm\Core\Context\Context $context
-     *
-     * @return \Sm\Data\Entity\EntitySchema
-     * @throws \Sm\Core\Context\Exception\InvalidContextException
-     */
     public function proxyInContext(Context $context): EntitySchema {
         throw new InvalidContextException("Cannot proxy in any other contexts");
     }
-    /**
-     * @return array|mixed
-     * @throws \Sm\Core\Exception\InvalidArgumentException
-     * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException
-     * @throws \Sm\Core\Exception\UnimplementedError
-     */
     public function jsonSerialize() {
         $serialized_properties = [];
         $properties            = $this->getProperties();

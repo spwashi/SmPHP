@@ -107,7 +107,7 @@ class Property extends AbstractResolvable implements Readonly_able,
             return $this->name;
         }
         if ($name === 'value') {
-            return $this->resolve();
+            return $this->getValue();
         }
         if ($name === 'raw_value') {
             return $this->subject;

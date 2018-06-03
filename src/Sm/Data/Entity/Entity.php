@@ -52,12 +52,28 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
     protected $persistedIdentity;
     
     #
-    ## Constructor
+    ## Instantiation/Initialization
     public function __construct(EntityDataManager $entityDataManager) {
         $this->setEntityDataManager($entityDataManager);
     }
     public static function init(EntityDataManager $entityDataManager) {
         return new static($entityDataManager);
+    }
+    public function updateComponentProperties() {
+        /**
+         * @var Property $property
+         */
+        foreach ($this->properties as $property) {
+            $effectiveSchematic = $property->getEffectiveSchematic();
+            if (!($effectiveSchematic instanceof EntityPropertySchematic)) continue;
+            $derivedFrom = $effectiveSchematic->getDerivedFrom();
+            
+            if (is_array($derivedFrom)) {
+                foreach ($derivedFrom as $propertyName => $smID) {
+                    $this->setInternalProperty($smID, $this->internal[ $propertyName ] ?? null);
+                }
+            }
+        }
     }
     
     #
@@ -101,32 +117,6 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
         }
         return null;
     }
-    public function updateComponentProperties() {
-        /**
-         * @var Property $property
-         */
-        foreach ($this->properties as $property) {
-            $effectiveSchematic = $property->getEffectiveSchematic();
-            if (!($effectiveSchematic instanceof EntityPropertySchematic)) continue;
-            $derivedFrom = $effectiveSchematic->getDerivedFrom();
-            
-            if (is_array($derivedFrom)) {
-                foreach ($derivedFrom as $propertyName => $smID) {
-                    $this->setInternalProperty($smID, $this->internal[ $propertyName ] ?? null);
-                }
-            }
-        }
-    }
-    protected function setInternalProperty(string $property_name_or_smID, $value) {
-        $property = $this->properties->$property_name_or_smID;
-        if (!isset($property)) {
-            $modelSchema = $this->getPersistedIdentity();
-            $properties  = $modelSchema->getProperties();
-            $property    = $properties->{$property_name_or_smID};
-        }
-        $property->value = $value;
-        return $property;
-    }
     /**
      * @param      $name
      * @param null $value
@@ -135,7 +125,7 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
      * @throws \Sm\Core\Exception\UnimplementedError
      * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
      */
-    public function set($name, $value = null) {
+    public function set($name, $value = null): Entity {
         if (is_array($name) && isset($value)) {
             throw new UnimplementedError("Not sure what to do with a name and value");
         }
@@ -169,6 +159,16 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
     public function setPersistedIdentity(ModelSchema $modelSchema) {
         $this->persistedIdentity = $modelSchema;
         return $this;
+    }
+    protected function setInternalProperty(string $property_name_or_smID, $value) {
+        $property = $this->properties->$property_name_or_smID;
+        if (!isset($property)) {
+            $modelSchema = $this->getPersistedIdentity();
+            $properties  = $modelSchema->getProperties();
+            $property    = $properties->{$property_name_or_smID};
+        }
+        $property->value = $value;
+        return $property;
     }
     
     #
