@@ -21,6 +21,7 @@
     "require":           {
         "twig/twig":            "2.4.*",
         "monolog/monolog":      "1.9.*",
-        "icanboogie/inflector": "1.4.*"
+        "icanboogie/inflector": "1.4.*",
+        "phpmailer/phpmailer":  "6.0.5"
     }
 }
