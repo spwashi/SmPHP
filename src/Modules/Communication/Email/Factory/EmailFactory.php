@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Modules\Email\Factory;
+namespace Sm\Modules\Communication\Email\Factory;
 
 
 use Sm\Core\Factory\StandardFactory;
