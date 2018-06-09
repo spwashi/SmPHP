@@ -35,7 +35,7 @@ abstract class StandardDatatype extends AbstractResolvable implements Datatype {
      * @return mixed
      * @throws \Sm\Data\Type\Exception\CannotCastException
      */
-    public function resolve($_ = null) {
+    public function resolve() {
         try {
             $subject = $this->subject;
             $subject = static::resolveType($subject);
