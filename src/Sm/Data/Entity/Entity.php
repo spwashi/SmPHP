@@ -194,13 +194,17 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
         $property            = $propertyDataManager->instantiate($propertySchema);
         return $property;
     }
-    /**
-     * @param \Sm\Data\Property\Property $property
-     *
-     * @param string                     $value
-     *
-     * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
-     */
+
+	/**
+	 * Given a property, set the value based on other properties in this entity or its primary model
+	 *
+	 * @param \Sm\Data\Property\Property $property
+	 *
+	 * @param string                     $value
+	 *
+	 * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
+	 * @throws InvalidArgumentException
+	 */
     protected function fillPropertyValue(Property $property, $value = Undefined_::class): void {
         /** @var \Sm\Data\Entity\Property\EntityPropertySchematic $propertySchematic */
         $propertySchematic = $property->getEffectiveSchematic();
