@@ -11,11 +11,6 @@ namespace Sm\Core\Resolvable;
 use Sm\Core\Factory\StandardFactory;
 
 class ResolvableFactory extends StandardFactory {
-    /**
-     * @param null $subject
-     *
-     * @return  \Sm\Core\Resolvable\Resolvable
-     */
     public function build($subject = null) {
         if ($subject instanceof Resolvable) {
             return $subject;

@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Sm\Data\Model\Exception;
+namespace Sm\Data\Model\Exception\Persistence;
 
 
 use Sm\Core\Exception\Exception;
