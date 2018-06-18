@@ -18,6 +18,7 @@ use Sm\Core\Resolvable\AbstractResolvable;
 use Sm\Core\Resolvable\NativeResolvable;
 use Sm\Core\Resolvable\Resolvable;
 use Sm\Core\Resolvable\ResolvableFactory;
+use Sm\Core\Schema\Schematic;
 use Sm\Core\Schema\Schematicized;
 use Sm\Core\SmEntity\SmEntity;
 use Sm\Core\SmEntity\Traits\Is_StdSchematicizedSmEntityTrait;
@@ -237,6 +238,7 @@ class Property extends AbstractResolvable implements Readonly_able,
 		return $this;
 	}
 	public function setValue($value) {
+		if ($value instanceof Schematic) return $this;
 		return $this->setSubject($value);
 	}
 	public function getValue() {

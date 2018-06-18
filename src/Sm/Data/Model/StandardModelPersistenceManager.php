@@ -4,6 +4,7 @@
 namespace Sm\Data\Model;
 
 
+use Sm\Core\SmEntity\SmEntity;
 use Sm\Data\Model\Resolvable\RawModelPropertyResolvable;
 use ICanBoogie\Inflector;
 use Sm\Core\Exception\UnimplementedError;
@@ -82,16 +83,16 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 	/**
 	 * Find multiple models that match this one
 	 *
-	 * @param Model $model
+	 * @param ModelSchema $model
 	 *
 	 * @return Model[]
 	 * @throws \Sm\Core\Exception\InvalidArgumentException
 	 * @throws \Sm\Core\Exception\UnimplementedError
 	 * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
-	 * @throws \Sm\Data\Property\Exception\NonexistentPropertyException
 	 * @throws \Sm\Data\Model\Exception\ModelNotSoughtException
+	 * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException
 	 */
-	public function findAll(Model $model) {
+	public function findAll(ModelSchema $model) {
 		$result      = $this->selectFind($model);
 		$end_results = [];
 
@@ -119,6 +120,7 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 
 		/** @var \Sm\Data\Property\Property $property */
 		foreach ($properties as $property_name => $property) {
+			if (!($property instanceof SmEntity)) continue;
 			if (!($property->raw_value instanceof Undefined_)) {
 				$conditions[] = EqualToCondition::init($property);
 			}
@@ -131,7 +133,7 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 
 		}
 
-		$all_properties_array = $properties->getAll();
+		$all_properties_array = $properties->getAll(true);
 		/**
 		 * @var \Sm\Data\Property\Property $_ap_property
 		 */
@@ -301,12 +303,13 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 	 * @throws \Sm\Core\Exception\InvalidArgumentException
 	 * @throws \Sm\Core\Exception\UnimplementedError
 	 * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException
+	 * @throws \Sm\Data\Property\Exception\NonexistentPropertyException
 	 */
 	public function hydrateModel(ModelSchema $model, array $properties) {
 		$fetched_data = $properties;
+		$fetched_data = $this->normalizeFoundSet($fetched_data);
 
 		if ($model instanceof Model) {
-			$fetched_data = $this->normalizeFoundSet($fetched_data);
 			# Return the model with synchronized values
 			return $model->set($fetched_data);
 		}
@@ -317,14 +320,13 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 		/** @var \Sm\Data\Model\ModelSchema $schematic */
 		$schematic = clone $model;
 
-		$schematic->set($fetched_data);
-
 
 		try {
 
 			$smID = $schematic->getSmID();
 			$item = $this->modelFactory->resolve($smID ?? null, $schematic);
 			$item->fromSchematic($schematic);
+			$item->set($fetched_data);
 
 			return $item;
 		} catch (UnresolvableException $exception) {
