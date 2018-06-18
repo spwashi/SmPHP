@@ -9,6 +9,8 @@ use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Internal\Monitor\Monitor;
 use Sm\Data\Entity\Exception\EntityNotFoundException;
 use Sm\Data\Entity\Exception\Persistence\CannotCreateEntityException;
+use Sm\Data\Entity\Property\EntityProperty;
+use Sm\Data\Entity\Property\EntityPropertySchematic;
 use Sm\Data\Entity\Validation\EntityValidationResult;
 use Sm\Data\Model\Exception\ModelNotFoundException;
 use Sm\Data\Model\Model;
@@ -25,6 +27,33 @@ use Sm\Data\Type\Undefined_;
 trait EntityHasPrimaryModelTrait {
 	/** @var  Model $foundModel */
 	private $foundModel;
+
+	/**
+	 * @param Model $model
+	 * @return Entity
+	 * @throws \Sm\Core\Exception\UnimplementedError
+	 * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
+	 */
+	public function fromModel(Model $model): Entity {
+		/** @var Entity $entity */
+		$entity = $this;
+		/** @var EntityProperty[] $allProperties */
+		$allProperties = $entity->getProperties()->getAll(true);
+		/**
+		 * @var                            $name
+		 * @var \Sm\Data\Property\Property $property
+		 */
+		foreach ($model->getProperties() as $name => $property) {
+			if (isset($allProperties[$name])) {
+				$entity->set($name, $property->raw_value);
+			}
+		}
+		$entity->setPersistedIdentity($model);
+		foreach ($allProperties as $property) {
+			$entity->fillPropertyValue($property);
+		}
+		return $entity;
+	}
 
 	/**
 	 * @param array                         $attributes
@@ -55,19 +84,7 @@ trait EntityHasPrimaryModelTrait {
 			                                                              $primaryModel,
 			                                                              $primaryModel->jsonSerialize(),
 		                                                              ]));
-
-		$allProperties = $entity->getProperties()->getAll();
-
-		/**
-		 * @var                            $name
-		 * @var \Sm\Data\Property\Property $property
-		 */
-		foreach ($primaryModel->getProperties() as $name => $property) {
-			if (isset($allProperties[$name])) {
-				$entity->set($name, $property->raw_value);
-			}
-		}
-		$entity->setPersistedIdentity($primaryModel);
+		$this->fromModel($primaryModel);
 		$primaryModel->markUnchanged();
 		return $entity;
 	}

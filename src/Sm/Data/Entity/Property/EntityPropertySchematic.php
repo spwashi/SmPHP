@@ -40,31 +40,18 @@ class EntityPropertySchematic extends PropertySchematic implements EntityPropert
 		$this->derivedFrom = $derivedFrom;
 		return $this;
 	}
-	public function jsonSerialize($context = null) {
-		if (!isset($context)) {
-			return array_filter([
-				                    'smID'        => $this->getSmID(),
-				                    'datatypes'   => $this->getRawDatatypes(),
-				                    'isRequired'  => $this->isRequired(),
-				                    'role'        => $this->getRole(),
-				                    'length'      => $this->getLength(),
-				                    'minLength'   => $this->getMinLength(),
-				                    'derivedFrom' => $this->getDerivedFrom(),
-				                    'reference'   => $this->getReferenceDescriptor(),
-			                    ], function ($item) { return !is_null($item);});
-		}
-
-		$properties   = parent::jsonSerialize();
-		$contextNames = $this->getContextNames();
-
-		if (isset($this->derivedFrom)) {
-			$properties['derivedFrom'] = $this->derivedFrom;
-		}
-		if (isset($contextNames)) {
-			$properties['contexts'] = $contextNames;
-		}
-
-		return $properties;
+	public function jsonSerialize() {
+		return array_filter([
+			                    'smID'        => $this->getSmID(),
+			                    'datatypes'   => $this->getRawDatatypes(),
+			                    'isRequired'  => $this->isRequired(),
+			                    'isGenerated' => $this->isGenerated(),
+			                    'role'        => $this->getRole(),
+			                    'length'      => $this->getLength(),
+			                    'minLength'   => $this->getMinLength(),
+			                    'derivedFrom' => $this->getDerivedFrom(),
+			                    'reference'   => $this->getReferenceDescriptor(),
+		                    ], function ($item) { return !is_null($item); });
 	}
 	/**
 	 * @return mixed

@@ -205,7 +205,7 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
 	 * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
 	 * @throws InvalidArgumentException
 	 */
-	protected function fillPropertyValue(Property $property, $value = Undefined_::class): void {
+	public function fillPropertyValue(Property $property, $value = Undefined_::class): void {
 		/** @var \Sm\Data\Entity\Property\EntityPropertySchematic $propertySchematic */
 		$propertySchematic = $property->getEffectiveSchematic();
 		if (!($propertySchematic instanceof EntityPropertySchematic)) {
