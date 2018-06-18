@@ -41,17 +41,18 @@ class EntityPropertySchematic extends PropertySchematic implements EntityPropert
 		return $this;
 	}
 	public function jsonSerialize() {
-		return array_filter([
-			                    'smID'        => $this->getSmID(),
-			                    'datatypes'   => $this->getRawDatatypes(),
-			                    'isRequired'  => $this->isRequired(),
-			                    'isGenerated' => $this->isGenerated(),
-			                    'role'        => $this->getRole(),
-			                    'length'      => $this->getLength(),
-			                    'minLength'   => $this->getMinLength(),
-			                    'derivedFrom' => $this->getDerivedFrom(),
-			                    'reference'   => $this->getReferenceDescriptor(),
-		                    ], function ($item) { return !is_null($item); });
+		$attributes = [
+			'smID'        => $this->getSmID(),
+			'datatypes'   => $this->getRawDatatypes(),
+			'isRequired'  => $this->isRequired(),
+			'isGenerated' => $this->isGenerated(),
+			'role'        => $this->getRole(),
+			'length'      => $this->getLength(),
+			'minLength'   => $this->getMinLength(),
+			'derivedFrom' => $this->getDerivedFrom(),
+			'reference'   => $this->getReferenceDescriptor(),
+		];
+		return array_filter($attributes, function ($item) { return !is_null($item); });
 	}
 	/**
 	 * @return mixed
