@@ -232,8 +232,8 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
 		}
 
 		if (is_array($derivedFrom)) {
-			$identity         = $derivedFrom['identity'];
-			$hydration_method = $derivedFrom['hydrationMethod'];
+			$identity         = $derivedFrom['identity'] ?? null;
+			$hydration_method = $derivedFrom['hydrationMethod'] ?? null;
 			if (isset($identity, $hydration_method)) {
 				if (!isset($hydration_method['property'])) throw new UnimplementedError('Can only hydrate from properties');
 
