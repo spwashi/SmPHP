@@ -21,7 +21,7 @@ class EntityPropertySchematic extends PropertySchematic implements EntityPropert
 		return $this;
 	}
 	protected function _configArraySet__derivedFrom($configuration) {
-		$derivedFrom = $configuration['derivedFrom'] ?? [];
+		$derivedFrom = $configuration['derivedFrom'] ?? null;
 		if (isset($derivedFrom)) $this->setDerivedFrom($derivedFrom);
 	}
 	protected function _configArraySet__contextNames($configuration) {

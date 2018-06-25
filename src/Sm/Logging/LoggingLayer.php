@@ -9,7 +9,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Sm\Core\Context\Layer\StandardLayer;
 
-class LoggingLayer extends StandardLayer {
+class LoggingLayer extends StandardLayer implements \Sm\Logging\Logger {
 	const LAYER_NAME = 'logging';
 	protected $loggers = [];
 	/** @var string $log_path */
@@ -18,11 +18,14 @@ class LoggingLayer extends StandardLayer {
 		if (isset($this->loggers[$name])) return $this->loggers[$name];
 		return parent::__get($name);
 	}
-	public function log($item, string $name = 'info', $level = Logger::INFO) {
+	public function log($item, string $name = 'info', $level = null) {
+		$level  = !empty($level) ? $level : Logger::INFO;
 		$logger = $this->loggers[$name] ?? $this->createLogger($name);
 		return $logger->log($level, is_string($item) ? $item : json_encode($item));
 	}
-	public function createLogger(string $name, $level = Logger::INFO) {
+	public function createLogger(string $name, $level = null) {
+		$level = !empty($level) ? $level : Logger::INFO;
+
 		if (isset($this->loggers[$name])) return $this->loggers[$name];
 		if (strpos($name, '/')) {
 			$dir_arr = explode('/', $name);

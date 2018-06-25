@@ -8,13 +8,14 @@ use Sm\Core\Event\GenericEvent;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Internal\Monitor\Monitor;
 use Sm\Data\Entity\Exception\EntityNotFoundException;
-use Sm\Data\Entity\Exception\Persistence\CannotCreateEntityException;
+use Sm\Data\Entity\Exception\Persistence\CannotModifyEntityException;
 use Sm\Data\Entity\Property\EntityProperty;
 use Sm\Data\Entity\Property\EntityPropertySchematic;
 use Sm\Data\Entity\Validation\EntityValidationResult;
 use Sm\Data\Model\Exception\ModelNotFoundException;
 use Sm\Data\Model\Model;
 use Sm\Data\Model\ModelDataManager;
+use Sm\Data\Model\ModelPersistenceManager;
 use Sm\Data\Model\ModelSchema;
 use Sm\Data\Property\Property;
 use Sm\Data\Property\PropertyContainer;
@@ -98,29 +99,42 @@ trait EntityHasPrimaryModelTrait {
 	 * @return \Sm\Data\Entity\Validation\EntityValidationResult
 	 * @throws \Sm\Core\Exception\InvalidArgumentException
 	 * @throws \Sm\Core\Exception\UnimplementedError
-	 * @throws \Sm\Data\Entity\Exception\Persistence\CannotCreateEntityException
+	 * @throws \Sm\Data\Entity\Exception\Persistence\CannotModifyEntityException
 	 * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
 	 */
 	public function createPrimaryModel(Context $context, $attributes = []): EntityValidationResult {
-		/** @var \Sm\Data\Entity\Entity|\Sm\Data\Entity\EntityHasPrimaryModelTrait $entity */
+		/** @var Entity|EntityHasPrimaryModelTrait $entity */
 		$entity = $this;
 
-		#
-		## Get the Model that we were looking for
-		$modelDataManager = $entity->entityDataManager->getModelDataManager();
-		$schematic        = $this->getPersistedIdentitySchema($modelDataManager);
-		$attributes       = static::getAttributesForCreation($entity, $attributes);
+		# Set properties on the model
+		$primed_detail_arr      = $this->primeModelModification($context, $attributes);
+		$entityValidationResult = $primed_detail_arr[0];
+		$model                  = $primed_detail_arr[1];
 
-		$entity->set($attributes);
-		$entityValidationResult = static::validateEntityOnContext($context, $entity);
-		$model                  = $modelDataManager->instantiate($schematic);
-		$this->setModelPropertiesFromEntity($entity, $model, $context);
+		# Create the model
+		$entity->entityDataManager->modelDataManager->persistenceManager->create($model);
 
-		#
-		## Throws an error if there was one
-		$modelPersistenceManager = $modelDataManager->persistenceManager;
-		$modelPersistenceManager->create($model);
-		$entity->setPersistedIdentity($model);
+		# Return the success of the validation
+		return $entityValidationResult;
+	}
+	/**
+	 * @param Context $context
+	 * @param array   $attributes
+	 * @return EntityValidationResult
+	 * @throws CannotModifyEntityException
+	 * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
+	 */
+	public function savePrimaryModel(Context $context, $attributes = []): EntityValidationResult {
+		/** @var Entity|EntityHasPrimaryModelTrait $entity */
+		$entity = $this;
+
+		# Set properties on the model
+		$primed_detail_arr      = $this->primeModelModification($context, $attributes);
+		$entityValidationResult = $primed_detail_arr[0];
+		$model                  = $primed_detail_arr[1];
+
+		# save the model
+		$entity->entityDataManager->modelDataManager->persistenceManager->save($model);
 
 		# Return the success of the validation
 		return $entityValidationResult;
@@ -166,7 +180,7 @@ trait EntityHasPrimaryModelTrait {
 	}
 
 	#
-	## Finding/Hydraying
+	## Finding/Hydrating
 	/**
 	 * @param \Sm\Data\Entity\Entity   $entity
 	 *
@@ -176,21 +190,6 @@ trait EntityHasPrimaryModelTrait {
 	 */
 	protected function getPropertiesForModel(Entity $entity, Context $context = null): array {
 		return array_merge_recursive($entity->getProperties()->getAll(), $entity->getInternal());
-	}
-	/**
-	 * Search for the Model that this Entity is based
-	 *
-	 * @param \Sm\Data\Model\ModelDataManager $modelDataManager
-	 * @param array                           $attributes
-	 *
-	 * @return Model
-	 * @throws \Sm\Core\Exception\InvalidArgumentException
-	 * @throws \Sm\Core\Exception\UnimplementedError
-	 * @throws \Sm\Data\Entity\Exception\EntityNotFoundException
-	 * @throws \Sm\Data\Property\Exception\NonexistentPropertyException
-	 */
-	protected function findPersistedIdentity(ModelDataManager $modelDataManager, $attributes = []) {
-
 	}
 	private function _searchForPersistedIdentity(ModelDataManager $modelDataManager, ModelSchema $model): Model {
 		return $modelDataManager->persistenceManager->find($model);
@@ -241,7 +240,7 @@ trait EntityHasPrimaryModelTrait {
 	 * @param                          $entity
 	 *
 	 * @return mixed
-	 * @throws \Sm\Data\Entity\Exception\Persistence\CannotCreateEntityException
+	 * @throws \Sm\Data\Entity\Exception\Persistence\CannotModifyEntityException
 	 */
 	protected static function validateEntityOnContext(Context $context, Entity $entity) {
 		$entityValidationResult = $entity->validate($context);
@@ -249,7 +248,7 @@ trait EntityHasPrimaryModelTrait {
 		#
 		## If there were errors in the validation, throw an exception
 		if (isset($entityValidationResult) && !$entityValidationResult->isSuccess()) {
-			$cannotCreateEntityException = new CannotCreateEntityException($entityValidationResult->getMessage());
+			$cannotCreateEntityException = new CannotModifyEntityException($entityValidationResult->getMessage());
 
 			if ($entityValidationResult instanceof EntityValidationResult) {
 				$propertyValidationResults = $entityValidationResult->getPropertyValidationResults();
@@ -259,6 +258,37 @@ trait EntityHasPrimaryModelTrait {
 
 			throw $cannotCreateEntityException;
 		}
+
 		return $entityValidationResult;
+	}
+	/**
+	 * @param Context $context
+	 * @param         $attributes
+	 * @return array
+	 * @throws CannotModifyEntityException
+	 * @throws InvalidArgumentException
+	 * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
+	 */
+	protected function primeModelModification(Context $context, $attributes): array {
+		/** @var \Sm\Data\Entity\Entity|\Sm\Data\Entity\EntityHasPrimaryModelTrait $entity */
+		$entity = $this;
+
+		#
+		## Get the Model that we were looking for
+
+		$model = $entity->getPersistedIdentity();
+		if (!($model instanceof Model)) {
+			/** @var ModelDataManager $modelDataManager */
+			$modelDataManager = $entity->entityDataManager->modelDataManager;
+			$schematic        = $this->getPersistedIdentitySchema($modelDataManager);
+			$model            = $modelDataManager->instantiate($schematic);
+		}
+		$attributes = static::getAttributesForCreation($entity, $attributes);
+		$entity->set($attributes);
+		$entityValidationResult = static::validateEntityOnContext($context, $entity);
+		$this->setModelPropertiesFromEntity($entity, $model, $context);
+		$entity->setPersistedIdentity($model);
+		$entity->updateComponentProperties();
+		return [$entityValidationResult, $model];
 	}
 }

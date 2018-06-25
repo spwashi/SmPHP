@@ -34,6 +34,7 @@ use Sm\Data\Type\Undefined_;
  * Sort of a wrapper class for Models that have an identity we can verify. Bound to a ModelDataManager.
  *
  * @property PropertyContainer $properties
+ * @property EntityDataManager $entityDataManager
  */
 abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver, Schematicized, SmEntity, \Sm\Data\Evaluation\Validation\Validatable {
 	use Is_StdSmEntityTrait;
@@ -63,14 +64,16 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
 		/**
 		 * @var Property $property
 		 */
-		foreach ($this->properties as $property) {
+		foreach ($this->properties->getAll() as $name => $property) {
 			$effectiveSchematic = $property->getEffectiveSchematic();
 			if (!($effectiveSchematic instanceof EntityPropertySchematic)) continue;
 			$derivedFrom = $effectiveSchematic->getDerivedFrom();
-
-			if (is_array($derivedFrom)) {
+			if (is_string($derivedFrom)) {
+				$this->setInternalProperty($derivedFrom, $property->value);
+			} else if (is_array($derivedFrom)) {
 				foreach ($derivedFrom as $propertyName => $smID) {
-					$this->setInternalProperty($smID, $this->internal[$propertyName] ?? null);
+					$value = $this->internal[$propertyName] ?? ($this->properties->$propertyName ? $this->properties->$propertyName->value : null);
+					$this->setInternalProperty($smID, $value);
 				}
 			}
 		}
@@ -84,7 +87,6 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
 	 * @return $this
 	 * @throws \Sm\Core\Exception\InvalidArgumentException
 	 * @throws \Sm\Core\Exception\UnimplementedError
-	 * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException
 	 */
 	public function fromSchematic($entitySchematic) {
 		/** @var \Sm\Data\Entity\EntitySchematic $entitySchematic */
@@ -114,12 +116,14 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
 		switch ($name) {
 			case 'properties':
 				return $this->getProperties();
+			case 'entityDataManager':
+				return $this->entityDataManager;
 		}
 		return null;
 	}
 	/**
-	 * @param      $name
-	 * @param null $value
+	 * @param string|array $name
+	 * @param null         $value
 	 *
 	 * @return $this
 	 * @throws \Sm\Core\Exception\UnimplementedError
