@@ -74,7 +74,9 @@ trait EntityHasPrimaryModelTrait {
 
 		$model = $this->getPersistedIdentitySchema($modelDataManager);
 		try {
-			$model->set($attributes);
+			foreach ($model->properties->getAll() as $name => $model_property) {
+				$model->set($name, $attributes[$name] ?? $model_property->value);
+			}
 			$primaryModel = $this->_searchForPersistedIdentity($modelDataManager, $model);
 		} catch (ModelNotFoundException $modelNotFoundException) {
 			throw new EntityNotFoundException("Could not find the primaryModel associated with this Entity", null, $modelNotFoundException);

@@ -231,6 +231,8 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
 			$property->value = $value;
 		} else if (is_string($derivedFrom)) {
 			$property->value = $this->properties->{$derivedFrom} ?? $primaryModel->properties->{$derivedFrom};
+		} else if (is_null($derivedFrom)) {
+			return;
 		} else if (!is_array($derivedFrom)) {
 			throw new UnresolvableException("Cannot resolve anything but an association of properties");
 		}
