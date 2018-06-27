@@ -4,11 +4,11 @@
 namespace Sm\Modules\Communication\Email;
 
 
-use Modules\Email\Factory\EmailFactory;
 use Sm\Communication\CommunicationLayer;
 use Sm\Core\Context\Exception\InvalidContextException;
 use Sm\Core\Context\Layer\Layer;
 use Sm\Core\Context\Layer\Module\LayerModule;
+use Sm\Modules\Communication\Email\Factory\EmailFactory;
 
 class EmailCommunicationModule extends LayerModule {
     /** @var EmailFactory */
