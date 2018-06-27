@@ -16,43 +16,43 @@ use Sm\Modules\Query\Sql\Formatting\Proxy\Column\ColumnIdentifierFormattingProxy
 use Sm\Modules\Query\Sql\Formatting\SqlQueryFormatter;
 
 class TwoOperandStatementFormatter extends SqlQueryFormatter {
-    public function format($stmt): string {
-        if (!($stmt instanceof TwoOperandStatement)) throw new InvalidArgumentException("Can only format TwoOperandStatements");
-        $right = $this->proxyRightSide($stmt);
-        $left  = $this->proxyLeftSide($stmt);
-        return $this->completeFormatting($stmt, $left, $right);
-    }
-    
-    protected function proxyRightSide(TwoOperandStatement $stmt) {
-        $right = $stmt->getRightSide();
-        
-        if (!($right instanceof ColumnSchema)) {
-            $right = $this->formatterManager->placeholder($right);
-        }
-        # Format each side like we're using columns
-        if ($right instanceof ColumnSchema) {
-            $right = $this->proxy($right, ColumnIdentifierFormattingProxy::class);
-        }
-        return $right;
-    }
-    protected function proxyLeftSide(TwoOperandStatement $stmt) {
-        $left = $stmt->getLeftSide();
-        if ($left instanceof ColumnSchema || $left instanceof PropertySchema) {
-            $left = $this->proxy($left, ColumnIdentifierFormattingProxy::class);
-        }
-        return $left;
-    }
-    /**
-     * @param $stmt
-     * @param $left
-     * @param $right
-     *
-     * @return string
-     */
-    protected function completeFormatting(TwoOperandStatement $stmt, $left, $right): string {
-        $formattedLeft  = $this->formatComponent($left);
-        $formattedRight = $this->formatComponent($right);
-        $operator       = $stmt->getOperator();
-        return $formattedLeft . ' ' . $operator . ' ' . $formattedRight;
-    }
+	public function format($stmt): string {
+		if (!($stmt instanceof TwoOperandStatement)) throw new InvalidArgumentException("Can only format TwoOperandStatements");
+		$right = $this->proxyRightSide($stmt);
+		$left  = $this->proxyLeftSide($stmt);
+		return $this->completeFormatting($stmt, $left, $right);
+	}
+
+	protected function proxyRightSide(TwoOperandStatement $stmt) {
+		$right = $stmt->getRightSide();
+		if (!($right instanceof ColumnSchema)) {
+			if(!isset($right)) return $right;
+			$right = $this->formatterManager->placeholder($right);
+		}
+		# Format each side like we're using columns
+		if ($right instanceof ColumnSchema) {
+			$right = $this->proxy($right, ColumnIdentifierFormattingProxy::class);
+		}
+		return $right;
+	}
+	protected function proxyLeftSide(TwoOperandStatement $stmt) {
+		$left = $stmt->getLeftSide();
+		if ($left instanceof ColumnSchema || $left instanceof PropertySchema) {
+			$left = $this->proxy($left, ColumnIdentifierFormattingProxy::class);
+		}
+		return $left;
+	}
+	/**
+	 * @param $stmt
+	 * @param $left
+	 * @param $right
+	 *
+	 * @return string
+	 */
+	protected function completeFormatting(TwoOperandStatement $stmt, $left, $right): string {
+		$formattedLeft  = $this->formatComponent($left);
+		$formattedRight = $this->formatComponent($right);
+		$operator       = $stmt->getOperator();
+		return $formattedLeft . ' ' . $operator . ' ' . $formattedRight;
+	}
 }

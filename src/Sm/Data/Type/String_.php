@@ -8,10 +8,12 @@
 namespace Sm\Data\Type;
 
 
+use Sm\Core\Resolvable\Resolvable;
 use Sm\Core\Resolvable\StringResolvable;
 
 class String_ extends StandardDatatype {
-    public static function resolveType($subject) {
-        return StringResolvable::init($subject);
-    }
+	public static function resolveType($subject) {
+
+		return StringResolvable::init($subject);
+	}
 }

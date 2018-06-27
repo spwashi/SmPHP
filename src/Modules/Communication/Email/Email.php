@@ -14,13 +14,6 @@ abstract class Email {
     protected $username;
     protected $password;
     
-    public function __construct($username, $password, $host, $port) {
-        $this->host     = $host;
-        $this->port     = $port;
-        $this->username = $username;
-        $this->password = $password;
-    }
-    
     #
     ##  Email methods
     abstract public function send(array $to):Email;

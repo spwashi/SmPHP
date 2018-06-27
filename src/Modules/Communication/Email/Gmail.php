@@ -19,10 +19,14 @@ class Gmail extends Email {
     
     #
     ##  Constructors/Initialization
-    public function __construct($username, $password, $host = 'smtp.gmail.com', $port = 587) {
-        parent::__construct($username, $password, $host, $port);
-    }
-    public static function init($username, $password): Gmail {
+	public function __construct($username, $password, $host = 'smtp.gmail.com', $port = 587) {
+		$this->host     = $host;
+		$this->port     = $port;
+		$this->username = $username;
+		$this->password = $password;
+	}
+
+	public static function init($username, $password): Gmail {
         return new static($username, $password);
     }
     public function initialize(array $from, array $reply_to = null): Email {

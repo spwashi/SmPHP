@@ -13,6 +13,7 @@ use Sm\Data\Source\DataSource;
 interface ModelPersistenceManager {
     public function save(Model $model);
     public function find(ModelSchema $schematic);
+    public function findAll(ModelSchema $schematic);
     public function create(Model $modelSchema);
     public function markDelete(Model $model);
     public function getModelSource($model): DataSource;
