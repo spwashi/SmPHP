@@ -19,8 +19,8 @@ use Sm\Data\Property\PropertyHaverSchema;
  * Something that describes a Entity
  */
 interface EntitySchema extends SmEntitySchema, PropertyHaverSchema {
-    public function getName();
-    public function setName(string $name);
-    public function getPersistedIdentity(): ?ModelSchema;
-    public function proxyInContext(Context $context): ?EntitySchema;
+	public function getName();
+	public function setName(string $name);
+	public function getPersistedIdentity();
+	public function proxyInContext(Context $context): ?EntitySchema;
 }

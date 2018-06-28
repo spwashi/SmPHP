@@ -121,6 +121,7 @@ class Model implements ModelSchema,
 	}
 	public function setProperties(PropertyContainer $properties) {
 		$this->properties = $properties;
+		var_dump(array_keys($properties->getAll()));
 		return $this;
 	}
 	public function registerProperty(string $name, Property $property = null) {
@@ -132,12 +133,6 @@ class Model implements ModelSchema,
 
 	#
 	## Validation
-	/**
-	 * @param \Sm\Core\Context\Context|null $context
-	 *
-	 * @return null|ModelValidationResult
-	 * @throws \Sm\Core\Exception\UnimplementedError
-	 */
 	public function validate(Context $context = null): ?ValidationResult {
 		$property_errors = $this->getPropertyValidationErrors($context);
 
@@ -148,40 +143,18 @@ class Model implements ModelSchema,
 
 	#
 	##  Configuration/Initialization
-	/**
-	 * @param $schematic
-	 *
-	 * @return $this
-	 * @throws \Sm\Core\Exception\InvalidArgumentException
-	 * @throws \Sm\Core\Exception\UnimplementedError
-	 * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException
-	 */
 	public function fromSchematic($schematic) {
-		/** @var \Sm\Data\Model\ModelSchematic $schematic */
+		/** @var ModelSchematic $schematic */
 		$this->_fromSchematic_std($schematic);
 		$this->setName($this->getName() ?? $schematic->getName());
 		$this->registerSchematicProperties($schematic);
 		return $this;
 	}
-	/**
-	 * @param $schematic
-	 *
-	 * @throws \Sm\Core\Exception\InvalidArgumentException
-	 */
 	public function checkCanUseSchematic($schematic) {
-		if (!($schematic instanceof ModelSchema)) {
-			throw new InvalidArgumentException("Cannot use anything except for a Model Schema to initialize these");
-		}
+		if (!$schematic instanceof ModelSchema) throw new InvalidArgumentException("Cannot use anything except for a Model Schema to initialize these");
 	}
-	/**
-	 * @param \Sm\Data\Property\PropertySchema $propertySchema
-	 *
-	 * @return \Sm\Data\Property\Property
-	 */
 	public function instantiateProperty(PropertySchema $propertySchema): Property {
-		$property = $this->propertySchematicInstantiator->instantiate($propertySchema);
-
-		return $property;
+		return $this->propertySchematicInstantiator->instantiate($propertySchema);
 	}
 
 	#
@@ -198,11 +171,6 @@ class Model implements ModelSchema,
 	public function __debugInfo() {
 		return $this->jsonSerialize();
 	}
-	/**
-	 * @param \Sm\Data\Property\PropertySchematicInstantiator $propertySchematicInstantiator
-	 *
-	 * @return  $this
-	 */
 	protected function setPropertySchematicInstantiator(PropertySchematicInstantiator $propertySchematicInstantiator) {
 		$this->propertySchematicInstantiator = $propertySchematicInstantiator;
 		return $this;

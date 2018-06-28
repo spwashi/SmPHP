@@ -140,6 +140,7 @@ class Property extends AbstractResolvable implements Readonly_able,
 		$this->referenceDescriptor = $referenceDescriptor;
 		return $this;
 	}
+
 	/**
 	 * @param $subject
 	 *
@@ -147,7 +148,14 @@ class Property extends AbstractResolvable implements Readonly_able,
 	 * @throws \Sm\Core\Exception\InvalidArgumentException
 	 */
 	public function setSubject($subject) {
+
+		# --
+
+		# Don't set from schematics
+		if ($subject instanceof Schematic) return $this;
+
 		$previous_value = $this->subject;
+
 		if ($subject instanceof Property) $subject = $subject->value;
 
 		if (!($subject instanceof Undefined_)) $this->valueIsNotDefault = true;
@@ -157,6 +165,7 @@ class Property extends AbstractResolvable implements Readonly_able,
 		# Only deal with Resolvables
 		$subject = (new ResolvableFactory)->resolve($subject);
 		$this->checkCanSetValue($subject);
+
 		parent::setSubject($subject);
 
 		# --
@@ -172,7 +181,7 @@ class Property extends AbstractResolvable implements Readonly_able,
 		}
 
 		if ($new !== $previous) {
-			$this->valueHistory->append(PropertyValueChange::init($this, $new_value, $previous_value));
+			$this->markValueChange($new_value, $previous_value);
 		}
 
 
@@ -237,8 +246,12 @@ class Property extends AbstractResolvable implements Readonly_able,
 		$this->_potential_types = $_potential_types;
 		return $this;
 	}
+
+	/**
+	 * @param $value
+	 * @return $this|Property
+	 */
 	public function setValue($value) {
-		if ($value instanceof Schematic) return $this;
 		return $this->setSubject($value);
 	}
 	public function getValue() {
@@ -357,5 +370,12 @@ class Property extends AbstractResolvable implements Readonly_able,
 	public function setDoStrictResolve(bool $doStrictResolve) {
 		$this->doStrictResolve = $doStrictResolve;
 		return $this;
+	}
+	/**
+	 * @param $new_value
+	 * @param $previous_value
+	 */
+	protected function markValueChange($new_value, $previous_value): void {
+		$this->valueHistory->append(PropertyValueChange::init($this, $new_value, $previous_value));
 	}
 }

@@ -144,7 +144,7 @@ abstract class SmEntityDataManager implements SmEntityManager, SchematicInstanti
 	 * @throws \Sm\Core\Exception\InvalidArgumentException
 	 * @throws \Sm\Core\Exception\UnimplementedError
 	 */
-	public function getSchematicByName($schematic_name): SmEntitySchematic {
+	public function getSchematicByName(string $schematic_name): SmEntitySchematic {
 		if (isset($this->registeredSchematics[$schematic_name])) {
 			return $this->registeredSchematics[$schematic_name] ?? null;
 		}

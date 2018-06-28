@@ -75,12 +75,18 @@ trait EntityHasPrimaryModelTrait {
 		$model = $this->getPersistedIdentitySchema($modelDataManager);
 		try {
 			foreach ($model->properties->getAll() as $name => $model_property) {
-				$model->set($name, $attributes[$name] ?? $model_property->value);
+				if (!isset($attributes[$name])) continue;
+
+				$model->set($name, $attributes[$name]);
 			}
+
+			var_dump(json_decode(json_encode($model)));
+
 			$primaryModel = $this->_searchForPersistedIdentity($modelDataManager, $model);
 		} catch (ModelNotFoundException $modelNotFoundException) {
 			throw new EntityNotFoundException("Could not find the primaryModel associated with this Entity", null, $modelNotFoundException);
 		}
+
 
 		$entity->getMonitor(Monitor::INFO)->append(GenericEvent::init('FOUND PRIMARY MODEL -- ',
 		                                                              [
@@ -205,7 +211,7 @@ trait EntityHasPrimaryModelTrait {
 
 			if ($value instanceof Property) $value = $value->getSubject();
 
-			/** @var \WANGHORN\Model\Property $property */
+			/** @var Property $property */
 			$property = $model->properties->{$key};
 			if (!isset($property)) continue;
 

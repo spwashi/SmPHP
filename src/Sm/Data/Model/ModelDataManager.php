@@ -22,7 +22,7 @@ use Sm\Data\SmEntity\SmEntityDataManager;
 
 /**
  * @property  ModelPersistenceManager $persistenceManager
- *
+ * @method getSchematicByName(string $schematic_name): ModelSchematic
  * @method configure($configuration): ModelSchematic
  */
 class ModelDataManager extends SmEntityDataManager {

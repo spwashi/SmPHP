@@ -18,5 +18,6 @@ use Sm\Core\Internal\Identification\Identifiable;
  * @package Sm\Data\Property
  */
 interface PropertyHaverSchema extends Identifiable {
-    public function getProperties();
+	/** @return PropertySchematicContainer */
+	public function getProperties();
 }

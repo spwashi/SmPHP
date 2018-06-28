@@ -17,6 +17,7 @@ use Sm\Data\Model\Exception\ModelLayerConfigurationError;
 use Sm\Data\Model\Exception\ModelNotFoundException;
 use Sm\Data\Model\Exception\ModelNotSoughtException;
 use Sm\Data\Model\Exception\Persistence\CannotCreateModelException;
+use Sm\Data\Property\Context\RawPropertyContainer;
 use Sm\Data\Property\PropertySchemaContainer;
 use Sm\Data\Source\Database\Table\TableSource;
 use Sm\Data\Source\DataSource;
@@ -56,42 +57,14 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 
 	#
 	## Fetching
-	/**
-	 * Retrieve and instantiate a Model
-	 *
-	 * @param \Sm\Data\Model\ModelSchema $search
-	 *
-	 * @param bool                       $do_hydrate
-	 *
-	 * @return Model
-	 * @throws \Sm\Core\Exception\InvalidArgumentException
-	 * @throws \Sm\Core\Exception\UnimplementedError
-	 * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
-	 * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException
-	 * @throws \Sm\Data\Model\Exception\ModelNotSoughtException
-	 */
 	public function find(ModelSchema $search, $do_hydrate = false): ModelSchema {
 		$result = $this->selectFind($search);
-
-		return $this->hydrateModel($search,
-		                           $this->normalizeFoundSet($result[0] ?? []));
+		return $this->hydrateModel($search, $result[0] ?? []);
 	}
 	public function setFindSafety($do_safe_finds = true) {
 		$this->do_safe_finds = $do_safe_finds;
 		return $this;
 	}
-	/**
-	 * Find multiple models that match this one
-	 *
-	 * @param ModelSchema $model
-	 *
-	 * @return Model[]
-	 * @throws \Sm\Core\Exception\InvalidArgumentException
-	 * @throws \Sm\Core\Exception\UnimplementedError
-	 * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
-	 * @throws \Sm\Data\Model\Exception\ModelNotSoughtException
-	 * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException
-	 */
 	public function findAll(ModelSchema $model) {
 		$result      = $this->selectFind($model);
 		$end_results = [];
@@ -102,17 +75,6 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 		}
 		return $end_results;
 	}
-	/**
-	 * Get the result of a Select query searching for a Model
-	 *
-	 * @param \Sm\Data\Model\ModelSchema $model
-	 *
-	 * @return array
-	 * @throws \Sm\Core\Exception\InvalidArgumentException
-	 * @throws \Sm\Core\Exception\UnimplementedError
-	 * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
-	 * @throws \Sm\Data\Model\Exception\ModelNotSoughtException
-	 */
 	protected function selectFind(ModelSchema $model) {
 		/** @var \Sm\Data\Property\PropertySchemaContainer $properties */
 		$properties = $model->getProperties();
@@ -167,14 +129,6 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 
 	#
 	## Saving
-	/**
-	 * Save a Model in whichever source maintains the association of its identity and its properties
-	 *
-	 * @param Model $model
-	 *
-	 * @return mixed
-	 * @throws \Sm\Core\Exception\InvalidArgumentException
-	 */
 	public function save(Model $model) {
 		$properties = $model->getChanged();
 		$table_name = $this->modelToTablename($model);
@@ -186,17 +140,6 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 
 	#
 	## Creation
-	/**
-	 * Create the Model in whichever source maintains its identity
-	 *
-	 * @param Model $model
-	 *
-	 * @return mixed
-	 * @throws \Sm\Core\Exception\InvalidArgumentException
-	 * @throws \Sm\Core\Exception\UnimplementedError
-	 * @throws \Sm\Data\Property\Exception\NonexistentPropertyException
-	 * @throws \Sm\Data\Model\Exception\Persistence\CannotCreateModelException
-	 */
 	public function create(Model $model) {
 		// Establish the Context for validating the properties of this Model
 		$creationContext = new ModelCreationContext;
@@ -236,14 +179,6 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 
 	#
 	## Deletion
-	/**
-	 * Instead of Deleting something, mark a flag that either queues it for deletion or removes it from the pool of valid models
-	 *
-	 * @param Model $model
-	 *
-	 * @return mixed
-	 * @throws \Sm\Core\Exception\InvalidArgumentException
-	 */
 	public function markDelete(Model $model) {
 		$delete_dt_property_name = $model->properties->delete_dt->getName();
 		$table_name              = $this->modelToTablename($model);
@@ -254,14 +189,6 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 		#$result1 = $this->queryInterpreter->getQueryFormatter()->format($update);
 		return $this->queryInterpreter->interpret($update);
 	}
-	/**
-	 * Remove a model from its maintainer-of-identity
-	 *
-	 * @param Model $model
-	 *
-	 * @return mixed
-	 * @throws \Sm\Core\Exception\InvalidArgumentException
-	 */
 	public function delete(Model $model) {
 		$table_name = $this->modelToTablename($model);
 		$delete     = DeleteStatement::init()
@@ -274,11 +201,6 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 
 	#
 	## Meta
-	/**
-	 * @param string|\Sm\Data\Model\ModelSchema $model
-	 *
-	 * @return string
-	 */
 	public function modelToTablename($model): string {
 		$model_name = $model instanceof ModelSchema ? $model->getName() : $model;
 
@@ -286,28 +208,15 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 
 		return Inflector::get()->pluralize($model_name);
 	}
-	/**
-	 * @param \Sm\Data\Model\ModelSchema|string $model
-	 *
-	 * @return \Sm\Data\Source\DataSource
-	 */
 	public function getModelSource($model): DataSource {
 		$table_name = $this->modelToTablename($model);
 		return TableSource::init()->setTableName($table_name);
 	}
-	/**
-	 * @param \Sm\Data\Model\ModelSchema $model
-	 * @param                            $properties
-	 *
-	 * @return $this|mixed|null|\Sm\Data\Model\Model
-	 * @throws \Sm\Core\Exception\InvalidArgumentException
-	 * @throws \Sm\Core\Exception\UnimplementedError
-	 * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException
-	 * @throws \Sm\Data\Property\Exception\NonexistentPropertyException
-	 */
 	public function hydrateModel(ModelSchema $model, array $properties) {
 		$fetched_data = $properties;
 		$fetched_data = $this->normalizeFoundSet($fetched_data);
+
+		$fetched_properties = RawPropertyContainer::init()->set($fetched_data);
 
 		if ($model instanceof Model) {
 			# Return the model with synchronized values
@@ -335,14 +244,6 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 		}
 	}
 
-	/**
-	 * Get the properties that would be set on creation (not related to the Identity of the Model)
-	 *
-	 * @param \Sm\Data\Model\ModelSchema                     $model
-	 * @param \Sm\Data\Property\PropertySchemaContainer|null $properties
-	 *
-	 * @return \Sm\Data\Property\PropertySchemaContainer
-	 */
 	protected function getModelNon_IdentityProperties(ModelSchema $model, PropertySchemaContainer $properties = null) {
 		$property_array = $properties->getAll();
 
