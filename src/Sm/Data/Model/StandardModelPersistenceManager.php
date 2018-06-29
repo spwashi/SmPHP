@@ -17,7 +17,7 @@ use Sm\Data\Model\Exception\ModelLayerConfigurationError;
 use Sm\Data\Model\Exception\ModelNotFoundException;
 use Sm\Data\Model\Exception\ModelNotSoughtException;
 use Sm\Data\Model\Exception\Persistence\CannotCreateModelException;
-use Sm\Data\Property\Context\RawPropertyContainer;
+use Sm\Data\Property\Context\Raw\RawPropertyContainer;
 use Sm\Data\Property\PropertySchemaContainer;
 use Sm\Data\Source\Database\Table\TableSource;
 use Sm\Data\Source\DataSource;
@@ -213,14 +213,11 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 		return TableSource::init()->setTableName($table_name);
 	}
 	public function hydrateModel(ModelSchema $model, array $properties) {
-		$fetched_data = $properties;
-		$fetched_data = $this->normalizeFoundSet($fetched_data);
-
-		$fetched_properties = RawPropertyContainer::init()->set($fetched_data);
+		$fetched_properties = RawPropertyContainer::init()->set($properties);
 
 		if ($model instanceof Model) {
 			# Return the model with synchronized values
-			return $model->set($fetched_data);
+			return $model->set($fetched_properties);
 		}
 
 
@@ -235,8 +232,7 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 			$smID = $schematic->getSmID();
 			$item = $this->modelFactory->resolve($smID ?? null, $schematic);
 			$item->fromSchematic($schematic);
-			$item->set($fetched_data);
-
+			$item->set($fetched_properties);
 			return $item;
 		} catch (UnresolvableException $exception) {
 			$error = (new ModelLayerConfigurationError("Could not resolve from"))->setModel($schematic);

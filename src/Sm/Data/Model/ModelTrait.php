@@ -32,7 +32,7 @@ trait ModelTrait {
 				$this->set($key, $val);
 			}
 		} else if ($name instanceof PropertyContainer) {
-			$this->setProperties($name);
+			$this->set($name->getAll());
 		} else {
 			/** @var PropertyContainer $properties */
 			$properties = $this->getProperties();

@@ -367,6 +367,9 @@ class Property extends AbstractResolvable implements Readonly_able,
 		}
 		return null;
 	}
+	public function __debugInfo() {
+		return ['subject' => $this->subject instanceof Undefined_ ? '~UNDEFINED~' : $this->subject];
+	}
 	public function setDoStrictResolve(bool $doStrictResolve) {
 		$this->doStrictResolve = $doStrictResolve;
 		return $this;

@@ -15,7 +15,7 @@ namespace Sm\Core\Resolvable;
  * @package Sm\Core\Resolvable
  */
 class NativeResolvable extends AbstractResolvable implements \JsonSerializable {
-    public function resolve($name = null) {
+    public function resolve() {
         return $this->subject;
     }
     /**

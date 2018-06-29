@@ -106,28 +106,11 @@ class Model implements ModelSchema,
 			$property->resetValueHistory();
 		}
 	}
-	public function getProperties($property_names = []): PropertyContainer {
-		$properties = $this->properties = $this->properties ?? PropertyContainer::init();
-
-		if (count($property_names)) {
-			$return_properties = [];
-			foreach ($property_names as $name) {
-				$return_properties[$name] = $properties->{$name};
-			}
-			return PropertyContainer::init()->register($return_properties);
-		}
-
-		return $properties;
-	}
-	public function setProperties(PropertyContainer $properties) {
-		$this->properties = $properties;
-		var_dump(array_keys($properties->getAll()));
-		return $this;
-	}
 	public function registerProperty(string $name, Property $property = null) {
 		try {
-			$this->getProperties()->register($name, $property ?? $this->propertySchematicInstantiator->instantiate($name));
-		} catch (InvalidArgumentException|ReadonlyPropertyException $e) {
+			$property = $property ?? $this->propertySchematicInstantiator->instantiate($name);
+			$this->getProperties()->register($name, $property);
+		} catch (ReadonlyPropertyException $e) {
 		}
 	}
 
@@ -165,7 +148,7 @@ class Model implements ModelSchema,
 		return [
 			'smID'       => $smID,
 			'name'       => $this->getName(),
-			'properties' => $propertyContainer->count() ? $propertyContainer : null,
+			'properties' => $propertyContainer,
 		];
 	}
 	public function __debugInfo() {

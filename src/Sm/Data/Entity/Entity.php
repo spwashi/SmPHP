@@ -16,6 +16,7 @@ use Sm\Core\SmEntity\Traits\Is_StdSchematicizedSmEntityTrait;
 use Sm\Core\SmEntity\Traits\Is_StdSmEntityTrait;
 use Sm\Data\Entity\Property\EntityAsProperty;
 use Sm\Data\Entity\Property\EntityProperty;
+use Sm\Data\Entity\Property\EntityPropertyContainer;
 use Sm\Data\Entity\Property\EntityPropertySchematic;
 use Sm\Data\Model\Model;
 use Sm\Data\Model\ModelSchema;
@@ -35,6 +36,9 @@ use Sm\Data\Type\Undefined_;
  *
  * @property PropertyContainer $properties
  * @property EntityDataManager $entityDataManager
+ *
+ * @method EntitySchematic getEffectiveSchematic()
+ *
  */
 abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver, Schematicized, SmEntity, \Sm\Data\Evaluation\Validation\Validatable {
 	use Is_StdSmEntityTrait;
@@ -77,6 +81,11 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
 			}
 		}
 	}
+	protected function instantiatePropertyContainer(): PropertyContainer {
+		return EntityPropertyContainer::init()->setEntity($this);
+	}
+
+
 
 	#
 	## Schematic
@@ -84,7 +93,9 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
 		/** @var \Sm\Data\Entity\EntitySchematic $entitySchematic */
 		$this->_fromSchematic_std($entitySchematic);
 		$this->setName($this->getName() ?? $entitySchematic->getName());
-		$this->persistedIdentity = $entitySchematic->hasPersistedIdentity() ? $entitySchematic->getPersistedIdentity() : null;
+		$persistedIdentitySchematic = $entitySchematic->hasPersistedIdentity() ? $entitySchematic->getPersistedIdentity() : null;
+		$persistedIdentity          = $this->entityDataManager->modelDataManager->instantiate($persistedIdentitySchematic);
+		$this->setPersistedIdentity($persistedIdentity);
 		$this->registerSchematicProperties($entitySchematic);
 		return $this;
 	}
@@ -152,7 +163,7 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
 	#
 	## Get/Set Properties
 	public function instantiateProperty(PropertySchema $propertySchema): Property {
-		if ($this instanceof PropertyHaverSchema) throw new InvalidArgumentException("Cannot instantiate a property on subjects that do not own properties");
+		if (!$this instanceof PropertyHaverSchema) throw new InvalidArgumentException("Cannot instantiate a property on subjects that do not own properties");
 
 		# Instantiate using the EntityDataManager's PropertyDataManager
 		$propertyDataManager = $this->entityDataManager->getPropertyDataManager();

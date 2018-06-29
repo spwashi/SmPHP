@@ -19,9 +19,8 @@ use Sm\Data\Property\PropertySchemaContainer;
 use Sm\Data\Property\PropertySchematicContainer;
 
 /**
- * Class EntitySchematic
  *
- * Represents the structure of a Entity
+ *
  */
 class EntitySchematic implements EntitySchema,
                                  PropertyHaverSchematic,
@@ -52,7 +51,7 @@ class EntitySchematic implements EntitySchema,
 		$entity                      = new static;
 		$entity->modelDataManager    = $modelDataManager;
 		$entity->propertyDataManager = $propertyDataManager;
-		$entity->properties          = PropertySchemaContainer::init();
+		$entity->properties          = PropertySchematicContainer::init();
 		return $entity;
 	}
 

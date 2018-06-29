@@ -6,7 +6,7 @@
  * Time: 1:55 PM
  */
 
-namespace Sm\Data\Property\Context;
+namespace Sm\Data\Property\Context\Raw;
 
 
 use Sm\Data\Property\Property;

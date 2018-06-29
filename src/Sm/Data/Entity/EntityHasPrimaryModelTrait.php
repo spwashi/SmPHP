@@ -29,59 +29,36 @@ trait EntityHasPrimaryModelTrait {
 	/** @var  Model $foundModel */
 	private $foundModel;
 
-	/**
-	 * @param Model $model
-	 * @return Entity
-	 * @throws \Sm\Core\Exception\UnimplementedError
-	 * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
-	 */
 	public function fromModel(Model $model): Entity {
 		/** @var Entity $entity */
 		$entity = $this;
 		/** @var EntityProperty[] $allProperties */
 		$allProperties = $entity->getProperties()->getAll(true);
-		/**
-		 * @var                            $name
-		 * @var \Sm\Data\Property\Property $property
-		 */
+
 		foreach ($model->getProperties() as $name => $property) {
-			if (isset($allProperties[$name])) {
-				$entity->set($name, $property->raw_value);
-			}
+
+			/** @var  Property $property */
+			if (isset($allProperties[$name])) $entity->set($name, $property->raw_value);
+
 		}
+
 		$entity->setPersistedIdentity($model);
-		foreach ($allProperties as $property) {
-			$entity->fillPropertyValue($property);
-		}
+
+		foreach ($allProperties as $property) $entity->fillPropertyValue($property);
+
 		return $entity;
 	}
-
-	/**
-	 * @param array                         $attributes
-	 *
-	 * @param \Sm\Core\Context\Context|null $context
-	 *
-	 * @return \Sm\Data\Entity\Entity
-	 * @throws \Sm\Core\Exception\InvalidArgumentException
-	 * @throws \Sm\Core\Exception\UnimplementedError
-	 * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
-	 * @throws \Sm\Data\Entity\Exception\EntityNotFoundException
-	 */
 	public function findPrimaryModel($attributes = [], Context $context = null) {
 		/** @var \Sm\Data\Entity\Entity|\Sm\Data\Entity\EntityHasPrimaryModelTrait $entity */
 		$entity           = $this;
 		$modelDataManager = $entity->entityDataManager->getModelDataManager();
-
-		$model = $this->getPersistedIdentitySchema($modelDataManager);
+		$model            = $this->getPersistedIdentitySchema($modelDataManager);
 		try {
 			foreach ($model->properties->getAll() as $name => $model_property) {
 				if (!isset($attributes[$name])) continue;
 
 				$model->set($name, $attributes[$name]);
 			}
-
-			var_dump(json_decode(json_encode($model)));
-
 			$primaryModel = $this->_searchForPersistedIdentity($modelDataManager, $model);
 		} catch (ModelNotFoundException $modelNotFoundException) {
 			throw new EntityNotFoundException("Could not find the primaryModel associated with this Entity", null, $modelNotFoundException);
@@ -100,16 +77,6 @@ trait EntityHasPrimaryModelTrait {
 
 	#
 	## Creation
-	/**
-	 * @param \Sm\Core\Context\Context $context
-	 * @param array                    $attributes
-	 *
-	 * @return \Sm\Data\Entity\Validation\EntityValidationResult
-	 * @throws \Sm\Core\Exception\InvalidArgumentException
-	 * @throws \Sm\Core\Exception\UnimplementedError
-	 * @throws \Sm\Data\Entity\Exception\Persistence\CannotModifyEntityException
-	 * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
-	 */
 	public function createPrimaryModel(Context $context, $attributes = []): EntityValidationResult {
 		/** @var Entity|EntityHasPrimaryModelTrait $entity */
 		$entity = $this;
@@ -125,13 +92,6 @@ trait EntityHasPrimaryModelTrait {
 		# Return the success of the validation
 		return $entityValidationResult;
 	}
-	/**
-	 * @param Context $context
-	 * @param array   $attributes
-	 * @return EntityValidationResult
-	 * @throws CannotModifyEntityException
-	 * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
-	 */
 	public function savePrimaryModel(Context $context, $attributes = []): EntityValidationResult {
 		/** @var Entity|EntityHasPrimaryModelTrait $entity */
 		$entity = $this;
@@ -147,14 +107,6 @@ trait EntityHasPrimaryModelTrait {
 		# Return the success of the validation
 		return $entityValidationResult;
 	}
-	/**
-	 * @param \Sm\Data\Entity\Entity $entity
-	 * @param                        $attributes
-	 *
-	 * @return array
-	 * @throws \Sm\Core\Exception\InvalidArgumentException
-	 * @throws \Sm\Core\Exception\UnimplementedError
-	 */
 	private static function getAttributesForCreation(Entity $entity, $attributes): array {
 #
 		## Check the arguments
@@ -189,13 +141,6 @@ trait EntityHasPrimaryModelTrait {
 
 	#
 	## Finding/Hydrating
-	/**
-	 * @param \Sm\Data\Entity\Entity   $entity
-	 *
-	 * @param \Sm\Core\Context\Context $context
-	 *
-	 * @return array
-	 */
 	protected function getPropertiesForModel(Entity $entity, Context $context = null): array {
 		return array_merge_recursive($entity->getProperties()->getAll(), $entity->getInternal());
 	}
@@ -225,31 +170,18 @@ trait EntityHasPrimaryModelTrait {
 	protected function getPersistedIdentityIdentifyingProperties(): PropertyContainer {
 		return PropertyContainer::init();
 	}
-	/**
-	 * @param \Sm\Data\Model\ModelDataManager $modelDataManager
-	 *
-	 * @return Model
-	 * @throws \Sm\Core\Exception\InvalidArgumentException
-	 * @throws \Sm\Core\Exception\UnimplementedError
-	 */
-	private function getPersistedIdentitySchema(ModelDataManager $modelDataManager): ModelSchema {
+	private function getPersistedIdentitySchema(ModelDataManager $modelDataManager): Model {
 		/** @var \Sm\Data\Entity\Entity|\Sm\Data\Entity\EntityHasPrimaryModelTrait $self */
 		$self             = $this;
-		$modelSchema      = $self->getPersistedIdentity();
+		$modelSchema      = $self->getEffectiveSchematic()->getPersistedIdentity();
 		$model            = $modelDataManager->instantiate($modelSchema);
 		$searchProperties = $self->getPersistedIdentityIdentifyingProperties();
-		return $model->set($searchProperties);
+		$model->set($searchProperties);
+		return $model;
 	}
 
 	#
 	## Validation
-	/**
-	 * @param \Sm\Core\Context\Context $context
-	 * @param                          $entity
-	 *
-	 * @return mixed
-	 * @throws \Sm\Data\Entity\Exception\Persistence\CannotModifyEntityException
-	 */
 	protected static function validateEntityOnContext(Context $context, Entity $entity) {
 		$entityValidationResult = $entity->validate($context);
 
@@ -269,14 +201,6 @@ trait EntityHasPrimaryModelTrait {
 
 		return $entityValidationResult;
 	}
-	/**
-	 * @param Context $context
-	 * @param         $attributes
-	 * @return array
-	 * @throws CannotModifyEntityException
-	 * @throws InvalidArgumentException
-	 * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
-	 */
 	protected function primeModelModification(Context $context, $attributes): array {
 		/** @var \Sm\Data\Entity\Entity|\Sm\Data\Entity\EntityHasPrimaryModelTrait $entity */
 		$entity = $this;
