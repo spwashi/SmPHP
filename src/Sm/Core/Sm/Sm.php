@@ -17,9 +17,8 @@ class Sm {
 
 	public static function init() {
 		# Initialize the globals
-		Sm::setMode(php_sapi_name() === 'cli' ? Sm::MODE__CONSOLE : Sm::MODE__HTTP);
+		Sm::setMode(static::isCli() ? Sm::MODE__CONSOLE : Sm::MODE__HTTP);
 	}
-
 	public static function setMode($mode = Sm::MODE__HTTP) {
 		static::$globals = (new Globals)->enterInitMode();
 		switch ($mode) {
@@ -39,5 +38,6 @@ class Sm {
 
 		static::$globals->exitInitMode();
 	}
+	public static function isCli(): bool { return php_sapi_name() === 'cli'; }
 }
 Sm::init();

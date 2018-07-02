@@ -44,7 +44,10 @@ class Globals {
 		return $this;
 	}
 
-	public function __get($name) { return $this->$name = $this->$name ?? []; }
+	public function &__get($name) {
+		$this->$name = $this->$name ?? [];
+		return $this->$name;
+	}
 	public function __set($name, $value) {
 		if (!property_exists($this, $name)) throw new InvalidArgumentException("Cannot interact with global var");
 		if (!$this->initializing) throw new InvalidArgumentException("Cannot interact with global var");
