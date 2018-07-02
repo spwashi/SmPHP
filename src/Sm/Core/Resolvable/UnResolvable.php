@@ -18,16 +18,24 @@ use Sm\Core\Resolvable\Exception\UnresolvableException;
  * @package Sm\Core\Resolvable
  */
 class UnResolvable extends AbstractResolvable {
-    
-    /**
-     * @param null $_
-     *
-     * @return mixed
-     * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
-     * @internal param mixed|null|\Sm\Core\Abstraction\Resolvable\Arguments $arguments ,..
-     *
-     */
-    public function resolve($_ = null) {
-        throw new UnresolvableException("Cannot resolve");
-    }
+
+	/**
+	 * @param null $_
+	 *
+	 * @return mixed
+	 * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
+	 * @internal param mixed|null|\Sm\Core\Abstraction\Resolvable\Arguments $arguments ,..
+	 *
+	 */
+	public function resolve($_ = null) {
+		throw new UnresolvableException("Cannot resolve");
+	}
+
+	public function __get($name) {
+		throw new UnresolvableException("Cannot resolve");
+	}
+
+	public function __set($name, $value) {
+		throw new UnresolvableException("Cannot set $name");
+	}
 }
