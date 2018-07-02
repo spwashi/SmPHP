@@ -61,7 +61,9 @@ class EntityAsProperty extends EntityProperty {
 				return $this->attempted_validation_contexts[$context_id];
 			}
 
-			return $this->attempted_validation_contexts[$context_id] = $this->entity->validate($context);
+			$validationResult = $this->attempted_validation_contexts[$context_id] = $this->entity->validate($context);
+
+			return $validationResult;
 		}
 
 		return null;

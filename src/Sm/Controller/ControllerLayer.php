@@ -91,6 +91,9 @@ class ControllerLayer extends StandardLayer {
 		if (!is_string($identifier)) throw new UnimplementedError("Cannot create a controller from anything except for a string");
 
 
+		# Replace pipes with backslashes (makes it visually easier, I think)
+		$identifier = str_replace('|', '\\', $identifier);
+
 		# Sometimes we might
 		preg_match('~\[([a-zA-Z]+)\]~', $identifier, $matches);
 		if ($matches[1] ?? false) {

@@ -6,14 +6,15 @@ namespace Sm\Data\Entity\Property;
 
 use Sm\Core\Context\Context;
 use Sm\Data\Entity\Property\Validation\EntityPropertyValidationResult;
+use Sm\Data\Entity\Validation\EntityValidationResult;
 use Sm\Data\Evaluation\Validation\ValidationResult;
 use Sm\Data\Property\Property;
 use Sm\Data\Property\Validation\PropertyValidationResult;
 use Sm\Data\Type\String_;
 
 class EntityProperty extends Property implements EntityPropertySchema {
-	protected function getValidationResult(...$arguments): PropertyValidationResult {
-		return new EntityPropertyValidationResult(...$arguments);
+	protected function getValidationResult($success = false, $error = null): PropertyValidationResult {
+		return new EntityPropertyValidationResult(...func_get_args());
 	}
 	/**
 	 * @param \Sm\Core\Context\Context|null $context
@@ -30,11 +31,15 @@ class EntityProperty extends Property implements EntityPropertySchema {
 			$schematic = $this->getEffectiveSchematic();
 
 
-			if ($schematic instanceof EntityPropertySchematic) {
+			if ($schematic instanceof EntityPropertySchematic && $datatype instanceof String_) {
 				$minLength = $schematic ? $schematic->getMinLength() : null;
-				if (isset($minLength) && $datatype instanceof String_ && strlen($resolved_value) < $minLength) {
-					return $this->getValidationResult(false, 'Too short - must be at least ' . $minLength . ' characters');
+				if (isset($minLength) && strlen($resolved_value) < $minLength) {
+					$too_short_message        = 'Too short - must be at least ' . $minLength . ' characters';
+					$propertyValidationResult = new EntityPropertyValidationResult(false, $too_short_message);
+					$propertyValidationResult->setFailedAttributes([PropertyValidationResult::ATTR__LENGTH => $resolved_value]);
+					return $propertyValidationResult;
 				}
+
 			}
 		}
 		return $parent;

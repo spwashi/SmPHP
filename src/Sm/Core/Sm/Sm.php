@@ -17,6 +17,7 @@ class Sm {
 
 	public static function init() {
 		# Initialize the globals
+		if (session_status() === PHP_SESSION_NONE) @session_start();
 		Sm::setMode(static::isCli() ? Sm::MODE__CONSOLE : Sm::MODE__HTTP);
 	}
 	public static function setMode($mode = Sm::MODE__HTTP) {

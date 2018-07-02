@@ -298,7 +298,6 @@ class Property extends AbstractResolvable implements Readonly_able,
 	public function getPrimaryDatatype() {
 		return $this->getDatatypes()[0] ?? null;
 	}
-
 	public function isValueNotDefault() {
 		return $this->valueIsNotDefault;
 	}
@@ -323,9 +322,7 @@ class Property extends AbstractResolvable implements Readonly_able,
 
 		return null;
 	}
-	protected function getValidationResult(...$arguments): PropertyValidationResult {
-		return new PropertyValidationResult(...$arguments);
-	}
+	protected function getValidationResult($success = false, $error = null): PropertyValidationResult { return new PropertyValidationResult(...func_get_args()); }
 
 
 	#
