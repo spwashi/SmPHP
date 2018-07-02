@@ -9,7 +9,6 @@
 namespace Sm\Core\Sm;
 
 
-use Sm\Core\Exception\UnimplementedError;
 class Sm {
 	/** @var Globals */
 	public static $globals;
@@ -35,7 +34,7 @@ class Sm {
 				static::$globals->request = $_REQUEST;
 				break;
 			case Sm::MODE__CONSOLE:
-				throw new UnimplementedError("Cannot set superglobals from the console");
+				break;
 		}
 
 		static::$globals->exitInitMode();
