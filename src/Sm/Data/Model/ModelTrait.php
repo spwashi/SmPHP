@@ -28,11 +28,12 @@ trait ModelTrait {
 	 */
 	public function set($name, $value = null) {
 		if (is_array($name)) {
-			foreach ($name as $key => $val) {
-				$this->set($key, $val);
-			}
+			foreach ($name as $key => $val) $this->set($key, $val);
 		} else if ($name instanceof PropertyContainer) {
-			$this->set($name->getAll());
+			$container = $name;
+
+			# Directly set the property on the PropertyContainer
+			foreach ($container as $property_name => $property) $this->properties->$property_name = $property;
 		} else {
 			/** @var PropertyContainer $properties */
 			$properties = $this->getProperties();

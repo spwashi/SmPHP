@@ -82,37 +82,15 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
 		return null;
 	}
 
-	/**
-	 * @return PropertySchemaContainer
-	 * @throws InvalidArgumentException
-	 */
 	public function getProperties() {
 		$context = $this->context;
-		if (!$this->subject) return new PropertySchemaContainer;
-		$properties               = $this->subject->getProperties();
-		$contextualizedProperties = [];
-		/**
-		 * @var \Sm\Data\Property\Property $property
-		 */
-		foreach ($properties as $propertyName => $property) {
-			$effectiveSchematic = $property instanceof Schematic ? $property : $property->getEffectiveSchematic();
-			if (!($effectiveSchematic instanceof EntityPropertySchematic)) {
-				continue;
-			}
-			$contextNames = $effectiveSchematic->getContextNames();
-			$contextName  = isset($context) ? $context->getContextName() : null;
+		if (!$this->subject) return new PropertyContainer;
 
-			if (!$contextNames || in_array($contextName, $contextNames)) {
-				$contextualizedProperties[$propertyName] = $property;
-			}
-		}
-		$propertySchemaContainer = new PropertySchemaContainer;
-		try {
-			$propertySchemaContainer->register($contextualizedProperties);
-		} catch (ReadonlyPropertyException $e) {
-		} finally {
-			return $propertySchemaContainer;
-		}
+		# get an array of properties
+		$contextualizedProperties = $this->getContextualizedPropertyArray($context);
+		$propertySchemaContainer  = new PropertyContainer;
+		$propertySchemaContainer->register($contextualizedProperties);
+		return $propertySchemaContainer;
 	}
 
 	public function getSmID(): ?string {
@@ -145,5 +123,29 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
 			'smID'       => $this->subject ? $this->subject->getSmID() : null,
 			'properties' => $serialized_properties,
 		];
+	}
+	/**
+	 * @param $context
+	 * @return array
+	 */
+	private function getContextualizedPropertyArray($context): array {
+		$properties               = $this->subject->getProperties();
+		$contextualizedProperties = [];
+		/**
+		 * @var \Sm\Data\Property\Property $property
+		 */
+		foreach ($properties as $propertyName => $property) {
+			$effectiveSchematic = $property instanceof Schematic ? $property : $property->getEffectiveSchematic();
+			if (!($effectiveSchematic instanceof EntityPropertySchematic)) {
+				continue;
+			}
+			$contextNames = $effectiveSchematic->getContextNames();
+			$contextName  = isset($context) ? $context->getContextName() : null;
+
+			if (!$contextNames || in_array($contextName, $contextNames)) {
+				$contextualizedProperties[$propertyName] = $property;
+			}
+		}
+		return $contextualizedProperties;
 	}
 }

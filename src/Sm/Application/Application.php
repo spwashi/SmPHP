@@ -18,6 +18,7 @@ use Sm\Core\Internal\Monitor\HasMonitorTrait;
 use Sm\Core\Internal\Monitor\MonitorContainer;
 use Sm\Core\Internal\Monitor\Monitored;
 use Sm\Core\Paths\Exception\PathNotFoundException;
+use Sm\Core\SmEntity\Exception\InvalidConfigurationException;
 use Sm\Core\Util;
 use Sm\Data\DataLayer;
 use Sm\Logging\LoggingLayer;
@@ -68,24 +69,17 @@ class Application implements \JsonSerializable, LayerRoot {
 	##########################################################################
 	# Constructors/Initialization
 	##########################################################################
-	/**
-	 * Application constructor.
-	 *
-	 * @param string $name        The name of the application
-	 * @param string $root_path   Where the application is located
-	 * @param null   $config_path Where all of the config info is
-	 */
-	protected function __construct($root_path, $config_path = null, $logging_dir = null) {
+	protected function __construct($root_path, $config_path, $logging_dir = null) {
 		$this->layerContainer = LayerContainer::init();
 		$this->_registerLoggingLayer();
-		if (isset($logging_dir)) {
-			$this->logging->setLogPath($logging_dir);
-		}
-		$this->initSettings()
-		     ->setRootPath($root_path);
-		$this->config_path = $config_path ?? ($this->root_path . 'config/');
+
+		if (isset($logging_dir)) $this->logging->setLogPath($logging_dir);
+
+		$this->initSettings()->setRootPath($root_path);
+		$this->config_path = $config_path;
 		$this->initLayers();
 	}
+
 	/**
 	 * @see \Sm\Application\Application::__construct
 	 *
@@ -95,7 +89,7 @@ class Application implements \JsonSerializable, LayerRoot {
 	 *
 	 * @return Application
 	 */
-	public static function init($root_path, $config_path = null) {
+	public static function init($root_path, $config_path) {
 		return new static(...func_get_args());
 	}
 	public function boot(): Application {
@@ -138,8 +132,17 @@ class Application implements \JsonSerializable, LayerRoot {
 	 * @throws \Sm\Core\Paths\Exception\PathNotFoundException
 	 */
 	protected function _configure() {
-		$_config_php = $this->config_path . 'config.php';
+		$_CONFIG_FILE = $this->config_path . 'config.json';
 
+		if (file_exists($_CONFIG_FILE)) {
+			$__json_string        = file_get_contents($_CONFIG_FILE);
+			$__decoded_json_array = json_decode($__json_string, true);
+			$config               = $__decoded_json_array;
+		} else {
+			throw new InvalidConfigurationException("Cannot configure the application without a valid config file");
+		}
+
+		$_config_php = $config['paths']['config'] . '/config.php';
 		if (file_exists($_config_php)) {
 			$app = $this; # defined for the include
 			require_once $_config_php;
