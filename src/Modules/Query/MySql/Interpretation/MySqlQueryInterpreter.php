@@ -19,6 +19,7 @@ use Sm\Core\Internal\Monitor\Monitor;
 use Sm\Core\Resolvable\Resolvable;
 use Sm\Core\Util;
 use Sm\Modules\Query\MySql\Authentication\MySqlAuthentication;
+use Sm\Modules\Query\Sql\Event\BatchExecutionEvent;
 use Sm\Modules\Query\Sql\Event\SqlQueryExecutionEvent;
 use Sm\Modules\Query\Sql\SqlDisplayContext;
 use Sm\Modules\Query\Sql\SqlExecutionContext;
@@ -69,42 +70,36 @@ class MySqlQueryInterpreter extends SqlQueryInterpreter {
 	 * @throws \Sm\Core\Exception\InvalidArgumentException
 	 */
 	protected function execute($query_or_statement): SqlQueryExecutionEvent {
-		$formattingContext = new SqlExecutionContext;
-		$formatted_query   = $this->format($query_or_statement, $formattingContext);
-		$bound_variables   = $this->getBoundVariables($formattingContext);
-		$connection        = $this->authentication->getConnection();
-		$sth               = $connection->prepare("$formatted_query");
-		$executionEvent    = MySqlQueryExecutionEvent::init();
-		try {
-			$values           = $this->resolveBoundVariableValues($bound_variables);
-			$executionSuccess = $sth->execute($values);
-		} catch (\PDOException $e) {
-			$executionSuccess = false;
-			if (intval($e->getCode()) === 23000) {
-				$cannotDuplicateEntryException = new CannotDuplicateEntryException('duplicated message', null, $e);
-				$executionEvent->setException($cannotDuplicateEntryException);
-			} else {
-				$executionEvent->setException($e);
-			}
+		if (!is_array($query_or_statement)) {
+			return $this->executeSingleStatement($query_or_statement);
 		}
 
-		$executionEvent->setQuery($query_or_statement)
-		               ->setFormattedQuery($formatted_query)
-		               ->setQueryVariables($values)
-		               ->setDatabaseHandle($connection)
-		               ->setStatementHandle($sth)
-		               ->setExecutionSuccess($executionSuccess);
+		# only associative arrays
+		if (Util::arrayIsAssociative($query_or_statement)) throw new InvalidArgumentException("Can only execute arrays of numerically indexed queries");
 
-		if ($this->logQueries) {
-			$this->getMonitor(static::MONITOR__QUERY_EXECUTED)->append($executionEvent);
+		$dbh = $this->authentication->getConnection();
 
-			$displayContext = new SqlDisplayContext;
-			$formattedQuery = $this->format($query_or_statement, $displayContext);
+		# set Loop varaibles
+		$cumulativeEvent = BatchExecutionEvent::init();
+		$events          = [];
+		$exception       = null;
 
-			$executionEvent->setFormattedQueryWithInlineVariables($formattedQuery);
+		# wrap in a transaction
+		$dbh->beginTransaction();
+		foreach ($query_or_statement as $stmt) {
+			$result   = $this->executeSingleStatement($stmt);
+			$events[] = $result;
+			if ($exception = $result->getException()) break;
 		}
 
-		return $executionEvent;
+		# There isn't a good way to process this exception
+		if ($exception) throw $exception;
+		$dbh->commit();
+
+
+		# add all events to cumulative
+		$cumulativeEvent->setExecutionEvents($events);
+		return $cumulativeEvent;
 	}
 	/**
 	 * @param \Sm\Modules\Query\Sql\Event\SqlQueryExecutionEvent $queryExecutionEvent
@@ -118,6 +113,15 @@ class MySqlQueryInterpreter extends SqlQueryInterpreter {
 	 */
 	protected function interpretResult(SqlQueryExecutionEvent $queryExecutionEvent, $return_type) {
 		$sth = $queryExecutionEvent->getStatementHandle();
+
+		if ($queryExecutionEvent instanceof BatchExecutionEvent) {
+			$allEvents = $queryExecutionEvent->getExecutionEvents();
+			$results   = [];
+			foreach ($allEvents as $event) {
+				$results[] = $this->interpretResult($event, $return_type);
+			}
+			return $results;
+		}
 
 		if (!($sth instanceof \PDOStatement)) {
 			throw new InvalidArgumentException("Expected the handle to be a PDOStatement - " . Util::getShape($sth) . " given");
@@ -188,5 +192,47 @@ class MySqlQueryInterpreter extends SqlQueryInterpreter {
 			}
 		}
 		return $bound_variables;
+	}
+	/**
+	 * @param $query_or_statement
+	 * @return MySqlQueryExecutionEvent
+	 */
+	protected function executeSingleStatement($query_or_statement) {
+		$formattingContext = new SqlExecutionContext;
+		$formatted_query   = $this->format($query_or_statement, $formattingContext);
+		$bound_variables   = $this->getBoundVariables($formattingContext);
+		$connection        = $this->authentication->getConnection();
+		$sth               = $connection->prepare("$formatted_query");
+		$executionEvent    = MySqlQueryExecutionEvent::init();
+		try {
+			$values           = $this->resolveBoundVariableValues($bound_variables);
+			$executionSuccess = $sth->execute($values);
+		} catch (\PDOException $e) {
+			$executionSuccess = false;
+			if (intval($e->getCode()) === 23000) {
+				$cannotDuplicateEntryException = new CannotDuplicateEntryException('duplicated message', null, $e);
+				$executionEvent->setException($cannotDuplicateEntryException);
+			} else {
+				$executionEvent->setException($e);
+			}
+		}
+
+		$executionEvent->setQuery($query_or_statement)
+		               ->setFormattedQuery($formatted_query)
+		               ->setQueryVariables($values)
+		               ->setDatabaseHandle($connection)
+		               ->setStatementHandle($sth)
+		               ->setExecutionSuccess($executionSuccess);
+
+		if ($this->logQueries) {
+			$this->getMonitor(static::MONITOR__QUERY_EXECUTED)->append($executionEvent);
+
+			$displayContext = new SqlDisplayContext;
+			$formattedQuery = $this->format($query_or_statement, $displayContext);
+
+			$executionEvent->setFormattedQueryWithInlineVariables($formattedQuery);
+		}
+
+		return $executionEvent;
 	}
 }
