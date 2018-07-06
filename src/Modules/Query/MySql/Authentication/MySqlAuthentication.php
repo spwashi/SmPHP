@@ -48,7 +48,9 @@ class MySqlAuthentication extends AbstractAuthentication implements SqlAuthentic
     public function getDatabaseName() {
         return $this->database_name;
     }
-    
+	public function getUsername() {
+		return $this->username;
+    }
     /**
      * Is the authentication still valid?
      *

@@ -46,6 +46,7 @@ class Application implements \JsonSerializable, LayerRoot {
 	const ENV_DEV     = 'development';
 	const ENV_PROD    = 'production';
 	const ENV_STAGING = 'staging';
+	const ENV_TESTING = 'testing';
 
 	# -- the application name
 	protected $name;
@@ -108,6 +109,7 @@ class Application implements \JsonSerializable, LayerRoot {
 			case Application::ENV_DEV:
 			case Application::ENV_PROD:
 			case Application::ENV_STAGING:
+			case Application::ENV_TESTING:
 				$this->env = $env;
 				break;
 			default:
@@ -129,7 +131,7 @@ class Application implements \JsonSerializable, LayerRoot {
 	/**
 	 * Configure the Application using the path set on it based on the root path.
 	 *
-	 * @throws \Sm\Core\Paths\Exception\PathNotFoundException
+	 * @throws InvalidConfigurationException
 	 */
 	protected function _configure() {
 		$_CONFIG_FILE = $this->config_path . 'config.json';
@@ -137,21 +139,27 @@ class Application implements \JsonSerializable, LayerRoot {
 		if (file_exists($_CONFIG_FILE)) {
 			$__json_string        = file_get_contents($_CONFIG_FILE);
 			$__decoded_json_array = json_decode($__json_string, true);
-			$config               = $__decoded_json_array;
+			$__config             = $__decoded_json_array;
 		} else {
 			throw new InvalidConfigurationException("Cannot configure the application without a valid config file");
 		}
 
-		$_config_php = $config['paths']['config'] . '/config.php';
+		#
+		## The bootLoader is a script that loads the necessary app configuration into this application using the two variables below ($app and $app_config)
+		$_config_php = $__config['bootLoader'];
 		if (file_exists($_config_php)) {
-			$app = $this; # defined for the include
-			require_once $_config_php;
+			$app        = $this; # defined for the include
+			$app_config = $__config;
+			require $_config_php;
 			$configEvent = GenericEvent::init("Configured application with path " . $_config_php);
 			$this->getMonitor('info')->append($configEvent);
-		} else {
-			$configEvent = GenericEvent::init("Could not configure application with path " . $_config_php);
-			throw new UnimplementedError("Could not configure application with path " . $_config_php);
+			return;
 		}
+
+
+		$configEvent = GenericEvent::init("Could not configure application with path " . $_config_php);
+		$this->getMonitor('info')->append($configEvent);
+		throw new UnimplementedError("Could not configure application with path " . $_config_php);
 	}
 
 

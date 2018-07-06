@@ -54,7 +54,12 @@ class MySqlQueryInterpreter extends SqlQueryInterpreter {
 	public function checkAuthenticationValidity(Authentication $authentication) {
 		# This should actually probably be a part of the execution context...
 		if (!($authentication instanceof MySqlAuthentication)) throw new TypeMismatchException("Can only connect with a MySqlAuthentication");
-		if (!$authentication->canConnect()) throw new InvalidMysqlAuthenticationException("Cannot connect to the database with this authentication");
+		if (!$authentication->canConnect()) {
+			$username     = $authentication->getUsername();
+			$host         = $authentication->getHost();
+			$databaseName = $authentication->getDatabaseName();
+			throw new InvalidMysqlAuthenticationException("Cannot connect to the database with this authentication ({$username} on {$host}.{$databaseName})");
+		}
 	}
 
 	/**

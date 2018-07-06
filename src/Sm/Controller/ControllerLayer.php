@@ -65,12 +65,15 @@ class ControllerLayer extends StandardLayer {
 			throw new MalformedControllerException("{$controller_identifier} not formed like a Controller. - is this a class, method, or function?");
 		}
 
-		list($class_name, $method) = explode('::', $controller_identifier);
+		list($normalized_controller_classname, $method) = explode('::', $controller_identifier);
 
-		$this->resolveControllerNamespace($class_name);
+		$class_name = $this->resolveControllerNamespace($normalized_controller_classname);
 
 		if (!method_exists($class_name, $method)) {
-			throw new MalformedControllerException("{$class_name}::{$method} not found");
+
+			$class_exists_msg = class_exists($class_name) ? ' although the class exists' : ' and the class does not exist in any namespace';
+
+			throw new MalformedControllerException("{$class_name}::{$method} not found" . $class_exists_msg);
 		}
 
 		$instance = $this->initController($class_name);
@@ -132,33 +135,31 @@ class ControllerLayer extends StandardLayer {
 		$this->controller_namespaces = array_merge($this->controller_namespaces, $controller_namespaces);
 		return $this;
 	}
-	/**
-	 * @param $class_name
-	 */
-	protected function resolveControllerNamespace(&$class_name): void {
-		if (strpos($class_name, '#') === 0) {
-			$class_name      = substr($class_name, 1);
-			$class           = null;
-			$namespace_array = array_reverse($this->controller_namespaces);
+	protected function resolveControllerNamespace($class_name): string {
+		if (strpos($class_name, '#') !== 0) throw new MalformedControllerException($class_name . ' Not formed like a controller');
 
-			/** @var \Sm\Core\Internal\Monitor\Monitor $class_resolution__Monitor */
-			$class_resolution__Monitor = $this->monitors->{ControllerLayer::MONITOR__CLASS_RESOLUTION};
+		$class_name      = substr($class_name, 1);
+		$class           = null;
+		$namespace_array = array_reverse($this->controller_namespaces);
+		/** @var \Sm\Core\Internal\Monitor\Monitor $class_resolution__Monitor */
+		$class_resolution__Monitor = $this->monitors->{ControllerLayer::MONITOR__CLASS_RESOLUTION};
+		$attempted_classnames      = [];
+		$found_classname           = null;
+		foreach ($namespace_array as $namespace) {
+			$new_class_name         = '\\' . trim($namespace, '\\') . '\\' . $class_name;
+			$attempted_classnames[] = $new_class_name;
+			$attempt                = Attempt_ResolveControllerClass::init($new_class_name);
+			$class_resolution__Monitor->append($attempt);
 
-			foreach ($namespace_array as $namespace) {
-				$new_class_name = '\\' . trim($namespace, '\\') . '\\' . $class_name;
+			if (!class_exists($new_class_name)) continue;
 
-				$attempt = Attempt_ResolveControllerClass::init($new_class_name);
+			$found_classname = $new_class_name;
+			$attempt->declareSuccessful();
 
-				$class_resolution__Monitor->append($attempt);
-
-				if (!class_exists($new_class_name)) {
-					continue;
-				}
-				$class_name = $new_class_name;
-				$attempt->declareSuccessful();
-				break;
-			}
+			return $found_classname;
 		}
+
+		throw new MalformedControllerException("Could not find a class matching [" . implode(',', $attempted_classnames) . ']');
 	}
 	/**
 	 * Initialize the Controller  with all of the things this framework decides is necessary for the controller to know about.
