@@ -10,14 +10,14 @@ namespace Sm\Data\Model;
 
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\SmEntity\SmEntityFactory;
-use Sm\Data\Property\PropertySchematicInstantiator;
+use Sm\Data\Property\PropertyInstantiator;
 
 /**
  * Class ModelFactory
  * @method Model resolve($name = null)
  */
 class ModelFactory extends SmEntityFactory {
-    /** @var PropertySchematicInstantiator $propertySchematicInstantiator */
+    /** @var PropertyInstantiator $propertySchematicInstantiator */
     protected $propertySchematicInstantiator;
     public function __construct() {
         parent::__construct();
@@ -45,7 +45,7 @@ class ModelFactory extends SmEntityFactory {
             throw new InvalidArgumentException("Cannot instantiate model with parameters");
         }
     }
-    public function setPropertyInstantiatior(PropertySchematicInstantiator $propertySchematicInstantiator) {
+    public function setPropertyInstantiatior(PropertyInstantiator $propertySchematicInstantiator) {
         $this->propertySchematicInstantiator = $propertySchematicInstantiator;
         return $this;
     }

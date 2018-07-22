@@ -30,8 +30,7 @@ trait Is_StdSchematicizedSmEntityTrait {
         if ($schematic instanceof SmEntitySchema) {
             $this->_smID = $this->_smID ?? $schematic->getSmID();
         }
-        
-        
+
         $this->effectiveSchematic = $schematic instanceof Schematicized ? $schematic->getEffectiveSchematic() : $schematic;
         
         return $this;

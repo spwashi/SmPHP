@@ -33,9 +33,6 @@ class StringResolvable extends NativeResolvable implements \JsonSerializable {
 		}
 		parent::__construct($subject);
 	}
-	public function __debugInfo() {
-		return ['value' => $this->subject ?? null];
-	}
 	public function __toString() {
 		return $this->resolve();
 	}

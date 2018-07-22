@@ -129,7 +129,7 @@ function register_formatting_handlers(SqlQueryFormatterManager $formatterManager
 			DateTime::class                               => $formatterFactory->createFormatter(function (DateTime $datetime) {
 				return '"' . $datetime->format('Y-M-D H:M:S') . '"';
 			}),
-			Property::class                               => $formatterFactory->createFormatter(function (Property $property) use ($formatterManager) {
+			\Sm\Data\Property\PropertyInstance::class     => $formatterFactory->createFormatter(function (\Sm\Data\Property\PropertyInstance $property) use ($formatterManager) {
 				return $formatterManager->format($property->getValue());
 			}),
 			SelectStatement::class                        => new SelectStatementFormatter($formatterManager),

@@ -22,9 +22,9 @@ class AbstractFactoryTest extends \PHPUnit_Framework_TestCase {
         $mockFactory = new FactoryStub;
         $mockFactory->setCreationMode(StandardFactory::MODE_DO_CREATE_MISSING);
         $this->expectException(WrongFactoryException::class);
-        $registrand       = new \stdClass;
-        $registrand->name = 'test';
-        $mockFactory->register(\stdClass::class, $registrand);
+        $registrant       = new \stdClass;
+        $registrant->name = 'test';
+        $mockFactory->register(\stdClass::class, $registrant);
         $result = $mockFactory->resolve(\stdClass::class);
     }
     public function testCanRegisterStringsAsNames() {

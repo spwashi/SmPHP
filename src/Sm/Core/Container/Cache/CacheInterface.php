@@ -10,6 +10,6 @@ namespace Sm\Core\Container\Cache;
 
 interface CacheInterface {
     function start($key = '-');
-    function cache($index, $registrand);
+    function cache($index, $registrant);
     function end($key = '-');
 }

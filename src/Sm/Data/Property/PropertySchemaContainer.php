@@ -10,6 +10,7 @@ namespace Sm\Data\Property;
 
 use Sm\Core\Abstraction\ReadonlyTrait;
 use Sm\Core\Container\Container;
+use Sm\Core\Container\Mini\MiniContainer;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Resolvable\NativeResolvable;
 use Sm\Core\Resolvable\Resolvable;
@@ -24,7 +25,7 @@ use Sm\Data\SmEntity\SmEntityDataManager;
  * @package Sm\Data\Property
  * @property \Sm\Data\Property\PropertySchema $id
  */
-class PropertySchemaContainer extends Container {
+class PropertySchemaContainer extends MiniContainer {
 	use ReadonlyTrait;
 
 
@@ -38,7 +39,9 @@ class PropertySchemaContainer extends Container {
 		if ($item instanceof NativeResolvable) return $item->resolve();
 		return $item;
 	}
-	public function resolve($name = null): ?PropertySchema {
+
+	/** @return PropertySchema */
+	public function resolve($name = null) {
 		$parsed = SmEntityDataManager::parseSmID($name);
 		foreach ($this as $propertyName => $property) {
 			if (!$parsed) continue;
@@ -58,7 +61,7 @@ class PropertySchemaContainer extends Container {
 	 * Add a Property to this class, naming it if it is not already named.
 	 *
 	 * @param \Sm\Data\Property\PropertySchema|string $name
-	 * @param \Sm\Data\Property\PropertySchema        $registrand
+	 * @param \Sm\Data\Property\PropertySchema        $registrant
 	 *
 	 * @return $this
 	 * @throws \Sm\Data\Property\Exception\ReadonlyPropertyException If we try to add a property to
@@ -68,7 +71,7 @@ class PropertySchemaContainer extends Container {
 	 * @throws \Sm\Core\Exception\InvalidArgumentException If we try to register anything
 	 *                                          that isn't a named Property or array of named properties
 	 */
-	public function register($name = null, $registrand = null) {
+	public function register($name = null, $registrant = null) {
 		# Don't register to readonly PropertyContainers
 		if ($this->readonly) {
 			throw new ReadonlyPropertyException("Trying to add a property to a readonly PropertyContainer.");
@@ -85,12 +88,12 @@ class PropertySchemaContainer extends Container {
 
 		# If the first parameter is a named property, register it
 		if ($name instanceof PropertySchema && isset($name->name)) {
-			if (isset($registrand)) throw new InvalidArgumentException("When using a PropertySchema as the first parameter, ther can be no second");
+			if (isset($registrant)) throw new InvalidArgumentException("When using a PropertySchema as the first parameter, ther can be no second");
 			return $this->register($name->name, $name);
 		}
 
 		# We can only register Properties
-		$this->checkRegistrandIsCorrectType($registrand);
+		$this->checkRegistrantIsCorrectType($registrant);
 
 
 		# We can only register named Properties
@@ -99,10 +102,10 @@ class PropertySchemaContainer extends Container {
 		}
 
 		# Set the name of the property based on this one
-		if (!isset($registrand->name)) $registrand->setName($name);
+		if (!isset($registrant->name)) $registrant->setName($name);
 
 		/** @var static $result */
-		parent::register($name, $registrand);
+		parent::register($name, $registrant);
 		return $this;
 	}
 	/**
@@ -122,12 +125,12 @@ class PropertySchemaContainer extends Container {
 		return parent::remove($name);
 	}
 	/**
-	 * @param $registrand
+	 * @param $registrant
 	 *
 	 * @throws \Sm\Core\Exception\InvalidArgumentException
 	 */
-	protected function checkRegistrandIsCorrectType($registrand): void {
-		if (!($registrand instanceof PropertySchema)) {
+	protected function checkRegistrantIsCorrectType($registrant): void {
+		if (!($registrant instanceof PropertySchema)) {
 			throw new InvalidArgumentException("Can only add Properties to the PropertyContainer");
 		}
 	}

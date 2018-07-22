@@ -65,11 +65,6 @@ class Route extends FunctionResolvable implements \JsonSerializable {
 	public function __toString() {
 		return '';
 	}
-	function __debugInfo() {
-		return array_merge(parent::__debugInfo(), [
-			'pattern' => $this->requestDescriptor,
-		]);
-	}
 	####################################################
 	#   Resolution
 	####################################################

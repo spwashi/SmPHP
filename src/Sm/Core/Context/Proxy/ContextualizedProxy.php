@@ -18,10 +18,10 @@ use Sm\Core\Proxy\Proxy;
  * @package Sm\Core\Context
  */
 interface ContextualizedProxy extends Proxy {
-    /**
-     * Get the Context that the Proxy is referencing
-     *
-     * @return \Sm\Core\Context\Context
-     */
-    public function getContext(): Context;
+	/**
+	 * Get the Context that the Proxy is referencing
+	 *
+	 * @return \Sm\Core\Context\Context
+	 */
+	public function getContext(): ?Context;
 }

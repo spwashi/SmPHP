@@ -78,18 +78,18 @@ class StandardFactory extends AbstractContainer implements Factory {
      *
      * @param null $name
      *
-     * @param      $registrand
+     * @param      $registrant
      *
      * @return $this
      */
-    public function register($name = null, $registrand = null) {
+    public function register($name = null, $registrant = null) {
         if (is_array($name)) {
             foreach ($name as $key => $value) {
                 $this->register(is_numeric($key) ? null : $key, $value);
             }
             return $this;
         } else {
-            $registrand = $this->standardizeRegistrand($registrand);
+            $registrant = $this->standardizeRegistrant($registrant);
             
             
             # If the "name" is an object, just use the classname
@@ -97,13 +97,13 @@ class StandardFactory extends AbstractContainer implements Factory {
                 $name = get_class($name);
             }
             if (is_string($name)) {
-                $this->class_registry[ $name ] = $registrand;
+                $this->class_registry[ $name ] = $registrant;
             }
             
             # register functions that don't have a name
             #  or FunctionResolvables that don't have an
             else if (!$name) {
-                array_unshift($this->registry, $registrand);
+                array_unshift($this->registry, $registrant);
             }
         }
         return $this;
@@ -205,18 +205,18 @@ class StandardFactory extends AbstractContainer implements Factory {
         return true;
     }
     /**
-     * @param mixed $registrand Whatever is being registered
+     * @param mixed $registrant Whatever is being registered
      *
      * @return null|\Sm\Core\Resolvable\Resolvable
      */
-    protected function standardizeRegistrand($registrand): ?Resolvable {
-        if (is_object($registrand) && (get_class($registrand) !== \Closure::class)) {
-            $registrand = function () use ($registrand) {
-                return clone $registrand;
+    protected function standardizeRegistrant($registrant): ?Resolvable {
+        if (is_object($registrant) && (get_class($registrant) !== \Closure::class)) {
+            $registrant = function () use ($registrant) {
+                return clone $registrant;
             };
         }
         
-        return is_callable($registrand) ? FunctionResolvable::init($registrand) : NativeResolvable::init($registrand);
+        return is_callable($registrant) ? FunctionResolvable::init($registrant) : NativeResolvable::init($registrant);
     }
     private function _checkCanInit($class_name) {
         if (!$this->canCreateClass($class_name) || !$this->do_create_missing) {

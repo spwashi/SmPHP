@@ -26,12 +26,12 @@ class DataSourceContainer extends MiniContainer {
      * @inheritdoc
      *
      * @param null|string $name
-     * @param null        $registrand
+     * @param null        $registrant
      *
      * @return $this
      */
-    public function register($name = DataSourceContainer::DEFAULT_SOURCE, $registrand = null) {
-        parent::register($name, $registrand);
+    public function register($name = DataSourceContainer::DEFAULT_SOURCE, $registrant = null) {
+        parent::register($name, $registrant);
         return $this;
     }
     /**

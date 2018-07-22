@@ -4,6 +4,7 @@
 namespace Sm\Data\Model;
 
 
+use Sm\Core\Context\Context;
 use Sm\Core\SmEntity\SmEntity;
 use Sm\Data\Model\Resolvable\RawModelPropertyResolvable;
 use ICanBoogie\Inflector;
@@ -18,6 +19,7 @@ use Sm\Data\Model\Exception\ModelNotFoundException;
 use Sm\Data\Model\Exception\ModelNotSoughtException;
 use Sm\Data\Model\Exception\Persistence\CannotCreateModelException;
 use Sm\Data\Property\Context\Raw\RawPropertyContainer;
+use Sm\Data\Property\PropertyContainerInstance;
 use Sm\Data\Property\PropertySchemaContainer;
 use Sm\Data\Source\Database\Table\TableSource;
 use Sm\Data\Source\DataSource;
@@ -95,7 +97,7 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 
 		}
 
-		$all_properties_array = $properties->getAll(true);
+		$all_properties_array = $properties->getAll();
 		/**
 		 * @var \Sm\Data\Property\Property $_ap_property
 		 */
@@ -129,21 +131,26 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 
 	#
 	## Saving
-	public function save(Model $model) {
-		$properties = $model->getChanged();
-		$table_name = $this->modelToTablename($model);
-		$update     = UpdateStatement::init($properties)->inSources($table_name)->where(EqualToCondition::init($model->properties->id,
-		                                                                                                       $model->properties->id->value));
+	public function save(ModelInstance $model) {
+		$properties        = $model->getProperties();
+		$changedProperties = $properties->getChanged();
+		$table_name        = $this->modelToTablename($model);
+
+		$variable_id_equals_this_id = EqualToCondition::init($properties->id, $properties->id->value);
+		$update                     = UpdateStatement::init($changedProperties)
+		                                             ->inSources($table_name)
+		                                             ->where($variable_id_equals_this_id);
+
 		#$result1 = $this->queryInterpreter->getQueryFormatter()->format($update);
+
 		return $this->queryInterpreter->interpret($update);
 	}
 
 	#
 	## Creation
-	public function create(Model $model) {
+	public function create(ModelInstance $model, Context $context = null) {
 		// Establish the Context for validating the properties of this Model
-		$creationContext = new ModelCreationContext;
-
+		$creationContext  = $context ?? new ModelCreationContext;
 		$validationResult = $model->validate($creationContext);
 
 		// Models always return a ValidationResult at the moment
@@ -163,7 +170,7 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 		// We insert the properties that are not related to this Model's Identity (because the database is responsible for generating those properties)
 		//      todo is this a safe assumption? For now...
 		$non_IdentityProperties = $this->getModelNon_IdentityProperties($model, $model->getProperties());
-		$insert                 = InsertStatement::init($non_IdentityProperties)
+		$insert                 = InsertStatement::init($non_IdentityProperties->getAll())
 		                                         ->inSources($table_name);
 
 		// The MySQL Query Interpreter returns an ID of the newly created model for INSERT statements
@@ -179,7 +186,7 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 
 	#
 	## Deletion
-	public function markDelete(Model $model) {
+	public function markDelete(ModelInstance $model) {
 		$delete_dt_property_name = $model->properties->delete_dt->getName();
 		$table_name              = $this->modelToTablename($model);
 		$update                  = UpdateStatement::init([$delete_dt_property_name => date("Y-m-d H:i:s")])
@@ -189,7 +196,7 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 		#$result1 = $this->queryInterpreter->getQueryFormatter()->format($update);
 		return $this->queryInterpreter->interpret($update);
 	}
-	public function delete(Model $model) {
+	public function delete(ModelInstance $model) {
 		$table_name = $this->modelToTablename($model);
 		$delete     = DeleteStatement::init()
 		                             ->from($table_name)
@@ -240,11 +247,10 @@ class StandardModelPersistenceManager implements ModelPersistenceManager {
 		}
 	}
 
-	protected function getModelNon_IdentityProperties(ModelSchema $model, PropertySchemaContainer $properties = null) {
+	protected function getModelNon_IdentityProperties(ModelInstance $model, PropertyContainerInstance $properties = null): PropertyContainerInstance {
 		$property_array = $properties->getAll();
-
 		$id_properties  = $this->getModelIdentityProperties($model);
-		$property_array = count($property_array) ? $property_array : $model->properties->getAll();
+		$property_array = count($property_array) ? $property_array : $model->getProperties()->getAll();
 		$array_diff     = array_diff(array_keys($property_array), array_keys($id_properties));
 
 		return $model->getProperties($array_diff);

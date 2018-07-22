@@ -5,17 +5,14 @@ namespace Sm\Data\Entity;
 
 
 use Sm\Core\SmEntity\SmEntitySchematic;
-use Sm\Core\SmEntity\Traits\HasPropertiesTrait;
 use Sm\Core\SmEntity\Traits\HasPropertySchematicsTrait;
 use Sm\Core\SmEntity\Traits\Is_StdSmEntitySchematicTrait;
 use Sm\Data\Model\ModelDataManager;
-use Sm\Data\Model\ModelSchema;
 use Sm\Data\Model\ModelSchematic;
 use Sm\Data\Property\Property;
 use Sm\Data\Property\PropertyDataManager;
 use Sm\Data\Property\PropertyHaverSchematic;
 use Sm\Data\Property\PropertySchema;
-use Sm\Data\Property\PropertySchemaContainer;
 use Sm\Data\Property\PropertySchematicContainer;
 
 /**
@@ -92,9 +89,6 @@ class EntitySchematic implements EntitySchema,
 		}
 
 		$this->setPersistedIdentity($persistedIdentity);
-	}
-	public function instantiateProperty(PropertySchema $propertySchema): Property {
-		return $this->propertyDataManager->instantiate($propertySchema);
 	}
 
 	#

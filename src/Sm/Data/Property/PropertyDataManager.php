@@ -21,7 +21,7 @@ use Sm\Data\Type\DatatypeFactory;
  *
  * @method configure($configuration):PropertySchematic
  */
-class PropertyDataManager extends SmEntityDataManager implements PropertySchematicInstantiator {
+class PropertyDataManager extends SmEntityDataManager implements PropertyInstantiator {
     protected static $identityManagerName = 'Property';
     protected        $datatypeFactory;
     

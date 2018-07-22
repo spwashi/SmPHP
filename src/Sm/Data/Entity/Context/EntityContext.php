@@ -6,6 +6,7 @@ namespace Sm\Data\Entity\Context;
 
 use Sm\Core\Context\StandardContext;
 use Sm\Core\Exception\InvalidArgumentException;
+use Sm\Core\SmEntity\Context\SmEntityContext;
 use Sm\Data\Entity\EntitySchematic;
 use Sm\Data\Property\PropertySchemaContainer;
 
@@ -15,7 +16,7 @@ use Sm\Data\Property\PropertySchemaContainer;
  * Context for interacting with entities
  *
  */
-class EntityContext extends StandardContext implements \JsonSerializable {
+class EntityContext extends StandardContext implements \JsonSerializable, SmEntityContext {
 	protected $context_name;
 	/** @var \Sm\Data\Entity\EntitySchematic[] */
 	protected $entitySchematics = [];
@@ -24,7 +25,7 @@ class EntityContext extends StandardContext implements \JsonSerializable {
 	#
 	##  Instantiation/Initialization
 	public function __construct(string $context_name = null) {
-		parent::__construct($context_name);
+		parent::__construct();
 		$this->context_name = $context_name;
 	}
 	public static function init(string $context_name = null) {

@@ -94,11 +94,11 @@ abstract class AbstractContainer extends MiniContainer {
      * #todo why did you write this?
      *
      * @param      $name
-     * @param null $registrand
+     * @param null $registrant
      *
      * @return $this
      */
-    public function registerDefaults($name, $registrand = null) {
+    public function registerDefaults($name, $registrant = null) {
         if (is_array($name)) {
             foreach ($name as $index => $item) {
                 $this->registerDefaults($index, $item);
@@ -107,7 +107,7 @@ abstract class AbstractContainer extends MiniContainer {
         }
         
         if (($this->_registered_defaults[ $name ] ?? false) || !($this->canResolve($name))) {
-            $this->register($name, $registrand);
+            $this->register($name, $registrant);
             $this->_registered_defaults[ $name ] = true;
         }
         return $this;
@@ -116,20 +116,20 @@ abstract class AbstractContainer extends MiniContainer {
      * Register an item or an array of items (indexed by name) as being things that are going to get resolved by this Container container
      *
      * @param string|array                   $name       Could also be an associative array of whatever we are registering
-     * @param Resolvable|callable|mixed|null $registrand Whatever is being registered. Null if we are registering an array
+     * @param Resolvable|callable|mixed|null $registrant Whatever is being registered. Null if we are registering an array
      *
      * @return $this
      */
-    public function register($name = null, $registrand = null) {
+    public function register($name = null, $registrant = null) {
         if (is_array($name)) {
             foreach ($name as $index => $item) $this->register($index, $item);
     
             return $this;
         }
     
-        $registrand = $this->standardizeRegistrand($registrand);
-        $this->__info_monitor__log('register', $name, $registrand);
-        parent::register($name, $registrand);
+        $registrant = $this->standardizeRegistrant($registrant);
+        $this->__info_monitor__log('register', $name, $registrant);
+        parent::register($name, $registrant);
         return $this;
     }
     /**
@@ -171,11 +171,11 @@ abstract class AbstractContainer extends MiniContainer {
         return $new_registry;
     }
     /**
-     * @param mixed $registrand Whatever is being registered
+     * @param mixed $registrant Whatever is being registered
      *
      * @return null|Resolvable
      */
-    abstract protected function standardizeRegistrand($registrand):? Resolvable;
+    abstract protected function standardizeRegistrant($registrant):? Resolvable;
     /**
      * Add something to the registry (meant to represent the actual action)
      *

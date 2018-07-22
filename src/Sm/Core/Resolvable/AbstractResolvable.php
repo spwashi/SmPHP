@@ -78,13 +78,6 @@ abstract class AbstractResolvable implements Resolvable, \JsonSerializable {
     public function __invoke() {
         return $this->resolve(...func_get_args());
     }
-    public function __debugInfo() {
-        return [
-            'id'               => $this->getObjectId(),
-            'subject'          => $this->subject,
-            'original_subject' => $this->original_subject,
-        ];
-    }
     public function jsonSerialize() {
         return [];
     }

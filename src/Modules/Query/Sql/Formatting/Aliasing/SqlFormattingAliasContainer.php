@@ -57,13 +57,13 @@ class SqlFormattingAliasContainer extends Container {
     
     /**
      * @param array|null|string                                  $name
-     * @param callable|mixed|null|\Sm\Core\Resolvable\Resolvable $registrand
+     * @param callable|mixed|null|\Sm\Core\Resolvable\Resolvable $registrant
      *
      * @return $this
      */
-    public function register($name = null, $registrand = null) {
+    public function register($name = null, $registrant = null) {
         $name = $this->standardizeName($name);
-        parent::register($name, $registrand);
+        parent::register($name, $registrant);
         return $this;
     }
     /**

@@ -13,6 +13,7 @@ use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Proxy\Proxy;
 use Sm\Core\Resolvable\Exception\UnresolvableException;
 use Sm\Core\Schema\Schematic;
+use Sm\Core\SmEntity\Traits\HasPropertiesTrait;
 use Sm\Data\Entity\Entity;
 use Sm\Data\Entity\EntitySchema;
 use Sm\Data\Entity\EntitySchematic;
@@ -23,38 +24,24 @@ use Sm\Data\Property\Property;
 use Sm\Data\Property\PropertyContainer;
 use Sm\Data\Property\PropertySchemaContainer;
 use Sm\Data\Property\PropertySchematic;
+use Sm\Data\Property\PropertySchematicContainer;
 
 
 class ContextualizedEntityProxy extends StandardContextualizedProxy implements Proxy, ContextualizedProxy, \JsonSerializable, EntitySchema {
+	use HasPropertiesTrait;
 	/** @var \Sm\Data\Entity\EntitySchema */
 	protected $subject;
 	/** @var \Sm\Data\Entity\Context\EntityContext $context */
 	protected $context;
 
-	/**
-	 * ContextualizedEntityProxy constructor.
-	 *
-	 * @param \Sm\Data\Entity\EntitySchema               $entitySchema
-	 * @param \Sm\Data\Entity\Context\EntityContext|null $context
-	 *
-	 * @throws \Sm\Core\Exception\InvalidArgumentException
-	 */
 	public function __construct(EntitySchema $entitySchema = null, EntityContext $context = null) {
 		parent::__construct($entitySchema, $context);
 		if ($entitySchema instanceof EntitySchematic) $context->registerEntitySchematic($entitySchema);
 	}
-
-	/**
-	 * @param $name
-	 *
-	 * @return mixed
-	 * @throws \Sm\Core\Resolvable\Exception\UnresolvableException
-	 */
 	public function __get($name) {
 		if (!isset($this->subject)) throw new UnresolvableException("Cannot resolve ${name}");
 		return $this->subject->$name;
 	}
-
 	public function __call($name, $args = []) {
 		try {
 			$check = new ReflectionMethod($this->subject, $name);
@@ -73,26 +60,26 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
 		if (!$this->subject) return null;
 		return $this->subject->getName();
 	}
-
 	public function setName(string $name) {
 		return $this;
 	}
-
 	public function getPersistedIdentity(): ?ModelSchema {
 		return null;
 	}
-
 	public function getProperties() {
-		$context = $this->context;
-		if (!$this->subject) return new PropertyContainer;
+		$context              = $this->context;
+		$newPropertyContainer = $this->subject instanceof Schematic ? new PropertySchematicContainer : new PropertyContainer;
+
+		# This really shouldn't NOT have a PropertyContainer
+		if (!$this->subject) return $newPropertyContainer;
 
 		# get an array of properties
 		$contextualizedProperties = $this->getContextualizedPropertyArray($context);
-		$propertySchemaContainer  = new PropertyContainer;
+		$propertySchemaContainer  = $newPropertyContainer;;
 		$propertySchemaContainer->register($contextualizedProperties);
+
 		return $propertySchemaContainer;
 	}
-
 	public function getSmID(): ?string {
 		if (!$this->subject) return null;
 		return $this->subject->getSmID();
@@ -100,6 +87,27 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
 
 	public function proxyInContext(Context $context = null): EntitySchema {
 		return $this->subject ? $this->subject->proxyInContext($context) : $this;
+	}
+
+	private function getContextualizedPropertyArray(EntityContext $context): array {
+		$properties               = $this->subject->getProperties();
+		$contextualizedProperties = [];
+
+		foreach ($properties as $propertyName => $property) {
+			/** @var \Sm\Data\Property\Property $property */
+			$effectiveSchematic = $property instanceof Schematic ? $property : $property->getEffectiveSchematic();
+			if (!($effectiveSchematic instanceof EntityPropertySchematic)) {
+				continue;
+			}
+			$contextNames = $effectiveSchematic->getContextNames();
+			$contextName  = isset($context) ? $context->getContextName() : null;
+
+			if (!$contextNames || in_array($contextName, $contextNames)) {
+				$contextualizedProperties[$propertyName] = $property;
+			}
+		}
+
+		return $contextualizedProperties;
 	}
 
 	public function jsonSerialize() {
@@ -123,29 +131,5 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
 			'smID'       => $this->subject ? $this->subject->getSmID() : null,
 			'properties' => $serialized_properties,
 		];
-	}
-	/**
-	 * @param $context
-	 * @return array
-	 */
-	private function getContextualizedPropertyArray($context): array {
-		$properties               = $this->subject->getProperties();
-		$contextualizedProperties = [];
-		/**
-		 * @var \Sm\Data\Property\Property $property
-		 */
-		foreach ($properties as $propertyName => $property) {
-			$effectiveSchematic = $property instanceof Schematic ? $property : $property->getEffectiveSchematic();
-			if (!($effectiveSchematic instanceof EntityPropertySchematic)) {
-				continue;
-			}
-			$contextNames = $effectiveSchematic->getContextNames();
-			$contextName  = isset($context) ? $context->getContextName() : null;
-
-			if (!$contextNames || in_array($contextName, $contextNames)) {
-				$contextualizedProperties[$propertyName] = $property;
-			}
-		}
-		return $contextualizedProperties;
 	}
 }

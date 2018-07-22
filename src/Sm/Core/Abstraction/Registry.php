@@ -9,6 +9,6 @@ namespace Sm\Core\Abstraction;
 
 
 interface Registry {
-    public function register($name, $registrand = null);
+    public function register($name, $registrant = null);
     public function resolve();
 }

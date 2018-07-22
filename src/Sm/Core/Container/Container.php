@@ -223,12 +223,12 @@ class Container extends AbstractContainer implements \JsonSerializable {
     /**
      * @inheritdoc
      *
-     * @param mixed $registrand
+     * @param mixed $registrant
      *
      * @return null|\Sm\Core\Resolvable\FunctionResolvable|\Sm\Core\Resolvable\NativeResolvable|\Sm\Core\Resolvable\StringResolvable
      */
-    protected function standardizeRegistrand($registrand):?Resolvable {
-        return isset($this->ResolvableFactory) ? $this->ResolvableFactory->build($registrand) : null;
+    protected function standardizeRegistrant($registrant):?Resolvable {
+        return isset($this->ResolvableFactory) ? $this->ResolvableFactory->build($registrant) : null;
     }
     
     public function jsonSerialize() {

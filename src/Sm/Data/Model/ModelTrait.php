@@ -26,7 +26,7 @@ trait ModelTrait {
 	 * @throws \Sm\Core\Exception\UnimplementedError
 	 * @throws \Sm\Data\Property\Exception\NonexistentPropertyException
 	 */
-	public function set($name, $value = null) {
+	public function set($name, $value = null, $silent = true) {
 		if (is_array($name)) {
 			foreach ($name as $key => $val) $this->set($key, $val);
 		} else if ($name instanceof PropertyContainer) {
@@ -37,7 +37,7 @@ trait ModelTrait {
 		} else {
 			/** @var PropertyContainer $properties */
 			$properties = $this->getProperties();
-			$properties->set($name, $value);
+			$properties->set($name, $value, $silent);
 		}
 		return $this;
 	}

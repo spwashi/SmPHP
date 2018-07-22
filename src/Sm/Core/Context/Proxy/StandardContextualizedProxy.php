@@ -35,7 +35,7 @@ abstract class StandardContextualizedProxy extends StandardContext implements Pr
         $this->subject = $subject;
         if ($context) $this->setContext($context);
     }
-    public function getContext(): Context {
+    public function getContext(): ?Context {
         return $this->context;
     }
     protected function setContext(Context $context) {

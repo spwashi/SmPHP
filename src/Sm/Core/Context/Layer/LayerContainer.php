@@ -34,15 +34,15 @@ class LayerContainer extends Container {
     }
     /**
      * @param array|null|string                                  $name
-     * @param callable|mixed|null|\Sm\Core\Resolvable\Resolvable $registrand
+     * @param callable|mixed|null|\Sm\Core\Resolvable\Resolvable $registrant
      *
      * @return $this|static
      * @throws \Sm\Core\Exception\InvalidArgumentException
      */
-    public function register($name = null, $registrand = null) {
+    public function register($name = null, $registrant = null) {
         if (!(is_string($name))) throw new InvalidArgumentException("Invalid name");
-        if (!($registrand instanceof Layer)) throw new InvalidArgumentException("Cannot register non-Layer {$name} here");
-        parent::register($name, $registrand);
+        if (!($registrant instanceof Layer)) throw new InvalidArgumentException("Cannot register non-Layer {$name} here");
+        parent::register($name, $registrant);
         return $this;
     }
     

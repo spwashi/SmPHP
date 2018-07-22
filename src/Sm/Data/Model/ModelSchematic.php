@@ -72,9 +72,6 @@ class ModelSchematic implements ModelSchema,
 		# add them to the ModelSchematic
 		$this->setProperties($schemaContainer);
 	}
-	public function instantiateProperty(PropertySchema $propertySchema): Property {
-		return $this->propertyDataManager->instantiate($propertySchema);
-	}
 	protected function propertyConfigToSchematics($properties): array {
 		$schematics = [];
 		foreach ($properties as $property_name => $config) {

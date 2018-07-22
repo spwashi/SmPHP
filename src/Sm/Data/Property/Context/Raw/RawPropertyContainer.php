@@ -15,11 +15,11 @@ use Sm\Data\Property\Context\Raw\RawProperty;
 use Sm\Data\Property\PropertyContainer;
 
 class RawPropertyContainer extends PropertyContainer {
-	public function set($name, $value = null) {
+	public function set($name, $value = null, $silent = false) {
 		if (is_iterable($name)) {
 
 			# If we've been passed an iterable, add each property to this container
-			foreach ($name as $key => $val) $this->set($key, $val);
+			foreach ($name as $key => $val) $this->set($key, $val, $silent);
 
 			return $this;
 		}

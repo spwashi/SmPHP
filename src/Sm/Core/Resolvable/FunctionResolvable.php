@@ -66,10 +66,4 @@ class FunctionResolvable extends AbstractResolvable {
         $this->arguments = $arguments;
         return $this;
     }
-    function __debugInfo() {
-        return array_merge(parent::__debugInfo(), [
-            'arguments' => $this->arguments,
-            'subject'   => is_object($this->subject) ? (method_exists($this->subject, '__debugInfo') ? $this->subject->__debugInfo() : get_class($this->subject)) : gettype($this->subject),
-        ]);
-    }
 }

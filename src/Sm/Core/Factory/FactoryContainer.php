@@ -19,10 +19,10 @@ use Sm\Core\Resolvable\Exception\UnresolvableException;
  * @package Sm\Core\Factory
  */
 class FactoryContainer extends Container {
-    public function register($name = null, $registrand = null, $overwrite = false) {
+    public function register($name = null, $registrant = null, $overwrite = false) {
         # This class stores factories as an array of arrays
         $this->registry[ $name ]   = !$overwrite ? $this->registry[ $name ] ??[] : [];
-        $this->registry[ $name ][] = $registrand;
+        $this->registry[ $name ][] = $registrant;
         return $this;
     }
     public function resolve($name = null) {

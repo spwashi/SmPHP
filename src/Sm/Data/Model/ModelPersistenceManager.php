@@ -3,6 +3,7 @@
 
 namespace Sm\Data\Model;
 
+use Sm\Core\Context\Context;
 use Sm\Data\Source\DataSource;
 
 /**
@@ -11,10 +12,10 @@ use Sm\Data\Source\DataSource;
  * An object responsible for persisting or destroying Models
  */
 interface ModelPersistenceManager {
-    public function save(Model $model);
-    public function find(ModelSchema $schematic);
-    public function findAll(ModelSchema $schematic);
-    public function create(Model $modelSchema);
-    public function markDelete(Model $model);
-    public function getModelSource($model): DataSource;
+	public function save(ModelInstance $model);
+	public function find(ModelSchema $schematic);
+	public function findAll(ModelSchema $schematic);
+	public function create(ModelInstance $modelSchema, Context $context = null);
+	public function markDelete(ModelInstance $model);
+	public function getModelSource($model): DataSource;
 }

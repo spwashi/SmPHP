@@ -9,6 +9,7 @@
 namespace Sm\Core\SmEntity\Traits;
 
 
+use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Data\Property\PropertySchematicContainer;
 
 /**
@@ -28,7 +29,8 @@ trait HasPropertySchematicsTrait {
 
 		return $properties;
 	}
-	public function setProperties(PropertySchematicContainer $properties) {
+	public function setProperties($properties) {
+		if (!$properties instanceof PropertySchematicContainer) throw new InvalidArgumentException("Expected a PropertySchematicContainer");
 		$this->properties = $properties;
 		return $this;
 	}

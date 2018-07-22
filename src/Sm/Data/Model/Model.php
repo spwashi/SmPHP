@@ -17,15 +17,16 @@ use Sm\Core\SmEntity\Traits\Is_StdSchematicizedSmEntityTrait;
 use Sm\Core\SmEntity\Traits\Is_StdSmEntityTrait;
 use Sm\Data\Evaluation\Validation\Validatable;
 use Sm\Data\Evaluation\Validation\ValidationResult;
+use Sm\Data\Model\Context\ContextualizedModelProxy;
+use Sm\Data\Model\Context\ModelSearchContext;
 use Sm\Data\Model\Validation\ModelValidationResult;
-use Sm\Data\Property\Exception\NonexistentPropertyException;
 use Sm\Data\Property\Exception\ReadonlyPropertyException;
 use Sm\Data\Property\Property;
 use Sm\Data\Property\PropertyContainer;
 use Sm\Data\Property\PropertyHaver;
 use Sm\Data\Property\PropertySchema;
-use Sm\Data\Property\PropertySchematicInstantiator;
-use Sm\Data\Property\Validation\PropertyValidationResult;
+use Sm\Data\Property\PropertyInstantiator;
+use Sm\Data\Property\Traits\IsSchematicizedPropertyHaver;
 use Sm\Data\Type\Undefined_;
 
 /**
@@ -43,27 +44,30 @@ use Sm\Data\Type\Undefined_;
  * @package Sm\Data\Model
  * @property PropertyContainer $properties
  */
-class Model implements ModelSchema,
-                       PropertyHaver,
+class Model implements ModelInstance,
                        Schematicized,
                        SmEntity,
                        Validatable,
                        \JsonSerializable {
+
 	use Is_StdSmEntityTrait;
-	use HasPropertiesTrait;
 	use ModelTrait;
+
+	use HasPropertiesTrait, IsSchematicizedPropertyHaver {
+		HasPropertiesTrait::inheritingPropertyHaver insteadof IsSchematicizedPropertyHaver;
+	}
 	use Is_StdSchematicizedSmEntityTrait {
 		fromSchematic as protected _fromSchematic_std;
 	}
 
 	/** @var  PropertyContainer */
 	protected $properties;
-	/** @var \Sm\Data\Property\PropertySchematicInstantiator $propertySchematicInstantiator When we interact with properties, we need to know how to instantiate them */
+	/** @var \Sm\Data\Property\PropertyInstantiator $propertySchematicInstantiator When we interact with properties, we need to know how to instantiate them */
 	protected $propertySchematicInstantiator;
 
 	#
 	## Constructor
-	public function __construct(PropertySchematicInstantiator $propertySchematicInstantiator) {
+	public function __construct(PropertyInstantiator $propertySchematicInstantiator) {
 		$this->setPropertySchematicInstantiator($propertySchematicInstantiator);
 	}
 
@@ -84,20 +88,6 @@ class Model implements ModelSchema,
 
 	#
 	## Interact with Properties
-	public function getChanged() {
-		$changed_properties = [];
-
-		/** @var \Sm\Data\Property\Property $property */
-		foreach ($this->properties->getAll() as $propertyName => $property) {
-			if ($property->value instanceof Undefined_) continue;
-
-			if ($property->valueHistory->count()) {
-				$changed_properties[$propertyName] = $property;
-			}
-		}
-
-		return $changed_properties;
-	}
 	public function markUnchanged() {
 		/**
 		 * @var Property $property ;
@@ -106,12 +96,13 @@ class Model implements ModelSchema,
 			$property->resetValueHistory();
 		}
 	}
-	public function registerProperty(string $name, Property $property = null) {
-		try {
-			$property = $property ?? $this->propertySchematicInstantiator->instantiate($name);
-			$this->getProperties()->register($name, $property);
-		} catch (ReadonlyPropertyException $e) {
+
+	public function proxy(Context $context = null): ContextualizedModelProxy {
+		if ($context instanceof ModelSearchContext) {
+			var_dump('Ideally would return a specific kind of ContextualizedModelProxy');
+			return new ContextualizedModelProxy($this, $context);
 		}
+		return new ContextualizedModelProxy($this, $context);
 	}
 
 	#
@@ -128,20 +119,30 @@ class Model implements ModelSchema,
 	##  Configuration/Initialization
 	public function fromSchematic($schematic) {
 		/** @var ModelSchematic $schematic */
+
+		# # # # standard initialization
 		$this->_fromSchematic_std($schematic);
+
+		# # # # name
 		$this->setName($this->getName() ?? $schematic->getName());
-		$this->registerSchematicProperties($schematic);
+
+		# # # # properties
+		$schematicProperties = $schematic->getProperties();
+		$this->properties->registerSchematics($schematicProperties);
+
+
+		####
 		return $this;
 	}
 	public function checkCanUseSchematic($schematic) {
 		if (!$schematic instanceof ModelSchema) throw new InvalidArgumentException("Cannot use anything except for a Model Schema to initialize these");
 	}
-	public function instantiateProperty(PropertySchema $propertySchema): Property {
-		return $this->propertySchematicInstantiator->instantiate($propertySchema);
-	}
 
 	#
 	##  Debugging/Serialization
+	public function __debugInfo() {
+		return $this->jsonSerialize();
+	}
 	public function jsonSerialize() {
 		$propertyContainer = $this->getProperties();
 		$smID              = $this->getSmID();
@@ -151,11 +152,12 @@ class Model implements ModelSchema,
 			'properties' => $propertyContainer,
 		];
 	}
-	public function __debugInfo() {
-		return $this->jsonSerialize();
-	}
-	protected function setPropertySchematicInstantiator(PropertySchematicInstantiator $propertySchematicInstantiator) {
+
+	#
+	## Internal initializers
+	protected function setPropertySchematicInstantiator(PropertyInstantiator $propertySchematicInstantiator) {
 		$this->propertySchematicInstantiator = $propertySchematicInstantiator;
+		$this->getProperties()->setPropertyInstantiator($propertySchematicInstantiator);
 		return $this;
 	}
 }

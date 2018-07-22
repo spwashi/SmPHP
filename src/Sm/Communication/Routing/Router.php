@@ -58,37 +58,37 @@ class Router implements Registry {
     
     /**
      * @param string|null $name
-     * @param null        $registrand
+     * @param null        $registrant
      *
      * @return $this
      * @throws \Sm\Communication\Routing\MalformedRouteException
      * @throws \Sm\Core\Exception\InvalidArgumentException
      */
-    public function register($name = null, $registrand = null) {
-        $original = [ $name, $registrand ];
+    public function register($name = null, $registrant = null) {
+        $original = [ $name, $registrant ];
         $addition = AddRoute::init($original);
         
         $this->getMonitor(static::MONITOR__ROUTE_ADD)->append($addition);
         
-        if (!isset($registrand)) {
+        if (!isset($registrant)) {
             throw new InvalidArgumentException("Cannot register null routes");
         }
         
         # If we are registering a route from an array
-        if (!($registrand instanceof Route)) {
+        if (!($registrant instanceof Route)) {
             $resolution = $pattern = null;
             
-            if (is_array($registrand)) {
-                static::getRouteCreationVariables__array($registrand,
+            if (is_array($registrant)) {
+                static::getRouteCreationVariables__array($registrant,
                                                          $name,
                                                          $pattern,
                                                          $resolution);
-            } else if ($registrand instanceof Resolvable) {
-                $resolution = $registrand;
+            } else if ($registrant instanceof Resolvable) {
+                $resolution = $registrant;
             }
             $route = Route::init($resolution, $pattern);
         } else {
-            $route = $registrand;
+            $route = $registrant;
         }
         
         # Register it with or without a name
@@ -164,29 +164,29 @@ class Router implements Registry {
         return $matching_route;
     }
     /**
-     * @param $registrand
+     * @param $registrant
      * @param $name
      * @param $pattern
      * @param $resolution
      *
      * @throws \Sm\Communication\Routing\MalformedRouteException
      */
-    private static function getRouteCreationVariables__array($registrand, &$name, &$pattern, &$resolution): void {
+    private static function getRouteCreationVariables__array($registrant, &$name, &$pattern, &$resolution): void {
 # allow us to register routes like [ 'pattern'=> 'resolution']
-        if (count($registrand) === 1) {
-            $pattern    = key($registrand);
-            $resolution = $registrand[ $pattern ];
-        } else if (isset($registrand['resolution'])) {
+        if (count($registrant) === 1) {
+            $pattern    = key($registrant);
+            $resolution = $registrant[ $pattern ];
+        } else if (isset($registrant['resolution'])) {
             
             # allow us to register routes like [ 'pattern' => '...', 'resolution' => ..., 'name' => ... ]
             
-            if (!isset($registrand['pattern']) && !isset($registrand['name'])) {
+            if (!isset($registrant['pattern']) && !isset($registrant['name'])) {
                 throw new MalformedRouteException("Cannot register a resolution without a name or pattern to go with it");
             }
             
-            $name       = $registrand['name'] ?? null;
-            $resolution = $registrand['resolution'] ?? null;
-            $pattern    = $registrand['pattern'] ?? null;
+            $name       = $registrant['name'] ?? null;
+            $resolution = $registrant['resolution'] ?? null;
+            $pattern    = $registrant['pattern'] ?? null;
         }
     }
     /**

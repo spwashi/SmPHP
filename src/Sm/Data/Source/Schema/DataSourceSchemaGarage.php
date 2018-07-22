@@ -35,9 +35,9 @@ class DataSourceSchemaGarage implements Registry {
         $this->dataSourceSchemaFactory = $dataSourceFactory ?? new DataSourceSchemaFactory;
         $this->dataSourceContainer     = $dataSourceContainer ?? new DataSourceContainer;
     }
-    public function register($name, $registrand = null) {
-        if (!$registrand) $this->dataSourceSchemaFactory->register($name);
-        else $this->dataSourceContainer->register($name, $registrand);
+    public function register($name, $registrant = null) {
+        if (!$registrant) $this->dataSourceSchemaFactory->register($name);
+        else $this->dataSourceContainer->register($name, $registrant);
         return $this;
     }
     /**
