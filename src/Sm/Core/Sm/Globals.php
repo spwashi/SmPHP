@@ -26,31 +26,35 @@ use Sm\Core\Exception\InvalidArgumentException;
  * @property  $env
  */
 class Globals {
-	protected $get;
-	protected $post;
-	protected $files;
-	protected $cookie;
-	protected $session;
-	protected $server;
-	protected $request;
-	protected $env;
-	private   $initializing;
-	public function enterInitMode() {
-		$this->initializing = true;
-		return $this;
-	}
-	public function exitInitMode() {
-		$this->initializing = false;
-		return $this;
-	}
+    protected $get;
+    protected $post;
+    protected $files;
+    protected $cookie;
+    protected $session;
+    protected $server;
+    protected $request;
+    protected $env;
+    private   $initializing;
+    public function enterInitMode() {
+        $this->initializing = true;
+        return $this;
+    }
+    public function exitInitMode() {
+        $this->initializing = false;
+        return $this;
+    }
 
-	public function &__get($name) {
-		$this->$name = $this->$name ?? [];
-		return $this->$name;
-	}
-	public function __set($name, $value) {
-		if (!property_exists($this, $name)) throw new InvalidArgumentException("Cannot interact with global var");
-		if (!$this->initializing) throw new InvalidArgumentException("Cannot interact with global var");
-		return $this->$name = $value;
-	}
+    public function &__get($name) {
+        $this->$name = $this->$name ?? [];
+        return $this->$name;
+    }
+    public function __set($name, $value) {
+        if (!property_exists($this, $name)) throw new InvalidArgumentException("Cannot interact with global var");
+        if (!$this->initializing) {
+            if (!is_array($value)) {
+                throw new InvalidArgumentException("Cannot interact with global var");
+            }
+        }
+        return $this->$name = $value;
+    }
 }

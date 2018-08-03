@@ -89,7 +89,7 @@ class ContextualizedEntityProxy extends StandardContextualizedProxy implements P
 		return $this->subject ? $this->subject->proxyInContext($context) : $this;
 	}
 
-	private function getContextualizedPropertyArray(EntityContext $context): array {
+	private function getContextualizedPropertyArray(EntityContext $context = null): array {
 		$properties               = $this->subject->getProperties();
 		$contextualizedProperties = [];
 

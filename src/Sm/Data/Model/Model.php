@@ -50,114 +50,111 @@ class Model implements ModelInstance,
                        Validatable,
                        \JsonSerializable {
 
-	use Is_StdSmEntityTrait;
-	use ModelTrait;
+    use Is_StdSmEntityTrait;
+    use ModelTrait;
 
-	use HasPropertiesTrait, IsSchematicizedPropertyHaver {
-		HasPropertiesTrait::inheritingPropertyHaver insteadof IsSchematicizedPropertyHaver;
-	}
-	use Is_StdSchematicizedSmEntityTrait {
-		fromSchematic as protected _fromSchematic_std;
-	}
+    use HasPropertiesTrait, IsSchematicizedPropertyHaver {
+        HasPropertiesTrait::inheritingPropertyHaver insteadof IsSchematicizedPropertyHaver;
+    }
+    use Is_StdSchematicizedSmEntityTrait {
+        fromSchematic as protected _fromSchematic_std;
+    }
 
-	/** @var  PropertyContainer */
-	protected $properties;
-	/** @var \Sm\Data\Property\PropertyInstantiator $propertySchematicInstantiator When we interact with properties, we need to know how to instantiate them */
-	protected $propertySchematicInstantiator;
+    /** @var  PropertyContainer */
+    protected $properties;
+    /** @var \Sm\Data\Property\PropertyInstantiator $propertySchematicInstantiator When we interact with properties, we need to know how to instantiate them */
+    protected $propertySchematicInstantiator;
 
-	#
-	## Constructor
-	public function __construct(PropertyInstantiator $propertySchematicInstantiator) {
-		$this->setPropertySchematicInstantiator($propertySchematicInstantiator);
-	}
+    #
+    ## Constructor
+    public function __construct(PropertyInstantiator $propertySchematicInstantiator) {
+        $this->setPropertySchematicInstantiator($propertySchematicInstantiator);
+    }
 
-	#
-	## Getters and Setters
-	public function __get($name) {
-		switch ($name) {
-			case 'properties':
-				return $this->getProperties();
-			default:
-				return null;
-		}
-	}
-	public function __clone() {
-		$properties = $this->getProperties();
-		$this->setProperties(clone $properties);
-	}
+    #
+    ## Getters and Setters
+    public function __get($name) {
+        switch ($name) {
+            case 'properties':
+                return $this->getProperties();
+            default:
+                return null;
+        }
+    }
+    public function __clone() {
+        $properties = $this->getProperties();
+        $this->setProperties(clone $properties);
+    }
 
-	#
-	## Interact with Properties
-	public function markUnchanged() {
-		/**
-		 * @var Property $property ;
-		 */
-		foreach ($this->properties->getAll() as $property) {
-			$property->resetValueHistory();
-		}
-	}
+    #
+    ## Interact with Properties
+    public function markUnchanged() {
+        /**
+         * @var Property $property ;
+         */
+        foreach ($this->properties->getAll() as $property) {
+            $property->resetValueHistory();
+        }
+    }
 
-	public function proxy(Context $context = null): ContextualizedModelProxy {
-		if ($context instanceof ModelSearchContext) {
-			var_dump('Ideally would return a specific kind of ContextualizedModelProxy');
-			return new ContextualizedModelProxy($this, $context);
-		}
-		return new ContextualizedModelProxy($this, $context);
-	}
+    public function proxy(Context $context = null): ContextualizedModelProxy {
+        if ($context instanceof ModelSearchContext) {
+            return new ContextualizedModelProxy($this, $context);
+        }
+        return new ContextualizedModelProxy($this, $context);
+    }
 
-	#
-	## Validation
-	public function validate(Context $context = null): ?ValidationResult {
-		$property_errors = $this->getPropertyValidationErrors($context);
+    #
+    ## Validation
+    public function validate(Context $context = null): ?ValidationResult {
+        $property_errors = $this->properties->getPropertyValidationErrors($context);
 
-		return new ModelValidationResult(count($property_errors) < 1,
-		                                 'model properties checked',
-		                                 $property_errors);
-	}
+        return new ModelValidationResult(count($property_errors) < 1, 'model properties checked', $property_errors);
+    }
 
-	#
-	##  Configuration/Initialization
-	public function fromSchematic($schematic) {
-		/** @var ModelSchematic $schematic */
+    #
+    ##  Configuration/Initialization
+    public function fromSchematic($schematic) {
+        /** @var ModelSchematic $schematic */
 
-		# # # # standard initialization
-		$this->_fromSchematic_std($schematic);
+        # # # # standard initialization
+        $this->_fromSchematic_std($schematic);
 
-		# # # # name
-		$this->setName($this->getName() ?? $schematic->getName());
+        # # # # name
+        $this->setName($this->getName() ?? $schematic->getName());
 
-		# # # # properties
-		$schematicProperties = $schematic->getProperties();
-		$this->properties->registerSchematics($schematicProperties);
+        # # # # properties
+        $schematicProperties = $schematic->getProperties()->getAll();
+        $this->properties->registerSchematics($schematicProperties);
 
 
-		####
-		return $this;
-	}
-	public function checkCanUseSchematic($schematic) {
-		if (!$schematic instanceof ModelSchema) throw new InvalidArgumentException("Cannot use anything except for a Model Schema to initialize these");
-	}
+        ####
+        return $this;
+    }
+    public function checkCanUseSchematic($schematic) {
+        if (!$schematic instanceof ModelSchema) throw new InvalidArgumentException("Cannot use anything except for a Model Schema to initialize these");
+    }
 
-	#
-	##  Debugging/Serialization
-	public function __debugInfo() {
-		return $this->jsonSerialize();
-	}
-	public function jsonSerialize() {
-		$propertyContainer = $this->getProperties();
-		$smID              = $this->getSmID();
-		return [
-			'smID'       => $smID,
-			'name'       => $this->getName(),
-			'properties' => $propertyContainer,
-		];
-	}
+    #
+    ##  Debugging/Serialization
+    public function __debugInfo() {
+        return $this->jsonSerialize();
+    }
+    public function jsonSerialize() {
+        $propertyContainer = $this->getProperties();
+        $smID              = $this->getSmID();
+        return [
+            'smID'       => $smID,
+            'name'       => $this->getName(),
+            'properties' => $propertyContainer,
+        ];
+    }
 
-	#
-	## Internal initializers
-	protected function setPropertySchematicInstantiator(PropertyInstantiator $propertySchematicInstantiator) {
-		$this->propertySchematicInstantiator = $propertySchematicInstantiator;
-		$this->getProperties()->setPropertyInstantiator($propertySchematicInstantiator);
-		return $this;
-	}
+    #
+    ## Internal initializers
+    protected function setPropertySchematicInstantiator(PropertyInstantiator $propertySchematicInstantiator) {
+        $this->propertySchematicInstantiator = $propertySchematicInstantiator;
+        $this->getProperties()->setPropertyInstantiator($propertySchematicInstantiator);
+        return $this;
+    }
 }

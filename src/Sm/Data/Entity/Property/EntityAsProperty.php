@@ -3,13 +3,18 @@ namespace Sm\Data\Entity\Property;
 use Sm\Core\Context\Context;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
+use Sm\Core\Resolvable\Exception\UnresolvableException;
 use Sm\Core\Resolvable\Resolvable;
+use Sm\Data\Entity\Context\EntityCreationContext;
+use Sm\Data\Entity\Context\NestedEntityCreationContext;
 use Sm\Data\Entity\Entity;
 use Sm\Data\Evaluation\Validation\ValidationResult;
+use Sm\Data\Property\PropertyContainer;
 use Sm\Data\SmEntity\SmEntityDataManager;
 use Sm\Data\Type\Undefined_;
 /**
  * @property-read Entity $entity
+ * @property-read PropertyContainer $identity
  */
 class EntityAsProperty extends EntityProperty {
     /**
@@ -19,7 +24,8 @@ class EntityAsProperty extends EntityProperty {
     /** @var Entity $subject */
     protected $subject;
     protected $attempted_validation_contexts = [];
-    protected $identity;
+    /** @var PropertyContainer */
+    protected $identityPropertyContainer;
     #
     ##  Resolution
     public function resolve() {
@@ -32,14 +38,31 @@ class EntityAsProperty extends EntityProperty {
         if ($this->found) {
             return $this->subject;
         } else {
-            $this->found = TRUE;
-            return $this->subject->find($this->identity);
+            $this->found   = TRUE;
+            $allProperties = $this->identityPropertyContainer->getAll();
+
+            return $this->subject->find($allProperties);
         }
     }
     public function create(Context $context) {
-        if ($this->subject && $this->subject->getPersistedIdentity()) {
-            $this->subject->set($this->identity ?? []);
-            return $this->subject->create($context);
+        if ($this->subject) {
+            $propertyContainer = $this->getIdentityProperties();
+            $identityContainer = $propertyContainer->getAll();
+            $this->subject->set($identityContainer);
+
+            #
+            ##  This ensures that we are creating in *a* creation context even if the last context wasn't
+            ##      Might be useful if we are editing something in a ModificationContext or something
+            ##      And that modification results in the creation of the Entiy associated with $this->subject
+
+            $nested_creationContext = new NestedEntityCreationContext;
+            $nested_creationContext->setParentContext($context);
+            $nested_creationContext->setParentEntity($this->owner);
+
+            # This should throw an error
+            return $this->subject->create($nested_creationContext);
+        } else {
+            throw new UnresolvableException("Cannot create entity in this context");
         }
     }
 
@@ -63,13 +86,15 @@ class EntityAsProperty extends EntityProperty {
         switch ($name) {
             case 'entity':
                 return $this->getEntity();
+            case 'identity':
+                return $this->initIdentityPropertyContainer();
             default:
                 return parent::__get($name);
         }
     }
-    public function setSubject($subject) {
+    public function setSubject($subject, $do_track_change = true) {
         if ($subject instanceof Undefined_) {
-            return parent::setSubject($subject);
+            return parent::setSubject($subject, $do_track_change);
         }
         $effectiveSchematic = $this->subject->getEffectiveSchematic();
         if (!$effectiveSchematic) {
@@ -108,10 +133,6 @@ class EntityAsProperty extends EntityProperty {
     public function getEntity(): Entity {
         return $this->subject;
     }
-    public function setIdentity($identity) {
-        $this->identity = $identity;
-        return $this;
-    }
     public function getValue(): Entity {
         return $this->subject;
     }
@@ -124,5 +145,11 @@ class EntityAsProperty extends EntityProperty {
     }
     public function jsonSerialize() {
         return $this->subject;
+    }
+    protected function initIdentityPropertyContainer() {
+        return $this->identityPropertyContainer = $this->identityPropertyContainer ?? new PropertyContainer;
+    }
+    protected function getIdentityProperties(): PropertyContainer {
+        return $this->initIdentityPropertyContainer();
     }
 }

@@ -23,13 +23,12 @@ use Sm\Data\Type\Undefined_;
  */
 class DirtyProperty extends Property {
 
-	public function setSubject($subject) {
+    public function setSubject($subject, $do_track_change = true) {
+        # dirty properties do not store any history except to mark them as not undefined
 
-		# dirty properties do not store any history except to mark them as not undefined
+        $this->resetValueHistory();
+        $this->markValueChange($subject, Undefined_::init());
 
-		$this->resetValueHistory();
-		$this->markValueChange($subject, Undefined_::init());
-
-		return $this;
-	}
+        return $this;
+    }
 }

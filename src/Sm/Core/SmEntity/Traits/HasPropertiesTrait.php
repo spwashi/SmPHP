@@ -54,34 +54,4 @@ trait HasPropertiesTrait {
         $this->properties = $properties;
         return $this;
     }
-
-    #
-    ##  Validation
-    public function validateProperties(Context $context = null): array {
-        $propertyValidationResults = [];
-        /** @var \Sm\Data\Entity\Property\EntityProperty $property */
-        foreach ($this->properties as $property_identifier => $property) {
-            try {
-                if (!$property) throw new NonexistentPropertyException('Cannot set ' . $property_identifier . ' on this Entity');
-                $result                                          = $property->validate($context);
-                $propertyValidationResults[$property_identifier] = $result;
-            } catch (NonexistentPropertyException $exception) {
-                $exception_msg                                   = $exception->getMessage();
-                $propertyValidationResults[$property_identifier] = new PropertyValidationResult(false, $exception_msg);
-            }
-        }
-        return $propertyValidationResults;
-    }
-    public function getPropertyValidationErrors(Context $context): array {
-        $propertyValidationResults = $this->validateProperties($context);
-
-        $property_errors = [];
-        /** @var PropertyValidationResult $property_validationResult */
-        foreach ($propertyValidationResults as $name => $property_validationResult) {
-            if (isset($property_validationResult) && !$property_validationResult->isSuccess()) {
-                $property_errors[$name] = $property_validationResult;
-            }
-        }
-        return $property_errors;
-    }
 }

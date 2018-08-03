@@ -7,6 +7,7 @@ namespace Sm\Data\Property\Context;
 use Sm\Core\Context\Context;
 use Sm\Core\Context\Proxy\ContextualizedProxy;
 use Sm\Core\Context\Proxy\StandardContextualizedProxy;
+use Sm\Core\Resolvable\Exception\UnresolvableException;
 use Sm\Data\Property\Property;
 use Sm\Data\Property\PropertyInstance;
 use Sm\Data\Property\PropertySchema;
@@ -38,5 +39,8 @@ class PropertyProxy extends StandardContextualizedProxy implements PropertyInsta
     }
     public function __toString() {
         return $this->subject->__toString();
+    }
+    public function setValue($value) {
+        throw new UnresolvableException("Cannot set Property to this value");
     }
 }

@@ -36,8 +36,8 @@ class EntityProperty extends Property implements EntityPropertySchema {
         $this->owner = $entitySchema;
         return $this;
     }
-    public function setValue($value) {
-        $res = parent::setValue($value);
+    public function setValue($value, $do_track_change = true) {
+        $res = parent::setValue($value, $do_track_change);
         if ($this->owner) $this->owner->markPropertyUpdated($this);
         return $res;
     }

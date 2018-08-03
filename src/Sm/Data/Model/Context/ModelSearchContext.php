@@ -4,6 +4,6 @@
 namespace Sm\Data\Model\Context;
 
 
-class ModelSearchContext extends ModelCreationContext {
+class ModelSearchContext extends ModelContext implements ModelIdentificationContext {
 
 }

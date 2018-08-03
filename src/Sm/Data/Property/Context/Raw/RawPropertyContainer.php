@@ -15,24 +15,23 @@ use Sm\Data\Property\Context\Raw\RawProperty;
 use Sm\Data\Property\PropertyContainer;
 
 class RawPropertyContainer extends PropertyContainer {
-	public function set($name, $value = null, $silent = false) {
-		if (is_iterable($name)) {
+    public function set($name, $value = null, $silent = false, $do_track_change = true) {
+        if (is_iterable($name)) {
+            # If we've been passed an iterable, add each property to this container
+            foreach ($name as $key => $val) $this->set($key, $val, $silent, $do_track_change);
 
-			# If we've been passed an iterable, add each property to this container
-			foreach ($name as $key => $val) $this->set($key, $val, $silent);
+            return $this;
+        }
 
-			return $this;
-		}
+        # This might be false if we've accidentally passed an associative array in
+        if (!is_string($name)) throw new InvalidArgumentException("Can properties with strings as names");
 
-		# This might be false if we've accidentally passed an associative array in
-		if (!is_string($name)) throw new InvalidArgumentException("Can properties with strings as names");
+        # Register the raw property
+        $this->register($name, RawProperty::init());
 
-		# Register the raw property
-		$this->register($name, RawProperty::init());
+        # Set the value of the property
+        $this->resolve($name)->value = RawModelPropertyResolvable::init($value);
 
-		# Set the value of the property
-		$this->resolve($name)->value = RawModelPropertyResolvable::init($value);
-
-		return $this;
-	}
+        return $this;
+    }
 }

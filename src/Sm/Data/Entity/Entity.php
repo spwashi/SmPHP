@@ -16,7 +16,9 @@ use Sm\Data\Entity\Property\EntityAsProperty;
 use Sm\Data\Entity\Property\EntityProperty;
 use Sm\Data\Entity\Property\EntityPropertyContainer;
 use Sm\Data\Entity\Property\EntityPropertySchematic;
+use Sm\Data\Model\Context\ContextualizedModelProxy;
 use Sm\Data\Model\Model;
+use Sm\Data\Model\ModelInstance;
 use Sm\Data\Model\ModelSchema;
 use Sm\Data\Property\Exception\NonexistentPropertyException;
 use Sm\Data\Property\Property;
@@ -53,8 +55,6 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
     private $properties = false;
     /** @var \Sm\Data\Entity\EntitySchematic */
     protected $effectiveSchematic;
-    /** @var \Sm\Data\Entity\EntityDataManager */
-    protected $entityDataManager;
     /** @var Model|ModelSchema $persistedIdentity */
     protected $persistedIdentity;
     /** @var ComponentManager */
@@ -135,38 +135,26 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
     }
     public function set($name, $value = null): Entity {
         if (is_array($name) && isset($value)) throw new UnimplementedError("Not sure what to do with a name and value");
-        # Perhaps we should really check if this is iterable
-        if (is_array($name)) {
-            foreach ($name as $key => $val) $this->set($key, $val);
-            return $this;
-        }
+
+        # Assume we are setting EntityProperties if we are accessing the object using this method
         if (is_string($name)) {
-            $persistedIdentity = $this->getPersistedIdentity();
-            # If the persisted Identity also has a property with this same name, set the property internally
-            if ($this->components->properties->$name === null && $persistedIdentity && $persistedIdentity->getProperties()->$name) {
-                $this->internal[$name] = $value;
-            }
-            if ($this->components->properties->$name) $this->fillPropertyValue($this->components->properties->$name, $value);
+            $this->components->set($name, $value);
             return $this;
         }
-        throw new InvalidArgumentException('Expected an associative array or a string');
-    }
-    public function getPersistedIdentity(): ?Model {
-        return $this->persistedIdentity;
-    }
-    public function setPersistedIdentity(Model $modelSchema) {
-        $this->persistedIdentity = $modelSchema;
+
+        # Perhaps we should really check if this is iterable
+        if (!is_iterable($name)) throw new InvalidArgumentException('Expected an associative array or a string');
+
+        foreach ($name as $key => $val) $this->set($key, $val);
+
         return $this;
     }
-    protected function setInternalProperty(string $property_name_or_smID, $value) {
-        $property = $this->components->properties->$property_name_or_smID;
-        if (!isset($property)) {
-            $modelSchema = $this->getPersistedIdentity();
-            $properties  = $modelSchema->getProperties();
-            $property    = $properties->{$property_name_or_smID};
-        }
-        $property->value = $value;
-        return $property;
+    public function getPersistedIdentity(): ?ModelInstance {
+        return $this->components->persisted_identity;
+    }
+    public function setPersistedIdentity(ModelInstance $model) {
+        $this->components->setPersistedIdentity($model);
+        return $this;
     }
 
     #
@@ -175,11 +163,9 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
         $this->components->markComponentUpdated($property);
         return $this;
     }
-    public function getInternal(): array {
-        return $this->internal;
-    }
     public function fillPropertyValue(Property $property, $value = Undefined_::class): void {
         /** @var \Sm\Data\Entity\Property\EntityPropertySchematic $propertySchematic */
+        throw new UnimplementedError();
         $propertySchematic = $property->getEffectiveSchematic();
         if (!($propertySchematic instanceof EntityPropertySchematic)) {
             return;
@@ -224,24 +210,6 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
     }
 
     #
-    ##
-    public function validateProperties(Context $context): array {
-        $propertyValidationResults = [];
-        /** @var \Sm\Data\Entity\Property\EntityProperty $property */
-        foreach ($this->components->properties as $property_identifier => $property) {
-            try {
-                if (!$property) throw new NonexistentPropertyException('Cannot set ' . $property_identifier . ' on Entiy');
-                $result                                          = $property->validate($context);
-                $propertyValidationResults[$property_identifier] = $result;
-            } catch (NonexistentPropertyException $exception) {
-                $exception_msg                                   = $exception->getMessage();
-                $propertyValidationResults[$property_identifier] = new PropertyValidationResult(false, $exception_msg);
-            }
-        }
-        return $propertyValidationResults;
-    }
-
-    #
     ## CRUD     [all no-ops]
     public function save($attributes = []) { }
     public function find($attributes = [], Context $context = null) { }
@@ -255,20 +223,5 @@ abstract class Entity implements \JsonSerializable, EntitySchema, PropertyHaver,
             'smID'       => $this->getSmID(),
             'properties' => $this->getProperties()->getAll(),
         ];
-    }
-    private function ucp() {
-        foreach ($this->components->properties->getAll() as $name => $property) {
-            /** @var  Property $property */
-            $effectiveSchematic = $property->getEffectiveSchematic();
-            if (!$effectiveSchematic instanceof EntityPropertySchematic) throw new InvalidArgumentException('Invalid Component Property');
-            $derivedFrom = $effectiveSchematic->getDerivedFrom();
-            if (is_string($derivedFrom)) return $this->setInternalProperty($derivedFrom, $property->value);
-            if (is_array($derivedFrom)) {
-                foreach ($derivedFrom as $propertyName => $smID) {
-                    $value = $this->internal[$propertyName] ?? ($this->components->properties->$propertyName ? $this->components->properties->$propertyName->value : null);
-                    $this->setInternalProperty($smID, $value);
-                }
-            }
-        }
     }
 }

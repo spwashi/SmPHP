@@ -147,10 +147,7 @@ class Property extends AbstractResolvable implements Readonly_able,
      * @return $this
      * @throws \Sm\Core\Exception\InvalidArgumentException
      */
-    public function setSubject($subject) {
-
-        # --
-
+    public function setSubject($subject, $do_track_change = true) {
         # Don't set from schematics
         if ($subject instanceof Schematic) return $this;
 
@@ -251,8 +248,8 @@ class Property extends AbstractResolvable implements Readonly_able,
      * @param $value
      * @return $this|Property
      */
-    public function setValue($value) {
-        return $this->setSubject($value);
+    public function setValue($value, $do_track_change = true) {
+        return $this->setSubject($value, $do_track_change);
     }
     public function getValue() {
         return $this->resolve();

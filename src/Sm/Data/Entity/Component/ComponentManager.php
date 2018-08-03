@@ -19,6 +19,7 @@ use Sm\Data\Property\Exception\NonexistentPropertyException;
 use Sm\Data\Property\Property;
 use Sm\Data\Property\PropertyContainer;
 use Sm\Data\Property\PropertyContainerInstance;
+use Sm\Data\Property\PropertySchematic;
 use Sm\Data\Type\Undefined_;
 
 
@@ -109,27 +110,27 @@ class ComponentManager {
     public function registerSchematic(EntitySchematic $entitySchematic) {
         return $this->properties->registerSchematics($entitySchematic->getProperties());
     }
-    public function setPersistedIdentity(Model $model) {
+    public function setPersistedIdentity(ModelInstance $model) {
+        $model                    = $model instanceof ContextualizedModelProxy ? $model->getModel() : $model;
         $this->persisted_identity = $model;
         return $this;
     }
     /** Returns a Model that represents the Entity */
     public function getRepresentativeModel(Context $context = NULL): ?ContextualizedModelProxy {
         $model            = $this->instantiateModel();
-        $model_properties = $this->getModelProperties();
+        $model_properties = $this->getPropertiesForIdentityModel($context);
         $model->set($model_properties);
         return $model->proxy($context);
     }
-    public function getModelProperties(): PropertyContainerInstance {
+    public function getPropertiesForIdentityModel(Context $context = null): PropertyContainerInstance {
         $model          = $this->instantiateModel();
         $properties     = [];
         $property_names = array_keys($this->properties->getAll());
         foreach ($property_names as $name) {
-            $properties[$name] = $this->derivePropertyForModelFromEntity($name, $model);
+            $properties[$name] = $this->derivePropertyForModelFromEntity($name, $model, $context);
         }
-        $not_null_fn = function ($item) {
-            return isset($item);
-        };
+
+        $not_null_fn = function ($item) { return isset($item); };
         $properties  = array_filter($properties, $not_null_fn);
         return PropertyContainer::init($properties);
     }
@@ -142,30 +143,39 @@ class ComponentManager {
     protected function updateProperties($instigator = null): void {
         if ($instigator instanceof Property) {
             $this->updatePropertiesFromProperty($instigator);
-        } else {
-            $modelProperties = $this->getModelProperties();
+            return;
+        }
 
-            /** @var EntityProperty $property */
-            foreach ($this->properties as $property) {
 
-                /** @var EntityPropertySchematic $propertySchematic */
+        /** @var EntityProperty $entityProperty */
+        $properties = $this->properties->getAll();
+        foreach ($properties as $name => $entityProperty) {
 
-                $derivedFrom = $property->schematic->getDerivedFrom();
+            /** @var EntityPropertySchematic $propertySchematic */
+            $derivedFrom = $entityProperty->schematic->getDerivedFrom();
 
-                if (is_array($derivedFrom)) {
-                    if (!$property instanceof EntityAsProperty) throw new UnimplementedError("Can only derive Entities from complex relationships");
-                    foreach ($derivedFrom as $name => $property_smID) {
-                        echo "boonman?:\n\n";
-                        var_dump([$property_smID, $this->resolveProperty($property_smID)]);
-                    }
-                    continue;
+            if (is_array($derivedFrom)) {
+                if (!$entityProperty instanceof EntityAsProperty) throw new UnimplementedError("Can only derive Entities from complex relationships");
+
+                foreach ($derivedFrom as $target_name => $derived_smID) {
+                    $origin_property = $this->resolveProperty($derived_smID);
+                    $identity        = $entityProperty->identity;
+
+                    $identity->register($target_name, $origin_property);
                 }
 
-                var_dump($derivedFrom);
+                continue;
             }
+
+            if (!$entityProperty instanceof EntityAsProperty) continue;
+
+            var_dump($derivedFrom);
         }
     }
     protected function updatePropertiesFromProperty(Property $instigator): void {
+        # todo'
+
+
         /** @var EntityProperty $property */
         foreach ($this->properties as $property) {
 
@@ -189,7 +199,33 @@ class ComponentManager {
     ##  Property resolution
     public function resolveProperty($name, Context $context = NULL): ?Property {
         ##  Should resolve a property at a particular time in a particular context
-        return $this->properties->$name ?? $this->getModelProperties()->$name;
+        $entity_property = $this->properties->$name;
+
+        if (isset($entity_property)) return $entity_property;
+
+        $modelProperties = $this->persisted_identity ? $this->persisted_identity->properties : null;
+        if (!$modelProperties) return null;
+
+        return $modelProperties->$name;
+    }
+    public function set($name, $value) {
+        if (is_iterable($name)) {
+            foreach ($name as $key => $val) $this->set($key, $val);
+            return $this;
+        }
+
+        # todo think about whether it's a good thing that we set both the entity and model properties here
+
+        $entityProperty = $this->properties->$name;
+        if ($entityProperty) $entityProperty->setValue($value);
+
+        $modelProperty = $this->persisted_identity->properties->resolve($name);
+        if ($modelProperty) {
+            $modelProperty->setValue($value);
+        }
+
+        # if the property hasn't been set yet, throw an exception
+        if (!($modelProperty || $entityProperty)) throw new NonexistentPropertyException("Cannot set {$name} on this Entity");
     }
 
 
@@ -208,16 +244,16 @@ class ComponentManager {
     protected function instantiateModel(): Model {
         #
         ##  Initialize the Model
-        $modelSchematic = $this->entity->getPersistedIdentity()->getEffectiveSchematic();
+        $modelSchematic = $this->persisted_identity->getEffectiveSchematic();
         $model          = $this->entity->entityDataManager->modelDataManager->instantiate($modelSchematic);
+        $model->set($this->persisted_identity->properties->getAll(), null);
         return $model;
     }
-    protected function derivePropertyForModelFromEntity($name, ModelInstance $model = NULL) {
+    protected function derivePropertyForModelFromEntity($name, ModelInstance $model = NULL, Context $context = null) {
         $model         = $model ?? $this->instantiateModel();
         $modelProperty = $model->properties->resolve($name);
-        if (!$modelProperty) {
-            return NULL;
-        }
+        if (!$modelProperty) return NULL;
+
         $propertyValue    = $this->properties->resolve($name);
         $newModelProperty = $model->properties->instantiate()->setValue($propertyValue);
         return $newModelProperty;
