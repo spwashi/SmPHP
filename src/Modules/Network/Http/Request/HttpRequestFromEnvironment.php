@@ -32,7 +32,7 @@ class HttpRequestFromEnvironment extends HttpRequest {
 	 * @return string
 	 */
 	public static function getEnvironmentRequestMethod() {
-		return strtolower(Sm::$globals->server['REQUEST_METHOD']);
+		return strtolower(Sm::$globals->server['REQUEST_METHOD'] ?? 'get');
 	}
 	public static function getRequestData() {
 		$contentType = static::getEnvironmentRequestedContentType();
