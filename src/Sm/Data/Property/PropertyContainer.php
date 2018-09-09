@@ -116,7 +116,12 @@ class PropertyContainer extends PropertySchemaContainer implements PropertyInsta
         return $this;
     }
     public function resolve($name = null): ?PropertyInstance {
-        return parent::resolve($name);
+        /** @var PropertyInstance $result */
+        $result = parent::resolve($name);
+        if (isset($result) && empty($result->getName())) {
+            $result->setName($name);
+        }
+        return $result;
     }
     public function getAll($by_smID = false) {
         if (!$by_smID) return parent::getAll();

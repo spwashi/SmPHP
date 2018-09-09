@@ -4,6 +4,7 @@ use Sm\Core\Container\Mini\MiniContainer;
 use Sm\Core\Context\Context;
 use Sm\Core\Exception\InvalidArgumentException;
 use Sm\Core\Exception\UnimplementedError;
+use Sm\Core\Resolvable\Exception\UnresolvableException;
 use Sm\Core\SmEntity\SmEntitySchema;
 use Sm\Data\Entity\Entity;
 use Sm\Data\Entity\EntityDataManager;
@@ -155,21 +156,24 @@ class ComponentManager {
             $derivedFrom = $entityProperty->schematic->getDerivedFrom();
 
             if (is_array($derivedFrom)) {
-                if (!$entityProperty instanceof EntityAsProperty) throw new UnimplementedError("Can only derive Entities from complex relationships");
+                if (!$entityProperty instanceof EntityAsProperty) {
+                    throw new UnimplementedError("Can only derive Entities from complex relationships");
+                }
 
                 foreach ($derivedFrom as $target_name => $derived_smID) {
-                    $origin_property = $this->resolveProperty($derived_smID);
+                    $origin_property = $this->resolveProperty($derived_smID) ?? $this->resolveProperty($target_name);
                     $identity        = $entityProperty->identity;
-
-                    $identity->register($target_name, $origin_property);
+                    // The property as we call it here might not have the same name property this EntityProperty refers to.
+                    // Check the smID of the persisted identity to make sure we are referring to the same name
+                    $actualProperty = $entityProperty->entity->components->resolveProperty($derived_smID);
+                    $identity->register($actualProperty ? $actualProperty->getName() : $target_name,
+                                        $origin_property);
                 }
 
                 continue;
             }
 
             if (!$entityProperty instanceof EntityAsProperty) continue;
-
-            var_dump($derivedFrom);
         }
     }
     protected function updatePropertiesFromProperty(Property $instigator): void {
@@ -225,7 +229,9 @@ class ComponentManager {
         }
 
         # if the property hasn't been set yet, throw an exception
-        if (!($modelProperty || $entityProperty)) throw new NonexistentPropertyException("Cannot set {$name} on this Entity");
+        if (!($modelProperty || $entityProperty)) {
+            throw new NonexistentPropertyException("Cannot set {$name} on this Entity");
+        }
     }
 
 
@@ -252,7 +258,18 @@ class ComponentManager {
     protected function derivePropertyForModelFromEntity($name, ModelInstance $model = NULL, Context $context = null) {
         $model         = $model ?? $this->instantiateModel();
         $modelProperty = $model->properties->resolve($name);
-        if (!$modelProperty) return NULL;
+        if (!$modelProperty) {
+            /** @var EntityProperty $entityProperty */
+            $entityProperty  = $this->entity->properties->resolve($name);
+            $entity_derivers = $entityProperty->schematic->getDerivedFrom();
+            if (count($entity_derivers) !== 1) {
+                throw new UnresolvableException("Cannot resolve the Model property directly associated with {$name}");
+            }
+
+            if (!($modelProperty = $model->properties->resolve($name))) {
+                return NULL;
+            }
+        }
 
         $propertyValue    = $this->properties->resolve($name);
         $newModelProperty = $model->properties->instantiate()->setValue($propertyValue);
