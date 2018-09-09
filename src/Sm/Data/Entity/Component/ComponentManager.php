@@ -120,6 +120,7 @@ class ComponentManager {
     public function getRepresentativeModel(Context $context = NULL): ?ContextualizedModelProxy {
         $model            = $this->instantiateModel();
         $model_properties = $this->getPropertiesForIdentityModel($context);
+        var_dump(array_keys($model_properties->getAll()));
         $model->set($model_properties);
         return $model->proxy($context);
     }
@@ -128,7 +129,9 @@ class ComponentManager {
         $properties     = [];
         $property_names = array_keys($this->properties->getAll());
         foreach ($property_names as $name) {
-            $properties[$name] = $this->derivePropertyForModelFromEntity($name, $model, $context);
+            $property          = $this->derivePropertyForModelFromEntity($name, $model, $context);
+            $name              = $property ? $property->getName() ?? $name : $name;
+            $properties[$name] = $property;
         }
 
         $not_null_fn = function ($item) { return isset($item); };
@@ -266,13 +269,18 @@ class ComponentManager {
                 throw new UnresolvableException("Cannot resolve the Model property directly associated with {$name}");
             }
 
-            if (!($modelProperty = $model->properties->resolve($name))) {
+            $derived_name = array_keys($entity_derivers)[0];
+            //  the model property doesn't exist
+            if (!($modelProperty = $model->properties->resolve($derived_name))) {
                 return NULL;
             }
-        }
 
-        $propertyValue    = $this->properties->resolve($name);
-        $newModelProperty = $model->properties->instantiate()->setValue($propertyValue);
+            $propertyValue = $this->properties->resolve($name)->resolve();
+            $property_name = $derived_name;
+        } else {
+            $propertyValue = $this->properties->resolve($name);
+        }
+        $newModelProperty = $model->properties->instantiate()->setValue($propertyValue)->setName($property_name ?? $name);
         return $newModelProperty;
     }
 
