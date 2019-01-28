@@ -120,7 +120,6 @@ class ComponentManager {
     public function getRepresentativeModel(Context $context = NULL): ?ContextualizedModelProxy {
         $model            = $this->instantiateModel();
         $model_properties = $this->getPropertiesForIdentityModel($context);
-        var_dump(array_keys($model_properties->getAll()));
         $model->set($model_properties);
         return $model->proxy($context);
     }
